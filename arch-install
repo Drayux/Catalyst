@@ -4,7 +4,7 @@ This includes all the major steps to get to the same configuration, but less so 
 
 
 Not sure where to put this yet:
-  Pacman recursive remove: pacman -Rscnd [package]
+  Pacman recursive remove: pacman -Rscnd [package] <-- dangerous
 
 
 Arch things TODO:
@@ -191,7 +191,7 @@ Reference of components:
 Display Server	:   Server (kinda like pulseaudio for GUIs) that handles GUI I/O and events (such as clicking the mouse)
 			^^Necessary for any desktop environment; Options are Xorg (on the X11 protocol) and Wayland
 Window Manager	:   Software that handles the placement and appearance of application windows
-			^^Can run standalone alongside a display server
+			^^Can run standalone alongside a display server, though many require session/launcher applications
 ** Compositor	:   A type of Window Manager that introduces an API enabling 2D and 3D effects, transparency, animation, etc.
 			^^All Wayland Window Managers are *also* compositors (aka Compositing Window Managers)
 Display Manager	:   Basically a login screen that automates the process of starting the window manager (and display server) after a successful login
@@ -205,13 +205,17 @@ Desktop Env.	:   A composite of any of the following software
 
 -- TODO: THIS WILL BE DIFFERENT --
 Custom Desktop Environment Config:
-Display Server - Wayland (where possible)
-Window Manager - KWin (Window manager used by KDE)
-Launcher - cutefish-launcher
-Dock - cutefish-dock
-Desktop Shell - plasma-desktop
+Display Server - Wayland (configure by setting EnableWayland=true in /run/gdm/custom.conf)
+~~Window Manager - Mutter (paired with gnome-shell/gnome-session and handled by GDM)
+Better Window Manager - KWin
+Launcher/Desktop - Gnome Shell
 
-Start desktop environment (from this point in the install) with 'kwin_wayland'
+Start desktop environment (from this point in the install) with 'gnome-shell --wayland'
+To change configuration, run 'systemctl restart gdm'
+
+TODO: Set up DE scripts
+  > Allow for launch (from GDM) either in Wayland or X11
+  > When logging in as root, disable the Display server and run as a TTY (and re-enable on log out)
 
 
 
