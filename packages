@@ -1,0 +1,77 @@
+# A list of every "main" package to install
+
+# Core
+linux
+linux-headers
+linux-firmware
+amd-ucode
+mkinitcpio	(and possibly the systemd version extras)
+
+
+# Shell
+zsh		(and oh-my-zsh but it's not a package)
+micro
+screen
+git
+neofetch
+cmatrix
+
+
+# Drivers (and similar)
+nvidia	(alternatively nvidia-open)
+alsa
+alsa-utils
+alsa-lib
+pipewire
+pipewire-alsa
+wireplumber
+networkmanager
+wireless_tools
+
+
+# Filesystem (not sure if I need these ATM)
+efibootmgr
+dosfstools
+mtools
+ntfs-3g
+
+
+# Desktop
+xorg*	(package organization...needs updating)
+lightdm
+[window manager]
+[compositor...picom?]
+polybar?
+rofi?
+latte-dock?
+
+
+# Utilities (GUI stuff)
+alacritty
+nvidia-settings
+nvidia-utils
+alsa-scarlett-gui
+helvum
+[file manager application]
+systemd-ui?
+
+
+# Applications
+firefox
+discord
+gimp
+
+
+# Docs
+pipewire-docs
+man-db
+man-pages
+zsh-doc
+
+
+# AUR
+atom-community
+steam (and related packages)
+browsh
+aether-lightdm-theme
+cider
