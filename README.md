@@ -13,7 +13,7 @@ List of systemd services to enable (or disable)
 Includes files such as a comprehensive list of packages to explicitly install  
   
 ## Notes
-Miscellaneous notes of various tricks and troubleshooting (ex. finding the package responsible for a file w/ pacman)  
+Miscellaneous notes of various tricks and troubleshooting (ex. finding the package responsible for a file w/ pacman or launch parameters for steam games)  
   
 ## Scripts
 Personal, system-management scripts (/home/Documents/scripts)  
