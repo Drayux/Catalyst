@@ -14,6 +14,7 @@ Includes files such as a comprehensive list of packages to explicitly install
   
 ## Notes
 Miscellaneous notes of various tricks and troubleshooting (ex. finding the package responsible for a file w/ pacman or launch parameters for steam games)  
+Also included are things like a "system TODO list"  
   
 ## Scripts
 Personal, system-management scripts (/home/Documents/scripts)  
