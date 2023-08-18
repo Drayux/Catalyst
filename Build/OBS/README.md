@@ -73,8 +73,8 @@
 - v4l2loopback-dkms (optional)
 
 ### Mystery dependencies
-- onevpl
-- libdatachannel
+- onevpl (dependency of ffmpeg-obs so that checks out)
+- libdatachannel (seems to be necessary for building the websocket, hence the absense from the AUR pkgbuild)
 
 # Install
 ### Clone the repo
