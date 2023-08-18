@@ -1,0 +1,4 @@
+{ ["link.output.node"] = 30,["object.linger"] = true,["object.id"] = 126,["object.serial"] = 134,["link.output.port"] = 32,["factory.id"] = 20,["link.input.port"] = 65,["link.input.node"] = 57,} 
+{ ["link.output.node"] = 30,["object.linger"] = true,["object.id"] = 127,["object.serial"] = 135,["link.output.port"] = 31,["factory.id"] = 20,["link.input.port"] = 67,["link.input.node"] = 57,} 
+{ ["link.output.node"] = 55,["object.linger"] = true,["object.id"] = 128,["object.serial"] = 136,["link.output.port"] = 59,["factory.id"] = 20,["link.input.port"] = 39,["link.input.node"] = 35,} 
+{ ["link.output.node"] = 55,["object.linger"] = true,["object.id"] = 129,["object.serial"] = 137,["link.output.port"] = 60,["factory.id"] = 20,["link.input.port"] = 38,["link.input.node"] = 35,} 

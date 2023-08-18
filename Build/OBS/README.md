@@ -5,6 +5,7 @@
 - ~~cef-minimal-obs~~ (local download for build)
 - cmake
 - git
+- make
 - nlohmann-json
 - websocketpp  
 ====================

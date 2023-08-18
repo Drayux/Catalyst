@@ -1,0 +1,160 @@
+{ ["port.id"] = 1,["object.path"] = virtual-sink:monitor_1,["port.direction"] = out,["object.serial"] = 57,["node.id"] = 30,["object.id"] = 31,["port.alias"] = Virtual Sink (Speaker):monitor_FR,["audio.channel"] = FR,["port.name"] = monitor_FR,["port.monitor"] = true,["format.dsp"] = 32 bit float mono audio,} 
+{ ["port.id"] = 0,["object.path"] = virtual-sink:monitor_0,["port.direction"] = out,["object.serial"] = 55,["node.id"] = 30,["object.id"] = 32,["port.alias"] = Virtual Sink (Speaker):monitor_FL,["audio.channel"] = FL,["port.name"] = monitor_FL,["port.monitor"] = true,["format.dsp"] = 32 bit float mono audio,} 
+{ ["port.id"] = 1,["object.path"] = virtual-sink:playback_1,["port.direction"] = in,["node.id"] = 30,["object.id"] = 33,["format.dsp"] = 32 bit float mono audio,["object.serial"] = 56,["port.name"] = playback_FR,["audio.channel"] = FR,["port.alias"] = Virtual Sink (Speaker):playback_FR,} 
+{ ["port.id"] = 0,["object.path"] = virtual-sink:playback_0,["port.direction"] = in,["node.id"] = 30,["object.id"] = 34,["format.dsp"] = 32 bit float mono audio,["object.serial"] = 54,["port.name"] = playback_FL,["audio.channel"] = FL,["port.alias"] = Virtual Sink (Speaker):playback_FL,} 
+{ ["port.id"] = 1,["object.path"] = virtual-source:capture_1,["port.direction"] = out,["object.serial"] = 61,["node.id"] = 35,["object.id"] = 36,["port.alias"] = Virtual Source (Mic):capture_AUX1,["audio.channel"] = AUX1,["port.name"] = capture_AUX1,["port.monitor"] = true,["format.dsp"] = 32 bit float mono audio,} 
+{ ["port.id"] = 0,["object.path"] = virtual-source:capture_0,["port.direction"] = out,["object.serial"] = 59,["node.id"] = 35,["object.id"] = 37,["port.alias"] = Virtual Source (Mic):capture_AUX0,["audio.channel"] = AUX0,["port.name"] = capture_AUX0,["port.monitor"] = true,["format.dsp"] = 32 bit float mono audio,} 
+{ ["port.id"] = 1,["object.path"] = virtual-source:input_1,["port.direction"] = in,["node.id"] = 35,["object.id"] = 38,["format.dsp"] = 32 bit float mono audio,["object.serial"] = 60,["port.name"] = input_AUX1,["audio.channel"] = AUX1,["port.alias"] = Virtual Source (Mic):input_AUX1,} 
+{ ["port.id"] = 0,["object.path"] = virtual-source:input_0,["port.direction"] = in,["node.id"] = 35,["object.id"] = 39,["format.dsp"] = 32 bit float mono audio,["object.serial"] = 58,["port.name"] = input_AUX0,["audio.channel"] = AUX0,["port.alias"] = Virtual Source (Mic):input_AUX0,} 
+{ ["port.id"] = 0,["object.path"] = alsa:seq:default:client_14:playback_0,["port.direction"] = in,["object.serial"] = 46,["node.id"] = 45,["object.id"] = 46,["port.alias"] = Midi Through:Midi Through Port-0,["format.dsp"] = 8 bit raw midi,["port.name"] = Midi Through:(playback_0) Midi Through Port-0,["port.physical"] = true,["port.terminal"] = true,} 
+{ ["port.id"] = 1,["port.terminal"] = true,["port.direction"] = in,["api.alsa.card"] = 0,["object.serial"] = 47,["node.id"] = 45,["object.id"] = 47,["port.alias"] = Scarlett 18i20 USB:Scarlett 18i20 USB MIDI 1,["format.dsp"] = 8 bit raw midi,["port.name"] = Focusrite Scarlett 18i20 USB at usb-0000:0e:00-3-2- high speed:(playback_0) Scarlett 18i20 USB MIDI 1,["port.physical"] = true,["object.path"] = alsa:seq:default:client_16:playback_0,} 
+{ ["port.id"] = 0,["object.path"] = alsa:seq:default:client_14:capture_0,["port.direction"] = out,["object.serial"] = 48,["node.id"] = 45,["object.id"] = 48,["port.alias"] = Midi Through:Midi Through Port-0,["format.dsp"] = 8 bit raw midi,["port.name"] = Midi Through:(capture_0) Midi Through Port-0,["port.physical"] = true,["port.terminal"] = true,} 
+{ ["port.id"] = 1,["port.terminal"] = true,["port.direction"] = out,["api.alsa.card"] = 0,["object.serial"] = 49,["node.id"] = 45,["object.id"] = 49,["port.alias"] = Scarlett 18i20 USB:Scarlett 18i20 USB MIDI 1,["format.dsp"] = 8 bit raw midi,["port.name"] = Focusrite Scarlett 18i20 USB at usb-0000:0e:00-3-2- high speed:(capture_0) Scarlett 18i20 USB MIDI 1,["port.physical"] = true,["object.path"] = alsa:seq:default:client_16:capture_0,} 
+{ ["port.id"] = 0,["port.terminal"] = true,["port.direction"] = out,["object.serial"] = 66,["port.alias"] = Samson Meteor Mic:capture_FL,["node.id"] = 54,["object.id"] = 58,["format.dsp"] = 32 bit float mono audio,["audio.channel"] = FL,["port.name"] = capture_FL,["port.physical"] = true,["object.path"] = alsa:pcm:3:front:3:capture:capture_0,} 
+{ ["port.id"] = 1,["port.terminal"] = true,["port.direction"] = out,["object.serial"] = 67,["port.alias"] = Samson Meteor Mic:capture_FR,["node.id"] = 54,["object.id"] = 59,["format.dsp"] = 32 bit float mono audio,["audio.channel"] = FR,["port.name"] = capture_FR,["port.physical"] = true,["object.path"] = alsa:pcm:3:front:3:capture:capture_1,} 
+{ ["port.id"] = 1,["object.path"] = alsa:pcm:1:hdmi:1:playback:monitor_1,["port.direction"] = out,["object.serial"] = 185,["node.id"] = 55,["object.id"] = 60,["port.alias"] = MSI MAG342CQ:monitor_FR,["audio.channel"] = FR,["port.name"] = monitor_FR,["port.monitor"] = true,["format.dsp"] = 32 bit float mono audio,} 
+{ ["port.id"] = 0,["object.path"] = alsa:pcm:1:hdmi:1:playback:monitor_0,["port.direction"] = out,["object.serial"] = 183,["node.id"] = 55,["object.id"] = 61,["port.alias"] = MSI MAG342CQ:monitor_FL,["audio.channel"] = FL,["port.name"] = monitor_FL,["port.monitor"] = true,["format.dsp"] = 32 bit float mono audio,} 
+{ ["port.id"] = 1,["port.terminal"] = true,["port.direction"] = in,["object.serial"] = 184,["port.alias"] = MSI MAG342CQ:playback_FR,["node.id"] = 55,["object.id"] = 62,["format.dsp"] = 32 bit float mono audio,["audio.channel"] = FR,["port.name"] = playback_FR,["port.physical"] = true,["object.path"] = alsa:pcm:1:hdmi:1:playback:playback_1,} 
+{ ["port.id"] = 0,["port.terminal"] = true,["port.direction"] = in,["object.serial"] = 182,["port.alias"] = MSI MAG342CQ:playback_FL,["node.id"] = 55,["object.id"] = 63,["format.dsp"] = 32 bit float mono audio,["audio.channel"] = FL,["port.name"] = playback_FL,["port.physical"] = true,["object.path"] = alsa:pcm:1:hdmi:1:playback:playback_0,} 
+{ ["port.id"] = 0,["port.terminal"] = true,["port.direction"] = in,["object.serial"] = 72,["port.alias"] = Scarlett 18i20 USB:playback_AUX0,["node.id"] = 56,["object.id"] = 64,["format.dsp"] = 32 bit float mono audio,["audio.channel"] = AUX0,["port.name"] = playback_AUX0,["port.physical"] = true,["object.path"] = alsa:pcm:0:hw:0,0:playback:playback_0,} 
+{ ["port.id"] = 0,["object.path"] = alsa:pcm:0:hw:0,0:playback:monitor_0,["port.direction"] = out,["object.serial"] = 73,["node.id"] = 56,["object.id"] = 65,["port.alias"] = Scarlett 18i20 USB:monitor_AUX0,["audio.channel"] = AUX0,["port.name"] = monitor_AUX0,["port.monitor"] = true,["format.dsp"] = 32 bit float mono audio,} 
+{ ["port.id"] = 1,["port.terminal"] = true,["port.direction"] = in,["object.serial"] = 74,["port.alias"] = Scarlett 18i20 USB:playback_AUX1,["node.id"] = 56,["object.id"] = 66,["format.dsp"] = 32 bit float mono audio,["audio.channel"] = AUX1,["port.name"] = playback_AUX1,["port.physical"] = true,["object.path"] = alsa:pcm:0:hw:0,0:playback:playback_1,} 
+{ ["port.id"] = 1,["object.path"] = alsa:pcm:0:hw:0,0:playback:monitor_1,["port.direction"] = out,["object.serial"] = 75,["node.id"] = 56,["object.id"] = 67,["port.alias"] = Scarlett 18i20 USB:monitor_AUX1,["audio.channel"] = AUX1,["port.name"] = monitor_AUX1,["port.monitor"] = true,["format.dsp"] = 32 bit float mono audio,} 
+{ ["port.id"] = 2,["port.terminal"] = true,["port.direction"] = in,["object.serial"] = 76,["port.alias"] = Scarlett 18i20 USB:playback_AUX2,["node.id"] = 56,["object.id"] = 68,["format.dsp"] = 32 bit float mono audio,["audio.channel"] = AUX2,["port.name"] = playback_AUX2,["port.physical"] = true,["object.path"] = alsa:pcm:0:hw:0,0:playback:playback_2,} 
+{ ["port.id"] = 2,["object.path"] = alsa:pcm:0:hw:0,0:playback:monitor_2,["port.direction"] = out,["object.serial"] = 77,["node.id"] = 56,["object.id"] = 69,["port.alias"] = Scarlett 18i20 USB:monitor_AUX2,["audio.channel"] = AUX2,["port.name"] = monitor_AUX2,["port.monitor"] = true,["format.dsp"] = 32 bit float mono audio,} 
+{ ["port.id"] = 3,["port.terminal"] = true,["port.direction"] = in,["object.serial"] = 78,["port.alias"] = Scarlett 18i20 USB:playback_AUX3,["node.id"] = 56,["object.id"] = 70,["format.dsp"] = 32 bit float mono audio,["audio.channel"] = AUX3,["port.name"] = playback_AUX3,["port.physical"] = true,["object.path"] = alsa:pcm:0:hw:0,0:playback:playback_3,} 
+{ ["port.id"] = 3,["object.path"] = alsa:pcm:0:hw:0,0:playback:monitor_3,["port.direction"] = out,["object.serial"] = 79,["node.id"] = 56,["object.id"] = 71,["port.alias"] = Scarlett 18i20 USB:monitor_AUX3,["audio.channel"] = AUX3,["port.name"] = monitor_AUX3,["port.monitor"] = true,["format.dsp"] = 32 bit float mono audio,} 
+{ ["port.id"] = 4,["port.terminal"] = true,["port.direction"] = in,["object.serial"] = 80,["port.alias"] = Scarlett 18i20 USB:playback_AUX4,["node.id"] = 56,["object.id"] = 72,["format.dsp"] = 32 bit float mono audio,["audio.channel"] = AUX4,["port.name"] = playback_AUX4,["port.physical"] = true,["object.path"] = alsa:pcm:0:hw:0,0:playback:playback_4,} 
+{ ["port.id"] = 4,["object.path"] = alsa:pcm:0:hw:0,0:playback:monitor_4,["port.direction"] = out,["object.serial"] = 81,["node.id"] = 56,["object.id"] = 73,["port.alias"] = Scarlett 18i20 USB:monitor_AUX4,["audio.channel"] = AUX4,["port.name"] = monitor_AUX4,["port.monitor"] = true,["format.dsp"] = 32 bit float mono audio,} 
+{ ["port.id"] = 5,["port.terminal"] = true,["port.direction"] = in,["object.serial"] = 82,["port.alias"] = Scarlett 18i20 USB:playback_AUX5,["node.id"] = 56,["object.id"] = 74,["format.dsp"] = 32 bit float mono audio,["audio.channel"] = AUX5,["port.name"] = playback_AUX5,["port.physical"] = true,["object.path"] = alsa:pcm:0:hw:0,0:playback:playback_5,} 
+{ ["port.id"] = 5,["object.path"] = alsa:pcm:0:hw:0,0:playback:monitor_5,["port.direction"] = out,["object.serial"] = 83,["node.id"] = 56,["object.id"] = 75,["port.alias"] = Scarlett 18i20 USB:monitor_AUX5,["audio.channel"] = AUX5,["port.name"] = monitor_AUX5,["port.monitor"] = true,["format.dsp"] = 32 bit float mono audio,} 
+{ ["port.id"] = 6,["port.terminal"] = true,["port.direction"] = in,["object.serial"] = 84,["port.alias"] = Scarlett 18i20 USB:playback_AUX6,["node.id"] = 56,["object.id"] = 76,["format.dsp"] = 32 bit float mono audio,["audio.channel"] = AUX6,["port.name"] = playback_AUX6,["port.physical"] = true,["object.path"] = alsa:pcm:0:hw:0,0:playback:playback_6,} 
+{ ["port.id"] = 6,["object.path"] = alsa:pcm:0:hw:0,0:playback:monitor_6,["port.direction"] = out,["object.serial"] = 85,["node.id"] = 56,["object.id"] = 77,["port.alias"] = Scarlett 18i20 USB:monitor_AUX6,["audio.channel"] = AUX6,["port.name"] = monitor_AUX6,["port.monitor"] = true,["format.dsp"] = 32 bit float mono audio,} 
+{ ["port.id"] = 7,["port.terminal"] = true,["port.direction"] = in,["object.serial"] = 86,["port.alias"] = Scarlett 18i20 USB:playback_AUX7,["node.id"] = 56,["object.id"] = 78,["format.dsp"] = 32 bit float mono audio,["audio.channel"] = AUX7,["port.name"] = playback_AUX7,["port.physical"] = true,["object.path"] = alsa:pcm:0:hw:0,0:playback:playback_7,} 
+{ ["port.id"] = 7,["object.path"] = alsa:pcm:0:hw:0,0:playback:monitor_7,["port.direction"] = out,["object.serial"] = 87,["node.id"] = 56,["object.id"] = 79,["port.alias"] = Scarlett 18i20 USB:monitor_AUX7,["audio.channel"] = AUX7,["port.name"] = monitor_AUX7,["port.monitor"] = true,["format.dsp"] = 32 bit float mono audio,} 
+{ ["port.id"] = 8,["port.terminal"] = true,["port.direction"] = in,["object.serial"] = 88,["port.alias"] = Scarlett 18i20 USB:playback_AUX8,["node.id"] = 56,["object.id"] = 80,["format.dsp"] = 32 bit float mono audio,["audio.channel"] = AUX8,["port.name"] = playback_AUX8,["port.physical"] = true,["object.path"] = alsa:pcm:0:hw:0,0:playback:playback_8,} 
+{ ["port.id"] = 8,["object.path"] = alsa:pcm:0:hw:0,0:playback:monitor_8,["port.direction"] = out,["object.serial"] = 89,["node.id"] = 56,["object.id"] = 81,["port.alias"] = Scarlett 18i20 USB:monitor_AUX8,["audio.channel"] = AUX8,["port.name"] = monitor_AUX8,["port.monitor"] = true,["format.dsp"] = 32 bit float mono audio,} 
+{ ["port.id"] = 9,["port.terminal"] = true,["port.direction"] = in,["object.serial"] = 90,["port.alias"] = Scarlett 18i20 USB:playback_AUX9,["node.id"] = 56,["object.id"] = 82,["format.dsp"] = 32 bit float mono audio,["audio.channel"] = AUX9,["port.name"] = playback_AUX9,["port.physical"] = true,["object.path"] = alsa:pcm:0:hw:0,0:playback:playback_9,} 
+{ ["port.id"] = 9,["object.path"] = alsa:pcm:0:hw:0,0:playback:monitor_9,["port.direction"] = out,["object.serial"] = 91,["node.id"] = 56,["object.id"] = 83,["port.alias"] = Scarlett 18i20 USB:monitor_AUX9,["audio.channel"] = AUX9,["port.name"] = monitor_AUX9,["port.monitor"] = true,["format.dsp"] = 32 bit float mono audio,} 
+{ ["port.id"] = 10,["port.terminal"] = true,["port.direction"] = in,["object.serial"] = 92,["port.alias"] = Scarlett 18i20 USB:playback_AUX10,["node.id"] = 56,["object.id"] = 84,["format.dsp"] = 32 bit float mono audio,["audio.channel"] = AUX10,["port.name"] = playback_AUX10,["port.physical"] = true,["object.path"] = alsa:pcm:0:hw:0,0:playback:playback_10,} 
+{ ["port.id"] = 10,["object.path"] = alsa:pcm:0:hw:0,0:playback:monitor_10,["port.direction"] = out,["object.serial"] = 93,["node.id"] = 56,["object.id"] = 85,["port.alias"] = Scarlett 18i20 USB:monitor_AUX10,["audio.channel"] = AUX10,["port.name"] = monitor_AUX10,["port.monitor"] = true,["format.dsp"] = 32 bit float mono audio,} 
+{ ["port.id"] = 11,["port.terminal"] = true,["port.direction"] = in,["object.serial"] = 94,["port.alias"] = Scarlett 18i20 USB:playback_AUX11,["node.id"] = 56,["object.id"] = 86,["format.dsp"] = 32 bit float mono audio,["audio.channel"] = AUX11,["port.name"] = playback_AUX11,["port.physical"] = true,["object.path"] = alsa:pcm:0:hw:0,0:playback:playback_11,} 
+{ ["port.id"] = 11,["object.path"] = alsa:pcm:0:hw:0,0:playback:monitor_11,["port.direction"] = out,["object.serial"] = 95,["node.id"] = 56,["object.id"] = 87,["port.alias"] = Scarlett 18i20 USB:monitor_AUX11,["audio.channel"] = AUX11,["port.name"] = monitor_AUX11,["port.monitor"] = true,["format.dsp"] = 32 bit float mono audio,} 
+{ ["port.id"] = 12,["port.terminal"] = true,["port.direction"] = in,["object.serial"] = 96,["port.alias"] = Scarlett 18i20 USB:playback_AUX12,["node.id"] = 56,["object.id"] = 88,["format.dsp"] = 32 bit float mono audio,["audio.channel"] = AUX12,["port.name"] = playback_AUX12,["port.physical"] = true,["object.path"] = alsa:pcm:0:hw:0,0:playback:playback_12,} 
+{ ["port.id"] = 12,["object.path"] = alsa:pcm:0:hw:0,0:playback:monitor_12,["port.direction"] = out,["object.serial"] = 97,["node.id"] = 56,["object.id"] = 89,["port.alias"] = Scarlett 18i20 USB:monitor_AUX12,["audio.channel"] = AUX12,["port.name"] = monitor_AUX12,["port.monitor"] = true,["format.dsp"] = 32 bit float mono audio,} 
+{ ["port.id"] = 13,["port.terminal"] = true,["port.direction"] = in,["object.serial"] = 98,["port.alias"] = Scarlett 18i20 USB:playback_AUX13,["node.id"] = 56,["object.id"] = 90,["format.dsp"] = 32 bit float mono audio,["audio.channel"] = AUX13,["port.name"] = playback_AUX13,["port.physical"] = true,["object.path"] = alsa:pcm:0:hw:0,0:playback:playback_13,} 
+{ ["port.id"] = 13,["object.path"] = alsa:pcm:0:hw:0,0:playback:monitor_13,["port.direction"] = out,["object.serial"] = 99,["node.id"] = 56,["object.id"] = 91,["port.alias"] = Scarlett 18i20 USB:monitor_AUX13,["audio.channel"] = AUX13,["port.name"] = monitor_AUX13,["port.monitor"] = true,["format.dsp"] = 32 bit float mono audio,} 
+{ ["port.id"] = 14,["port.terminal"] = true,["port.direction"] = in,["object.serial"] = 100,["port.alias"] = Scarlett 18i20 USB:playback_AUX14,["node.id"] = 56,["object.id"] = 92,["format.dsp"] = 32 bit float mono audio,["audio.channel"] = AUX14,["port.name"] = playback_AUX14,["port.physical"] = true,["object.path"] = alsa:pcm:0:hw:0,0:playback:playback_14,} 
+{ ["port.id"] = 14,["object.path"] = alsa:pcm:0:hw:0,0:playback:monitor_14,["port.direction"] = out,["object.serial"] = 101,["node.id"] = 56,["object.id"] = 93,["port.alias"] = Scarlett 18i20 USB:monitor_AUX14,["audio.channel"] = AUX14,["port.name"] = monitor_AUX14,["port.monitor"] = true,["format.dsp"] = 32 bit float mono audio,} 
+{ ["port.id"] = 15,["port.terminal"] = true,["port.direction"] = in,["object.serial"] = 102,["port.alias"] = Scarlett 18i20 USB:playback_AUX15,["node.id"] = 56,["object.id"] = 94,["format.dsp"] = 32 bit float mono audio,["audio.channel"] = AUX15,["port.name"] = playback_AUX15,["port.physical"] = true,["object.path"] = alsa:pcm:0:hw:0,0:playback:playback_15,} 
+{ ["port.id"] = 15,["object.path"] = alsa:pcm:0:hw:0,0:playback:monitor_15,["port.direction"] = out,["object.serial"] = 103,["node.id"] = 56,["object.id"] = 95,["port.alias"] = Scarlett 18i20 USB:monitor_AUX15,["audio.channel"] = AUX15,["port.name"] = monitor_AUX15,["port.monitor"] = true,["format.dsp"] = 32 bit float mono audio,} 
+{ ["port.id"] = 16,["port.terminal"] = true,["port.direction"] = in,["object.serial"] = 104,["port.alias"] = Scarlett 18i20 USB:playback_AUX16,["node.id"] = 56,["object.id"] = 96,["format.dsp"] = 32 bit float mono audio,["audio.channel"] = AUX16,["port.name"] = playback_AUX16,["port.physical"] = true,["object.path"] = alsa:pcm:0:hw:0,0:playback:playback_16,} 
+{ ["port.id"] = 16,["object.path"] = alsa:pcm:0:hw:0,0:playback:monitor_16,["port.direction"] = out,["object.serial"] = 105,["node.id"] = 56,["object.id"] = 97,["port.alias"] = Scarlett 18i20 USB:monitor_AUX16,["audio.channel"] = AUX16,["port.name"] = monitor_AUX16,["port.monitor"] = true,["format.dsp"] = 32 bit float mono audio,} 
+{ ["port.id"] = 17,["port.terminal"] = true,["port.direction"] = in,["object.serial"] = 106,["port.alias"] = Scarlett 18i20 USB:playback_AUX17,["node.id"] = 56,["object.id"] = 98,["format.dsp"] = 32 bit float mono audio,["audio.channel"] = AUX17,["port.name"] = playback_AUX17,["port.physical"] = true,["object.path"] = alsa:pcm:0:hw:0,0:playback:playback_17,} 
+{ ["port.id"] = 17,["object.path"] = alsa:pcm:0:hw:0,0:playback:monitor_17,["port.direction"] = out,["object.serial"] = 107,["node.id"] = 56,["object.id"] = 99,["port.alias"] = Scarlett 18i20 USB:monitor_AUX17,["audio.channel"] = AUX17,["port.name"] = monitor_AUX17,["port.monitor"] = true,["format.dsp"] = 32 bit float mono audio,} 
+{ ["port.id"] = 18,["port.terminal"] = true,["port.direction"] = in,["object.serial"] = 108,["port.alias"] = Scarlett 18i20 USB:playback_AUX18,["node.id"] = 56,["object.id"] = 100,["format.dsp"] = 32 bit float mono audio,["audio.channel"] = AUX18,["port.name"] = playback_AUX18,["port.physical"] = true,["object.path"] = alsa:pcm:0:hw:0,0:playback:playback_18,} 
+{ ["port.id"] = 18,["object.path"] = alsa:pcm:0:hw:0,0:playback:monitor_18,["port.direction"] = out,["object.serial"] = 109,["node.id"] = 56,["object.id"] = 101,["port.alias"] = Scarlett 18i20 USB:monitor_AUX18,["audio.channel"] = AUX18,["port.name"] = monitor_AUX18,["port.monitor"] = true,["format.dsp"] = 32 bit float mono audio,} 
+{ ["port.id"] = 19,["port.terminal"] = true,["port.direction"] = in,["object.serial"] = 110,["port.alias"] = Scarlett 18i20 USB:playback_AUX19,["node.id"] = 56,["object.id"] = 102,["format.dsp"] = 32 bit float mono audio,["audio.channel"] = AUX19,["port.name"] = playback_AUX19,["port.physical"] = true,["object.path"] = alsa:pcm:0:hw:0,0:playback:playback_19,} 
+{ ["port.id"] = 19,["object.path"] = alsa:pcm:0:hw:0,0:playback:monitor_19,["port.direction"] = out,["object.serial"] = 111,["node.id"] = 56,["object.id"] = 103,["port.alias"] = Scarlett 18i20 USB:monitor_AUX19,["audio.channel"] = AUX19,["port.name"] = monitor_AUX19,["port.monitor"] = true,["format.dsp"] = 32 bit float mono audio,} 
+{ ["port.id"] = 0,["port.terminal"] = true,["port.direction"] = out,["object.serial"] = 112,["port.alias"] = Scarlett 18i20 USB:capture_AUX0,["node.id"] = 57,["object.id"] = 104,["format.dsp"] = 32 bit float mono audio,["audio.channel"] = AUX0,["port.name"] = capture_AUX0,["port.physical"] = true,["object.path"] = alsa:pcm:0:hw:0,0:capture:capture_0,} 
+{ ["port.id"] = 1,["port.terminal"] = true,["port.direction"] = out,["object.serial"] = 113,["port.alias"] = Scarlett 18i20 USB:capture_AUX1,["node.id"] = 57,["object.id"] = 105,["format.dsp"] = 32 bit float mono audio,["audio.channel"] = AUX1,["port.name"] = capture_AUX1,["port.physical"] = true,["object.path"] = alsa:pcm:0:hw:0,0:capture:capture_1,} 
+{ ["port.id"] = 2,["port.terminal"] = true,["port.direction"] = out,["object.serial"] = 114,["port.alias"] = Scarlett 18i20 USB:capture_AUX2,["node.id"] = 57,["object.id"] = 106,["format.dsp"] = 32 bit float mono audio,["audio.channel"] = AUX2,["port.name"] = capture_AUX2,["port.physical"] = true,["object.path"] = alsa:pcm:0:hw:0,0:capture:capture_2,} 
+{ ["port.id"] = 3,["port.terminal"] = true,["port.direction"] = out,["object.serial"] = 115,["port.alias"] = Scarlett 18i20 USB:capture_AUX3,["node.id"] = 57,["object.id"] = 107,["format.dsp"] = 32 bit float mono audio,["audio.channel"] = AUX3,["port.name"] = capture_AUX3,["port.physical"] = true,["object.path"] = alsa:pcm:0:hw:0,0:capture:capture_3,} 
+{ ["port.id"] = 4,["port.terminal"] = true,["port.direction"] = out,["object.serial"] = 116,["port.alias"] = Scarlett 18i20 USB:capture_AUX4,["node.id"] = 57,["object.id"] = 108,["format.dsp"] = 32 bit float mono audio,["audio.channel"] = AUX4,["port.name"] = capture_AUX4,["port.physical"] = true,["object.path"] = alsa:pcm:0:hw:0,0:capture:capture_4,} 
+{ ["port.id"] = 5,["port.terminal"] = true,["port.direction"] = out,["object.serial"] = 117,["port.alias"] = Scarlett 18i20 USB:capture_AUX5,["node.id"] = 57,["object.id"] = 109,["format.dsp"] = 32 bit float mono audio,["audio.channel"] = AUX5,["port.name"] = capture_AUX5,["port.physical"] = true,["object.path"] = alsa:pcm:0:hw:0,0:capture:capture_5,} 
+{ ["port.id"] = 6,["port.terminal"] = true,["port.direction"] = out,["object.serial"] = 118,["port.alias"] = Scarlett 18i20 USB:capture_AUX6,["node.id"] = 57,["object.id"] = 110,["format.dsp"] = 32 bit float mono audio,["audio.channel"] = AUX6,["port.name"] = capture_AUX6,["port.physical"] = true,["object.path"] = alsa:pcm:0:hw:0,0:capture:capture_6,} 
+{ ["port.id"] = 7,["port.terminal"] = true,["port.direction"] = out,["object.serial"] = 119,["port.alias"] = Scarlett 18i20 USB:capture_AUX7,["node.id"] = 57,["object.id"] = 111,["format.dsp"] = 32 bit float mono audio,["audio.channel"] = AUX7,["port.name"] = capture_AUX7,["port.physical"] = true,["object.path"] = alsa:pcm:0:hw:0,0:capture:capture_7,} 
+{ ["port.id"] = 8,["port.terminal"] = true,["port.direction"] = out,["object.serial"] = 120,["port.alias"] = Scarlett 18i20 USB:capture_AUX8,["node.id"] = 57,["object.id"] = 112,["format.dsp"] = 32 bit float mono audio,["audio.channel"] = AUX8,["port.name"] = capture_AUX8,["port.physical"] = true,["object.path"] = alsa:pcm:0:hw:0,0:capture:capture_8,} 
+{ ["port.id"] = 9,["port.terminal"] = true,["port.direction"] = out,["object.serial"] = 121,["port.alias"] = Scarlett 18i20 USB:capture_AUX9,["node.id"] = 57,["object.id"] = 113,["format.dsp"] = 32 bit float mono audio,["audio.channel"] = AUX9,["port.name"] = capture_AUX9,["port.physical"] = true,["object.path"] = alsa:pcm:0:hw:0,0:capture:capture_9,} 
+{ ["port.id"] = 10,["port.terminal"] = true,["port.direction"] = out,["object.serial"] = 122,["port.alias"] = Scarlett 18i20 USB:capture_AUX10,["node.id"] = 57,["object.id"] = 114,["format.dsp"] = 32 bit float mono audio,["audio.channel"] = AUX10,["port.name"] = capture_AUX10,["port.physical"] = true,["object.path"] = alsa:pcm:0:hw:0,0:capture:capture_10,} 
+{ ["port.id"] = 11,["port.terminal"] = true,["port.direction"] = out,["object.serial"] = 123,["port.alias"] = Scarlett 18i20 USB:capture_AUX11,["node.id"] = 57,["object.id"] = 115,["format.dsp"] = 32 bit float mono audio,["audio.channel"] = AUX11,["port.name"] = capture_AUX11,["port.physical"] = true,["object.path"] = alsa:pcm:0:hw:0,0:capture:capture_11,} 
+{ ["port.id"] = 12,["port.terminal"] = true,["port.direction"] = out,["object.serial"] = 124,["port.alias"] = Scarlett 18i20 USB:capture_AUX12,["node.id"] = 57,["object.id"] = 116,["format.dsp"] = 32 bit float mono audio,["audio.channel"] = AUX12,["port.name"] = capture_AUX12,["port.physical"] = true,["object.path"] = alsa:pcm:0:hw:0,0:capture:capture_12,} 
+{ ["port.id"] = 13,["port.terminal"] = true,["port.direction"] = out,["object.serial"] = 125,["port.alias"] = Scarlett 18i20 USB:capture_AUX13,["node.id"] = 57,["object.id"] = 117,["format.dsp"] = 32 bit float mono audio,["audio.channel"] = AUX13,["port.name"] = capture_AUX13,["port.physical"] = true,["object.path"] = alsa:pcm:0:hw:0,0:capture:capture_13,} 
+{ ["port.id"] = 14,["port.terminal"] = true,["port.direction"] = out,["object.serial"] = 126,["port.alias"] = Scarlett 18i20 USB:capture_AUX14,["node.id"] = 57,["object.id"] = 118,["format.dsp"] = 32 bit float mono audio,["audio.channel"] = AUX14,["port.name"] = capture_AUX14,["port.physical"] = true,["object.path"] = alsa:pcm:0:hw:0,0:capture:capture_14,} 
+{ ["port.id"] = 15,["port.terminal"] = true,["port.direction"] = out,["object.serial"] = 127,["port.alias"] = Scarlett 18i20 USB:capture_AUX15,["node.id"] = 57,["object.id"] = 119,["format.dsp"] = 32 bit float mono audio,["audio.channel"] = AUX15,["port.name"] = capture_AUX15,["port.physical"] = true,["object.path"] = alsa:pcm:0:hw:0,0:capture:capture_15,} 
+{ ["port.id"] = 16,["port.terminal"] = true,["port.direction"] = out,["object.serial"] = 128,["port.alias"] = Scarlett 18i20 USB:capture_AUX16,["node.id"] = 57,["object.id"] = 120,["format.dsp"] = 32 bit float mono audio,["audio.channel"] = AUX16,["port.name"] = capture_AUX16,["port.physical"] = true,["object.path"] = alsa:pcm:0:hw:0,0:capture:capture_16,} 
+{ ["port.id"] = 17,["port.terminal"] = true,["port.direction"] = out,["object.serial"] = 129,["port.alias"] = Scarlett 18i20 USB:capture_AUX17,["node.id"] = 57,["object.id"] = 121,["format.dsp"] = 32 bit float mono audio,["audio.channel"] = AUX17,["port.name"] = capture_AUX17,["port.physical"] = true,["object.path"] = alsa:pcm:0:hw:0,0:capture:capture_17,} 
+{ ["port.id"] = 18,["port.terminal"] = true,["port.direction"] = out,["object.serial"] = 130,["port.alias"] = Scarlett 18i20 USB:capture_AUX18,["node.id"] = 57,["object.id"] = 122,["format.dsp"] = 32 bit float mono audio,["audio.channel"] = AUX18,["port.name"] = capture_AUX18,["port.physical"] = true,["object.path"] = alsa:pcm:0:hw:0,0:capture:capture_18,} 
+{ ["port.id"] = 19,["port.terminal"] = true,["port.direction"] = out,["object.serial"] = 131,["port.alias"] = Scarlett 18i20 USB:capture_AUX19,["node.id"] = 57,["object.id"] = 123,["format.dsp"] = 32 bit float mono audio,["audio.channel"] = AUX19,["port.name"] = capture_AUX19,["port.physical"] = true,["object.path"] = alsa:pcm:0:hw:0,0:capture:capture_19,} 
+{ ["port.id"] = 0,["object.path"] = Firefox:output_0,["port.direction"] = out,["node.id"] = 132,["object.id"] = 129,["format.dsp"] = 32 bit float mono audio,["object.serial"] = 281,["port.name"] = output_FL,["audio.channel"] = FL,["port.alias"] = Firefox:output_FL,} 
+{ ["port.id"] = 1,["object.path"] = Firefox:output_1,["port.direction"] = out,["node.id"] = 132,["object.id"] = 133,["format.dsp"] = 32 bit float mono audio,["object.serial"] = 282,["port.name"] = output_FR,["audio.channel"] = FR,["port.alias"] = Firefox:output_FR,} 
+link removed: 133
+link removed: 129
+link removed: 123
+link removed: 122
+link removed: 121
+link removed: 120
+link removed: 119
+link removed: 118
+link removed: 117
+link removed: 116
+link removed: 115
+link removed: 114
+link removed: 113
+link removed: 112
+link removed: 111
+link removed: 110
+link removed: 109
+link removed: 108
+link removed: 107
+link removed: 106
+link removed: 105
+link removed: 104
+link removed: 103
+link removed: 102
+link removed: 101
+link removed: 100
+link removed: 99
+link removed: 98
+link removed: 97
+link removed: 96
+link removed: 95
+link removed: 94
+link removed: 93
+link removed: 92
+link removed: 91
+link removed: 90
+link removed: 89
+link removed: 88
+link removed: 87
+link removed: 86
+link removed: 85
+link removed: 84
+link removed: 83
+link removed: 82
+link removed: 81
+link removed: 80
+link removed: 79
+link removed: 78
+link removed: 77
+link removed: 76
+link removed: 75
+link removed: 74
+link removed: 73
+link removed: 72
+link removed: 71
+link removed: 70
+link removed: 69
+link removed: 68
+link removed: 67
+link removed: 66
+link removed: 65
+link removed: 64
+link removed: 63
+link removed: 62
+link removed: 61
+link removed: 60
+link removed: 59
+link removed: 58
+link removed: 49
+link removed: 48
+link removed: 47
+link removed: 46
+link removed: 39
+link removed: 38
+link removed: 37
+link removed: 36
+link removed: 34
+link removed: 33
+link removed: 32
+link removed: 31
