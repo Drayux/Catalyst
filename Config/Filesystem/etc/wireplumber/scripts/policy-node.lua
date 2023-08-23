@@ -32,22 +32,22 @@ self.pending_error_timer = nil
 local custom_routes = {
   -- Game Audio (default)
 	["virtual-games"] = {
-    	"wine-preloader",
-   		"itgmania",
+    "wine-preloader",
+    "itgmania",
  	},
 
 	-- System Audio
 	["virtual-system"] = {
 		"plasmashell",
 		"firefox",
-    	"steam",
+    "steam",
 	},
 
 	-- Music (and video) Players
 	["virtual-music"] = {
 		"cider",
-    	"muffon",
-    	"vlc",
+    "muffon",
+    "vlc",
 	},
 
 	-- Communication Applications

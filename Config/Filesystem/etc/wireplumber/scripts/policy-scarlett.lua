@@ -1,6 +1,11 @@
 -- Attempts to connect the Scarlett 18i20 to the virtual output devices
 -- (Also implements a workaround for jack clients ignoring the default device)
 
+-- Link Reference: https://gist.github.com/RoarkGit/86c644faea50c79701e9ee3288aa44bc
+
+-- This script might actually be able to be replaced by a Pipewire configuration similar to the following: 
+-- https://gitlab.freedesktop.org/pipewire/pipewire/-/wikis/Virtual-Devices#behringer-umc404hd-microphoneguitar-virtual-sources
+
 -- Audio channel to which microphone is connected (ex. Analogue 3 --> AUX2)
 local mic_input = "AUX2"
 local default_nodes = Plugin.find("default-nodes-api")

@@ -69,10 +69,11 @@ To change themes:
 \<Main Menu\> (after press ◻️ to start) -> Options (access via L/R presses) -> Appearance Options -> Theme --> Simply Love
 
 ### In-game options
-F3 (hold) to view debug menu  
-F7 to toggle note clap  
-Shift + F7 to toggle measure clap  
-F8 to toggle autoplay  
+`/` will show song settings (notably useful for A3 theme)  
+`F3` (hold) to view debug menu  
+`F7` to toggle note clap  
+`Shift + F7` to toggle measure clap  
+`F8` to toggle autoplay  
   
 ### Song Packs
 #### [DDR A3](https://zenius-i-vanisher.com/v5.2/viewsimfilecategory.php?categoryid=1509)
@@ -127,7 +128,7 @@ _Preferred for home configuration_
 **Allow Screen Eval Summary** -> No  
 **Allow Screen Name Entry** -> No  
 **Allow Screen Game Over** -> No  
-**nice** -> On with Sound  
+**nice** -> On with Sound (the only appropriate setting)  
 **Write Custom Scores** -> No  
 **Keyboard Features** -> Yes  
 **Use Image Cache** -> No  
@@ -137,15 +138,15 @@ ITGMania seems to prevent the scroll wheel from working in electron-based applic
 
 # To-do
 ### Determine how to show Fantastic+ events on the post-song histogram
-### Determine how to configure timing window settings
-### Add option to enable per-beat metronome clap (instead of per measure)
+### Determine how to configure (global) timing window settings
+### Add option to enable per-beat metronome clap
+The default functionality once is per measure, which isn't particularlly useful on _most_ songs.  
+This is likely a theme setting.  
+  
 ### Determine how to enable DDR-style combo coloring (aka immediately show color of combo)
 This appears to be a theme option as this is present in the A3 theme  
 
 ### ~~DDR.A3 Theme: Fix the scores to show them normalized to 1,000,000 (not 100,000,000)~~
-### DDR.A3 Theme: Unable to change speed options 
-Probably missing a setting  
-(Also try pressing /)  
 
 ### Verify and prune dependencies
 ### Add pacman support

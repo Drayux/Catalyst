@@ -1,5 +1,5 @@
 # Directories
-### Dev
+### dev
 Development scripts written either with the intent of collecting information about the Pipewire/Wireplumber graph, or for experimenting with the Lua features.  
   
 Nothing in this folder is ran by the wireplumber core, though `wpexec \<script\>` can be used to run these scripts independently.  
