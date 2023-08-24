@@ -1,8 +1,10 @@
 # Sample rate
 [Reddit Question](https://www.reddit.com/r/linuxaudio/comments/15gmvn4/alsapipewire_unable_to_set_audio_interface_above/)  
   
-Setting the sample rate comes in two parts: Setting the graph rate for Pipewire, and the probe rate for Wireplumber. The first half happens in `pipewire.conf` with the parameter `default.clock.rate = <rate>`. The second portion is slightly more involved. We need to set a rule for the alsa device matching our card name, and then specify the parameter `["api.acp.probe-rate"] = 96000`. 
-
+Setting the sample rate comes in two parts: Setting the graph rate for Pipewire, and the probe rate for Wireplumber. The first half happens in `pipewire.conf` with the parameter `default.clock.rate = <rate>`. The second portion is slightly more involved. We need to set a rule for the alsa device matching our card name, and then specify the parameter `["api.acp.probe-rate"] = <rate>`.  
+  
+Note that the Focusrite Scarlett 18i20 disables its internal mixing logic above 96khz. After that only direct one-to-one connections are supported.  
+  
 ### Current notes
 ~~There appears to be many layers to this part. At the top there exists the pipewire graph and the sample rate in which nodes transmit their data. This is easily configured inside of `pipewire.conf`. It further appears that nodes individually can be set, but the default behavior will use the graph rate.~~  
   
@@ -11,6 +13,10 @@ Setting the sample rate comes in two parts: Setting the graph rate for Pipewire,
 ~~In addition, the 18i20 has none of the "params" listed in the output I should expect from `pw-dump` listed [here](https://gitlab.freedesktop.org/pipewire/pipewire/-/wikis/Config-Devices#runtime-settings). This suggests that something is being wrongly overridden, or that these parameters somehow do not apply to this device.~~  
   
 ~~If the graph rate is changed to 44100, the sample rate of the devices changes to reflect this. However anything above this remains at just 48000. If possible, it may be worth testing some sample sounds before any audio multiplexer is installed on the system at all.~~  
+  
+Pipewire has both Nodes and Devices, and both of which are separate entities. Almost always if a device exists, a node on the graph will represent it. Alas, what I failed to realize is that they each have their independent own sets of properties. All of my attempts at modifying configuration were inevitably modifying node properties and not device properties.  
+  
+The distinction between these is apparent in the name property. Devices are shown as alsa_card.\<device\> and nodes are shown as alsa_input or alsa_output.\<device\>.  
   
 # Routing
 ### Purpose
@@ -39,8 +45,10 @@ virtual-voice  :  AUX6 / AUX7 (PCM 4)
 virtual-stream :  AUX8 / AUX9 (PCM 5) 
 ```
   
-### Usage
-In its current configuration, the audio script functions exclusively by matching executable names to determine its output. By further modifying the relevant portion of `scripts/policy-node.lua` further functionalty could be added to match based upon the media class instead. This is a pipewire-provided property and can further be manipulated upon node creation by specifying an application rule. (See the [pipewire documentation](https://gitlab.freedesktop.org/pipewire/pipewire/-/wikis/Config-PipeWire#rules) or wireplumber documentation for the respective options to do this.)  
+### Modification
+In its current configuration, the audio script functions exclusively by matching executable names to determine its output. By further modifying the relevant portion of `scripts/policy-node.lua` further functionalty could be added to match based upon the media class instead. This is a pipewire-provided property and can further be manipulated upon node creation by specifying an application rule. (See the [pipewire documentation](https://gitlab.freedesktop.org/pipewire/pipewire/-/wikis/Config-PipeWire#rules) or [wireplumber documentation](https://pipewire.pages.freedesktop.org/wireplumber/configuration/config_lua.html#split-file-configuration) for the respective options to do this.)  
+  
+Note that this alternative is unlikely to be any more performant than the current solution.  
   
 ### Installation
 Enabling this functionality requires using the configuration files in both `/etc/pipewire` _**and**_ `/etc/wireplumber`. Modifying the virtual node names in the pipewire configuration will also require that they be modified in the object manager of the wireplumber scripts (`scripts/policy-node.lua`.)  
@@ -49,21 +57,21 @@ Enabling this functionality requires using the configuration files in both `/etc
   
 To add an executable to the list, there is a Lua table located at the top of `scripts/policy-node.lua` where one can add the name of the executable. After doing so, run `systemctl --user restart wireplumber pipewire pipewire-pulse` (_**TODO:**_ Ensure that this is still the case if using a different init system!) to reload the configuration.  
   
-Included in `util/` is a script that may serve useful to determine the executable name that corresponds with a given audio stream. By running `wpexec /etc/wireplumber/util/clients.lua` all suitable audio clients will be matched and enumerated to stdout. The script continues to run such that any additional clients added after the initialization of the script will also be shown. Alternatively, tools such as [Helvum](https://archlinux.org/packages/extra/x86_64/helvum/) or [QPWGraph](https://archlinux.org/packages/extra/x86_64/qpwgraph/) are very useful GUI routing tools. In my configuration, QPWGraph is my top choice, and great for use in manual overrides or troubleshooting new policies.  
+Included in `/etc/wireplumber/util/` is a script that may serve useful to determine the executable name that corresponds with a given audio stream. By running `wpexec /etc/wireplumber/util/clients.lua` all suitable audio clients will be matched and enumerated to stdout. The script continues to run such that any additional clients added after the initialization of the script will also be shown. Alternatively, tools such as [Helvum](https://archlinux.org/packages/extra/x86_64/helvum/) or [QPWGraph](https://archlinux.org/packages/extra/x86_64/qpwgraph/) are very useful GUI routing tools. In my configuration, QPWGraph is my top choice, and great for use in manual overrides or troubleshooting new policies.  
   
 # Tools / Troubleshooting
 ### Scarlett Control Panel
-Utility that provides a GUI for all the ALSA parameters available to Focusrite Scarlett devices. The state will generally be saved with the device.
+Utility that provides a GUI for all the ALSA parameters available to Focusrite Scarlett devices. The state will generally be saved with the device.  
 [alsa-scarlett-gui](https://archlinux.org/packages/extra/x86_64/alsa-scarlett-gui/)  
   
 ### PulseAudio Volume Control
-Though this is intended for pulse audio, it works perfectly within pipewire for enumerating devices, setting profiles, and declaring the default device. It also supports managing stream volume, which functions properly, however it does so by intersecting streams instead of modifying the nodes directly. (_**TODO:**_ this possible with pw-cli)  
+Though this is intended for pulse audio, it works perfectly within pipewire for enumerating devices, setting profiles, and declaring the default device. It also supports managing stream volume, which functions properly, however it does so by intersecting streams instead of modifying the nodes directly.   
   
-There exists a QT port of the following package
+There exists a QT port of the following package  
 [pavucontrol](https://archlinux.org/packages/extra/x86_64/pavucontrol/)  
   
 ### Carla
-A powerful plugin host that supports the vast majority of plugin formats (VST2, VST3, LADSPA, LV2, etc.) This is mentioned here as Carla supports being ran standalone, which creates a node within the pipewire graph to which other nodes can be linked. This process could be automated with pipewire config to initialize the host (pipewire.conf -> context.exec), and wireplumber to link accordingly. (Run the program with `pw-jack` ; Further inspect section 4.6 of the Arch Wiki pipewire page.) 
+A powerful plugin host that supports the vast majority of plugin formats (VST2, VST3, LADSPA, LV2, etc.) This is mentioned here as Carla supports being ran standalone, which creates a node within the pipewire graph to which other nodes can be linked. This process could be automated with pipewire config to initialize the host (pipewire.conf -> context.exec), and wireplumber to link accordingly. (Run the program with `pw-jack` ; Further inspect section 4.6 of the Arch Wiki pipewire page.)  
 [carla](https://archlinux.org/packages/extra/x86_64/carla/)  
   
 ### `pw-cli`
@@ -77,6 +85,11 @@ _**TODO**_
 ### `wpexec`
 _**TODO**_  
 Include description of wpexec versus core execution (Core, includes, etc.)  
+  
+### Change node volume via CLI
+Use the command line utility `pactl`, see the example usage:  
+`pactl set-source-mute virtual-music.monitor toggle`  
+Additional options include incrementally modifying the volume, or suspending a node outright. `pactl` can also be used to play samples akin to `pw-play` or `aplay` (if `alsa-utils` package is installed.)  
   
 ### Change pipewire graph rate at runtime
 `pw-metadata -n settings 0 clock.force-rate <rate>`  
@@ -102,3 +115,13 @@ It should be noted that the other files within the `/proc/asound/` directory can
 [Wireplumber Documentation](https://pipewire.pages.freedesktop.org/wireplumber/index.html)  
 [Wireplumber Source Code](https://gitlab.freedesktop.org/pipewire/wireplumber)  
   
+# To-Do
+### Speaker Switching
+Determine a system by which I could toggle between all sounds or just music going through the desktop speakers. So far I am considering having the default behavior be that all nodes are connected directly to the mixer (merged internally into the headphones) as well as an additional mixer PCM used as the speaker output.  
+  
+With this configuration, speaker "usage" is a matter of linking (or unlinking) the static nodes on the graph. Activities in which I'd prefer to use the speakers are far less likely to make the (likley neglibible) latency a concern.  
+
+### Mixer Device
+_**TODO:**_ Finish this writeup - Add links to various resources here as I research them  
+  
+_**TLDR:**_ Make a physical device that could run various commands to change node volume, mute nodes, or swap speaker modes as a somewhat of a "mixer"-feeling interface  

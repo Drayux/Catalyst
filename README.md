@@ -5,7 +5,7 @@ Includes copies of any modified files, and additional build files (like OBS -> b
   
 ## Config
 Any program configuration files (basically a directory clone of /etc/ and /home/.config)  
-_^^These will be loaded in `./Filesystem`_  
+_^^These will be located in `./Filesystem`_  
 Also includes notes to miscellaneous things such as links to KDE themes, fonts, etc.  
 Finally, customization resources will be available here as well (such as desktop wallpapers)  
   
