@@ -5,7 +5,7 @@ This repository is still a **work in progress** as I still have many steps remai
 Please feel encouraged to use the github discussions feature for any configuration changes you wish to suggest, typos on my readmes, questions left unanswered, or even if you're facing a similar issue to me and I might be a helpful resource to you.
 
 # To-do
-- Write a script that runs through `Config/Filesystem/` and checks for differences between the files located here and those on the system
+- Write a script that runs through `Config/Filesystem/` and checks for differences between the files located here and those on the system (ensure script ignores any files with the name of README.md)
 - Finish the To-do list  
 
 # Directory Structure
