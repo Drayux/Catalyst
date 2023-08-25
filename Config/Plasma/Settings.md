@@ -22,6 +22,7 @@ Currently prefer mocha (consider retheme to match pink candy Codium theme)
 ### Tela Circle - Purple Dark (Icons)
 [KDE Store](https://store.kde.org/p/1359276)  
 [Github Repo](https://github.com/vinceliuice/Tela-circle-icon-theme)  
+**Icon Path:** `$HOME/.local/share/icons/Tela-circle-purple*/`  
   
 ### Arch Splash (Splash Screen)
 [KDE Store](https://store.kde.org/p/1787957)  

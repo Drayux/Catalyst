@@ -47,3 +47,6 @@ _These are notes regarding my desktop environment and configuration, notably all
 # Troubleshooting
 ## Global App Menu
 Many applications run under Wayland seem to be incompatible with the global app menu, instead using their native app menu and showing no entries in the widget. The only current practical fix for this is to run the application under XWayland instead.  
+
+## XDG Trash location
+`$HOME/.local/Trash/`
