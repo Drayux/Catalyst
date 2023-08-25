@@ -1,5 +1,5 @@
 # About
-This repository is still a work in progress as I still have many steps remaining to "perfect" my setup. The vast majority of configuration files will likely only be added after I have "completed" that portion of the setup to the full extent of my intention.
+This repository is still a **work in progress** as I still have many steps remaining to "perfect" my setup. The vast majority of configuration files will likely only be added after I have "completed" that portion of the setup to the full extent of my intention.
 
 # Discussions
 Please feel encouraged to use the github discussions feature for any configuration changes you wish to suggest, typos on my readmes, questions left unanswered, or even if you're facing a similar issue to me and I might be a helpful resource to you.

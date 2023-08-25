@@ -115,6 +115,9 @@ It should be noted that the other files within the `/proc/asound/` directory can
 [Wireplumber Documentation](https://pipewire.pages.freedesktop.org/wireplumber/index.html)  
 [Wireplumber Source Code](https://gitlab.freedesktop.org/pipewire/wireplumber)  
   
+[Pipewire Guide](https://github.com/mikeroyal/PipeWire-Guide)  
+_This is a collection of projects and applications relevant to audio production._
+  
 # To-Do
 ### Speaker Switching
 Determine a system by which I could toggle between all sounds or just music going through the desktop speakers. So far I am considering having the default behavior be that all nodes are connected directly to the mixer (merged internally into the headphones) as well as an additional mixer PCM used as the speaker output.  

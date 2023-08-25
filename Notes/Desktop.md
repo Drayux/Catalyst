@@ -43,3 +43,7 @@ _These are notes regarding my desktop environment and configuration, notably all
 	- **PRO:** Such a large project also has a very large development team keeping everything as cutting-edge as possible
 	- **CON:** This also makes the system feel quite "locked down" as it is unnatural to replace some elements (like using rofi feels out of place, for example.) - Similarly, this can make it less compatible with some alternative systems
 	- **CON:** Almost every KDE application has many inter-dependencies and the entire desktop environment feels quite bulky, relying on multiple hundred packages even for a "minimal" installation - Most apps cannot be installed "standalone"
+
+# Troubleshooting
+## Global App Menu
+Many applications run under Wayland seem to be incompatible with the global app menu, instead using their native app menu and showing no entries in the widget. The only current practical fix for this is to run the application under XWayland instead.  

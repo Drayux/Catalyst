@@ -1,10 +1,14 @@
 # Setup
 The steam package is available in the Pacman multilib repo (the 32-bit stuff).  
 See the [Arch Wiki entry](https://wiki.archlinux.org/title/Steam) for additional information.  
-  
+
 ### Dependencies
-(the nvidia versus amd library stuff)  
+Steam has some dependencies that have optional providers. This is not a concern on most applications as the providers add an API that exposes a feature and calls it a day.  
   
+Steam's dependencies are dubious, however, as they depend on each other to an extent. (Perhaps something to do with the linux runtime packaged with Steam as well.) Notably in the case of graphics, Steam can appear to run flawlessly with the NVidia or the AMD implementations of various graphics APIs, but these APIs are not cross-compatible with eachother.  
+  
+I had this issue in the case of upgrading from an NVidia GPU to an AMD GPU, where I attempted to replace some of the packages for their mesa alternatives. I mistakenly missed a couple packages and Steam reported no issue. This became problematic where some games completely failed to launch with no apparently useful logging information and yet others worked perfectly as they did before the changes.  
+
 ### Launch Parameters
 Edit the .desktop entry to run steam with the `-console` parameter to enable the additional tab in the GUI.  
 This can be a useful tool for debugging misbehaving games.  
