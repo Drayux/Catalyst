@@ -10,6 +10,7 @@ export ZSH="$HOME/.config/zsh/ohmyzsh"
 # load a random theme each time oh-my-zsh is loaded, in which case,
 # to know which specific one was loaded, run: echo $RANDOM_THEME
 # See https://github.com/ohmyzsh/ohmyzsh/wiki/Themes
+# TODO: Specify theme based on whether we are in a TTY or not!
 # ZSH_THEME="starship"
 # ZSH_THEME="darkblood"
 ZSH_THEME="agnoster-tweak"
