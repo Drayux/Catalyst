@@ -58,7 +58,16 @@ Enabling this functionality requires using the configuration files in both `/etc
 To add an executable to the list, there is a Lua table located at the top of `scripts/policy-node.lua` where one can add the name of the executable. After doing so, run `systemctl --user restart wireplumber pipewire pipewire-pulse` (_**TODO:**_ Ensure that this is still the case if using a different init system!) to reload the configuration.  
   
 Included in `/etc/wireplumber/util/` is a script that may serve useful to determine the executable name that corresponds with a given audio stream. By running `wpexec /etc/wireplumber/util/clients.lua` all suitable audio clients will be matched and enumerated to stdout. The script continues to run such that any additional clients added after the initialization of the script will also be shown. Alternatively, tools such as [Helvum](https://archlinux.org/packages/extra/x86_64/helvum/) or [QPWGraph](https://archlinux.org/packages/extra/x86_64/qpwgraph/) are very useful GUI routing tools. In my configuration, QPWGraph is my top choice, and great for use in manual overrides or troubleshooting new policies.  
-  
+
+### Audio Interface Mixer Configuration
+_**TODO:**_ At some point while in windows, capture a screenshot of the mixer settings.  
+_**TLDR:**_ Channels 1 - 10 (AUX0 - AUX9 / PCM 1 - PCM5) all route with a neutral mix to virtual outputs 9/10(?) for the headphone output.  
+Currently channels 5/6 also route directly to SPDIF L/R outputs as well, though this will likely change such that an additional PCM6 will route here instead.  
+
+![PCM6 - Proof of Concept](Audio_PCM6-POC.png)  
+_Verification that this idea will work!_
+
+
 # Tools / Troubleshooting
 ### Scarlett Control Panel
 Utility that provides a GUI for all the ALSA parameters available to Focusrite Scarlett devices. The state will generally be saved with the device.  

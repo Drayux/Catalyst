@@ -5,10 +5,10 @@
 This is a custom service responsible for launching the desktop environment upon TTY login. It is a user service so that this only happens for specific users (i.e. happens for my main account but not `root`.) Essentially, this is a "budget display manager."  
 
 ## Installation
-**Enable the service:** `systemctl --user enable de-autostart.service`  
-**Disable the service:** `systemctl --user disable de-autostart.service`  
+**Enable the service:** `systemctl --user enable desktop-autostart.service`  
+**Disable the service:** `systemctl --user disable desktop-autostart.service`  
   
-This command will either create or remove the symlink to `~/.config/systemd/user/plasma-autostart.service` indicating to systemd that the service should be initalized.  
+This command will either create or remove the symlink to `~/.config/systemd/user/desktop-autostart.service` indicating to systemd that the service should be initalized.  
   
 The symlink will be placed in `~/.config/systemd/user/default.target.wants`  
 
@@ -18,5 +18,5 @@ Inside the service file, the ExecStart parameter needs to point to the path of t
   
 Additionally, the launch script itself will need to be modified depending on the desktop environment that one seeks to launch.  
   
-(_**TODO:**_ Consider creating the folder `~/.config/systemd/scripts` to hold a copy of the launch scripts relative to the service files.)  
-(_**TODO:**_ Modify the launch-de script to take a parameter for the .desktop entry, allowing the script to work for any DE.)  
+(_**DONE:**_ Service script moved from `Documents/Scripts` to `.config/systemd/scripts` to hold a copy of the launch scripts relative to the service files.)  
+(_**TODO:**_ Modify the launch-de script to take a parameter for the .desktop entry, allowing the script to work for any DE; Currently assumes KDE Plasma.)  

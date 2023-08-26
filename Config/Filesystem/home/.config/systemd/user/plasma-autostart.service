@@ -1,0 +1,17 @@
+# https://www.freedesktop.org/software/systemd/man/systemd.service.html
+
+[Unit]
+Description="Autostart Plasma (Wayland)"
+# After=default.target
+# Unsure if any targets are needed: systemctl --user list-units --type=target
+
+[Service]
+Type=forking
+# RemainAfterExit=yes
+# PIDFile=
+ExecStart=$HOME/.config/systemd/scripts/plasma-autostart.sh start
+# ExecStop=/home/Documents/Scripts/plasma-autostart stop
+
+[Install]
+WantedBy=default.target
+# WantedBy=graphical-session.target

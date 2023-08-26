@@ -161,6 +161,7 @@ XWayland can be forced with either the runtime parameter `-platform xcb` or the 
   
 #### Also pending exploration
 - https://github.com/norihiro/obs-command-source  
+- looking-glass (filter) : Consider this if I use this for my windows VM  
   
 #### The best (so far) audio plugins are available here -> https://github.com/sadko4u/lsp-plugins  
 *These may be packaged in extra/lsp-plugins-lv2 but this needs verification*  
