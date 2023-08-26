@@ -39,25 +39,25 @@ Use `-n` to specify that we are interested in _native_ packages, and `-m` to spe
 
 # Tips and Tricks
 ### "Proper" way to upgrade packages
-	`pacman -Syu`
+	pacman -Syu
 
 Installing packages with just `-Su` for example, may attempt to install an out-of-date package, which can quickly become problematic. Avoid this unless absolutely necessary!  
 
 ### "Proper" way to remove a package
-	`pacman -Rs`
+	pacman -Rs
 
 Similarly to upgrading packages (but with much less severe implications) removing a package with just `-R` will leave its dependencies untouched, which can abandon packages installed as a sole dependency of the installed package, consuming unnecessary disk space.  
 
 ### Refresh the database cache
-	`pacman -Syy`
+	pacman -Syy
 
 Sometimes the database cache can be finnicky and have corrupt links to packages (this notably happened for me once while trying to install `meson`.) A good first step in troubleshooting this is to _force_ a cache refresh with the above command.  
 
 ### List just package names (excluding versions)
-	`pacman -Qq`
+	pacman -Qq
 
 ### List package dependencies *and* depends
-	`pacman -Qii`
+	pacman -Qii
 
 Quite literally expands to `pacman -Q --info --info`. The second info parameter suggests that it should output an additional "layer" of package metadata.  
 _On further inspection, it seems that this may no longer be necessary?_  
@@ -65,12 +65,12 @@ _On further inspection, it seems that this may no longer be necessary?_
 ### Ignore a package upgrade
 When upgrading packages, the `--ignore=` flag can be specified to skip problematic packages. Notably, this has been of signifcant use when there were kernel bugs that had not been patched for a few versions. For example:  
 
-	`pacman -Syu --ignore=linux,linux-headers`
+	pacman -Syu --ignore=linux,linux-headers
 
 ### Clean up orphans
 Taken directly from the [Arch Wiki](https://wiki.archlinux.org/title/Pacman/Tips_and_tricks#Removing_unused_packages_(orphans))  
 
-	`pacman -Qqdt | pacman -Rns -`
+	pacman -Qqdt | pacman -Rns -
 
 Optionally, `-Qqdtt` can be specified instead to also remove extraneous optional dependencies.
 
@@ -81,37 +81,37 @@ Simply delete the contents of this folder periodically to save on the storage sp
 
 This can also be done with the command:
 
-	`pacman -Scc`
+	pacman -Scc
 
 ### Specify that a package should be installed as a dependency
 In the case of building a package from source, it may be necessary to manually install some of its dependencies. A potential beneficial practice is to specify that this package is a dependency (aka not explicitly installed) such that it can be removed when pruning orphaned packages.  
 
-	`pacman -S --asdeps <package>`
+	pacman -S --asdeps <package>
 	
 Alternatively, the `--asexplicit` flag can be used to force the opposite.  
 
 This can also be applied to packages that are already installed:
 
-	`pacman -D --asexplicit <packages>`
+	pacman -D --asexplicit <packages>
 
 ### Find which package to which a file belongs
 **Locally Installed**  
 
-	`pacman -Qo <path/to/package>`
+	pacman -Qo <path/to/package>
 
 **Global Database Search**  
 
-	`pacman -Fy <path/to/package>`
+	pacman -Fy <path/to/package>
 
 ### Read list of packages (upon which to operate) from stdin
-	`pacman <operation> -`
+	pacman <operation> -
 
 For example to install packages from a list in a file:  
 
-	`cat packages.txt | pacman -S -`
+	cat packages.txt | pacman -S -
 
 ### Install a local package
-	`pacman -U <path/to/package>`
+	pacman -U <path/to/package>
 
 ### _**TODO:**_ Mark a package as installed
 If I have to manually install what a package should provide, there should exist a way to specify to pacman that the binaries necessary to satisfy a package that depends on it are available on the system.  

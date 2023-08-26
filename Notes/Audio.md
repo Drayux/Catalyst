@@ -24,9 +24,12 @@ The goal of the audio routing scripts is to create numerous endpoints to which a
   
 ### Design
 A generic audio configuration takes nodes representing audio streams and links them directly to the default audio device. For a device with multiple interal PCM streams, a naive script would simply connect the nodes directly to the PCM ports. This proved to be ineffective as my intended use case with OBS was to monitor the audio categories independently. Further, this completely overrides any behavior with a default device selection, rendering the audio to feel "unwieldy."  
-  
+
 Instead, by creating virtual device nodes, these can connect to the PCM ports and effectively represent pairs of PCM ports as their own device. Specifying a PCM is now as simple as selecting a device from the list (or otherwise relying on the script with respect to how streams are routed.) The virtual nodes also have an infinite life, so manually linking nodes for a workaround setup need only be done once per session, as opposed to every time a new stream starts.  
-  
+
+![Current audio configuration basic layout](Audio_CUR-DESIGN.png)  
+_Basic routing configuration excluding any applications._
+
 Audio routing follows the following categorization:  
 ```
 <Default> -> virtual-games : (Intended for games as this is the largest category of executable names) 
@@ -66,7 +69,6 @@ Currently channels 5/6 also route directly to SPDIF L/R outputs as well, though 
 
 ![PCM6 - Proof of Concept](Audio_PCM6-POC.png)  
 _Verification that this idea will work!_
-
 
 # Tools / Troubleshooting
 ### Scarlett Control Panel
