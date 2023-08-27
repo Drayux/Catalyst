@@ -245,6 +245,14 @@ However if this changes, use `passwd` or `passwd <user>` to set a password.
 
 If I change my mind again, `passwd -d <user>`  
 
+### Networking coniguration
+> `s6-rc -u change NetworkManager-srv`  
+> `nmcli d wifi list`  
+> `nmcli d --ask wifi connect <SSID>`  
+> `nmcli con show` _(Optional, good sanity check)_  
+Configure a wireless network with NetworkManager (system will always connect to this network now)  
+_**TODO:**_ Determine how to specify a device if multiple are available  
+
 # Notes
 ## mkinitcpio
 General config located in `/etc/mkinitcpio.conf`  
