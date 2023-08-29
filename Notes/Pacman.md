@@ -48,6 +48,8 @@ Installing packages with just `-Su` for example, may attempt to install an out-o
 
 Similarly to upgrading packages (but with much less severe implications) removing a package with just `-R` will leave its dependencies untouched, which can abandon packages installed as a sole dependency of the installed package, consuming unnecessary disk space.  
 
+Further, the `-n` flag can be specified to additionally remove application config files. (_**TODO:**_ Needs verification)  
+
 ### Refresh the database cache
 	pacman -Syy
 

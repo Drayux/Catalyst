@@ -5,3 +5,8 @@
 A potential fix for the monitor EDID error (display)  
 `video=DP-1:D video=DP-2:d`  
 https://wiki.archlinux.org/title/kernel_mode_setting#Forcing_modes  
+
+### Kernel parameters
+`amdgpu.sg_display=0`
+
+### _**TODO:**_ Fan config

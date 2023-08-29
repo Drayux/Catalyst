@@ -47,6 +47,20 @@ _These are notes regarding my desktop environment and configuration, notably all
 # Plasma Desktop Packages
 (_**TODO:**_ Make a list of the KDE packages which I'd excluded from the plasma-desktop group when installing)
 
+# Dream `~/` folder
+_Consult the `xdg-user-dirs` configuration_  
+
+**Contents**
+- Content
+- Desktop
+- Documents
+- Downloads
+- Media (contains Media/Music and Media/Videos)
+- Projects
+
+_**TODO:**_ Consider making a link from `~/Config` to `~/.config`  
+_**TODO:**_ Add note from discord on hidden files  
+
 # Troubleshooting
 ## Global App Menu
 Many applications run under Wayland seem to be incompatible with the global app menu, instead using their native app menu and showing no entries in the widget. The only current practical fix for this is to run the application under XWayland instead.  

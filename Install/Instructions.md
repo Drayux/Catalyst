@@ -7,11 +7,6 @@
 _^^Some information is out of date, but the structure of the video is really informative._  
 
 # Guide
-_**AHHHH I MESSED UP!**_  
-I missed the memo that I should be root when using the installer ISO.  
-Log in with the provided credentials, and then run `su` to act as root.  
-_(Some of the commands shown have needless sudo's!)_
-
 ## _**TODO:**_ Bootable Medium
 Add the necessary configuration for the custom flexible bootable USB stick.  
 Also pending getting the other distributions to work smh.  
@@ -58,6 +53,12 @@ _**TODO:**_ `wpa_supplicant` assumes a specific interface by default, though it 
 > `ip a`  
 Display the adapters and their associated connections  
 
+### System clock (Not sure if this is actually necessary)
+> `s6-rc -u change ntpd`  
+Activate clock-synchronization daemon  
+_The s6 call is used because we have the s6 installation medium; See [here](https://wiki.artixlinux.org/Main/Installation#Update_the_system_clock) for the other mediums._
+
+
 ## Disk partitioning
 ### Target configuration
 **/dev/nvme0 [PCI-E 4.0]** ->  
@@ -68,16 +69,19 @@ Display the adapters and their associated connections
 750GB : `/` (Artix Linux system partition)  
 ~250GB : `/` (Debian system partition ; Backup OS)  
 
-### [gdisk](https://archlinux.org/packages/extra/x86_64/gptfdisk/)
-#### _**NOTE:**_ I think the reason my GRUB looked like shit on the old installs is that I accidentally used and MBR table not a GPT table so I was never actually using UEFI on my Linux install...OOPSIES.  
+### _If reinstalling to existing partition, skip to [formatting](#format-the-partitions)_
+Format just p2 for the system, and p1 if starting fresh with grub.  
 
 ### Install gptfdisk
 No, seriously.  
 
-    > sudo pacman -Sy
-    > sudo pacman -S gdisk
+    > pacman -Sy
+    > pacman -S gdisk
 
 _It will be loaded into memory and unavailable again after a restart._  
+
+#### [gdisk](https://archlinux.org/packages/extra/x86_64/gptfdisk/)
+#### _**NOTE:**_ I think the reason my GRUB looked like shit on the old installs is that I accidentally used and MBR table not a GPT table so I was never actually using UEFI on my Linux install...OOPSIES.  
 
 ### Partition the drive(s)
 [Arch Wiki - Partitioning](https://wiki.archlinux.org/title/Partitioning)  
@@ -93,7 +97,7 @@ Less pretty version of `lsblk` but it outputs the partition UUIDs
 Absolutely fucking obliterate your entire hard drive (namely the NVMe drive in the second M.2 slot here) ; Allows for a fresh start with `gdisk`  
 **DO NOT FUCK UP WHICH DRIVE YOU SPECIFY HERE!**  
 
-> `sudo gdisk /dev/nvme0n1`  
+> `gdisk /dev/nvme0n1`  
 Open the gdisk CLI on the specified drive (namely the NVMe drive in the second M.2 slot here)  
 
     > o
@@ -129,69 +133,56 @@ Open the gdisk CLI on the specified drive (namely the NVMe drive in the second M
     > w
     Do you want to proceed? (Y/N): y
 
-_**TODO:**_ Partition the home drive as well (`/dev/nvme0n1`)  
-> `sudo gdisk /dev/nvme0n1`  
+#### Partition the home drive as well (`/dev/nvme0n1`)  
+> `gdisk /dev/nvme0n1`  
 Specified drive is now the contents of the first M.2 slot (The PCI-E 4.0 one on my system)  
 
+    > o
+    This option deletes all partitions and creates a new protective MBR.
+    Proceed? (Y/N): y 
+    > n
+    Partition number (1-128, default 1): 
+    First sector (34-3907029134, default = 2048) or {+-}size{KMGTP}: 
+    Last sector (2048-3907029134, default = 3907029134) or {+-}size{KMGTP}: 
+    Hex code or GUID (L to show codes, Enter = 8300): 8302 
+    > c
+    Partition number (1-3): 1
+    Enter name: Drayux
+    > w
+    Do you want to proceed? (Y/N): y 
+
 ### Format the partitions
-> `sudo mkfs.fat -F 32 /dev/nvme1n1p1`  
+> `mkfs.fat -F 32 /dev/nvme1n1p1`  
 Format the ESP partition as FAT32  
 
-> `sudo mkfs.xfs /dev/nvme1n1p2`  
-> `sudo mkfs.xfs /dev/nvme1n1p3`  
+> `mkfs.xfs -f /dev/nvme1n1p2` (Artix system)  
+> ~~`mkfs.xfs -f /dev/nvme1n1p3` (Debian)~~  
+> `mkfs.xfs -f /dev/nvme0n1p1` (Drayux home)  
 Format both of the system partitions as XFS  
+_**NOTE:**_ The `-f` flag will force an overwrite  
 
 ### Mount the partitions
-> ~~`sudo mkdir /mnt/boot /mmt/system`~~  
-> ~~`sudo mount /dev/nvme1n1p1 /mnt/boot`~~  
-> ~~`sudo mount /dev/nvme1n1p2 /mnt/system`~~  
+> `mount /dev/nvme1n1p2 /mnt`  
+> `mkdir /mnt/boot /mnt/home` ~~(Use `-p` for nested directories)~~  
+> `mount /dev/nvme1n1p1 /mnt/boot`  
+> `mount /dev/nvme0n1p1 /mnt/home`  
 _**TODO:**_ Ensure that this creates the intended config in `/etc/fstab`  
-
-Alternatively, try this mount configuration:
-> `sudo mount /dev/nvme1n1p2 /mnt`  
-> `sudo mkdir /mnt/boot` (Use `-p` for nested directories)  
-> `sudo mount /dev/nvme1n1p1 /mnt/boot`  
-_**TODO:**_ Ensure that this creates the intended config in `/etc/fstab`  
-
-## System clock (Not sure if this is needed here yet??)
-> `sudo s6-rc -u change ntpd`  
-Activate clock-synchronization daemon  
 
 ## Core system install
-> `basestrap /mnt base base-devel s6-base elogind-s6 amd-ucode micro`  
-Init system of choice: [`s6`](https://wiki.artixlinux.org/Main/S6)  
+> `basestrap /mnt base base-devel amd-ucode dinit ~~elogind-dinit~~ seatd-dinit`  
+Init system of choice: [`dinit`](https://wiki.artixlinux.org/Main/Dinit)  
 _Is it accurate to call this the GNU half of the operating system??_  
 
-> `basestrap /mnt linux-lts linux-zen linux-lts-headers linux-firmware`  
+> `basestrap /mnt linux-lts linux-zen linux-lts-headers linux-firmware micro zsh`  
 Primary kernel of choice: `linux-zen` (it sounds like the realtime scheduling will prove beneficial for streaming)  
 Backup kernel: `linux-lts` (use this when building custom modules)  
 
 > `fstabgen -U /mnt >> /mnt/etc/fstab`  
 Generate the filesystem table  
+VERIFY the entries manually : Extraneous mounts may be shown, for example
 
 > `artix-chroot /mnt`  
 Change root into the fresh install!  
-
-### System configuration chores
-> `ls -sf /usr/share/zoneinfo/US/Mountain /etc/localtime`  
-> `hwclock --systohc`  
-Specify and sync the time zone  
-
-> `micro /etc/locale.gen`  
-EDIT the locale file : Uncomment the locale of choice (`en_US.UTF-8 UTF-8`)  
-> `locale-gen`  
-
-> `micro /etc/mkinitcpio.conf`  
-EDIT the coniguration file : Change the `HOOKS` entry  
-`HOOKS=(base udev autoconnect modconf block filesystems fsck)`  
-_Later we will need to add the GPU modules to `MODULES`_  
-
-> `micro /etc/mkinitcpio.d/linux-zen.preset`  
-EDIT the coniguration file : Remove the fallback preset (line 7)  
-_Since I have multiple kernels installed, I really don't need two fallback images as well._  
-
-> `cat catalyst > /etc/hostname`  
-Set the hostname ; Needs to be ran as root  
 
 ### Bootloader
 Bootloader of choice: `GRUB`  
@@ -203,35 +194,80 @@ Install relevant packages (`os-prober` is optional but will be convenient consid
 > `grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=grub`  
 > `grub-mkconfig -o /boot/grub/grub.cfg`  
 Install grub for a UEFI setup  
-_GRUB config file `/etc/default/grub` available in this repository (rerun `grub-mkconig`.)_  
+_GRUB config file `/etc/default/grub` available in this repository (rerun `grub-mkconig` after making changes.)_  
 
 > `cp /usr/share/locale/en\@quot/LC_MESSAGES/grub.mo /boot/grub/locale/en.mo`  
 Provide grub with a locale file  
 
-### More packages
-- networkmanager-s6
-- ~~iwd --asdeps~~
-- zsh
-- less
-- openssh
-- neofetch
+### System configuration chores
+> `dinitctl enable seatd`  
+Enable the user management service (used by Hyprland later on)  
+_**TODO:**_ Verify if this step is required or not  
 
-> `pacman -S `_`<the above list>`_  
+> `ln -sf /usr/share/zoneinfo/US/Mountain /etc/localtime`  
+> `hwclock --systohc`  
+Specify and sync the time zone  
 
-### Users
-**DANGER ZONE : SuDo Config**  
+> `micro /etc/locale.gen`  
+EDIT the locale file : Uncomment the locale of choice (`en_US.UTF-8 UTF-8`)  
+> `locale-gen`  
+
+> `chsh root`  
+> `> /bin/zsh`  
+Change the default shell for root  
+
+> `echo catalyst > /etc/hostname`  
+Set the hostname ; Needs to be ran as root  
+
+---
+**DANGER ZONE : sudo config**  
 > `EDITOR=/usr/bin/micro visudo /etc/sudoers`  
 EDIT sudoers file : Add dragon group to sudoers  
 ```
 ## Custom version: allow members of group dragon to execute any command
-## Would require root password if set
+## Would require password if user has one set
 %dragon ALL=(ALL:ALL) ALL
 ```
+---
 
+> `pacman -S mesa vulkan-radeon libva-mesa-driver mesa-vdpau wayland`  
+Install the [graphics drivers/related software](https://wiki.archlinux.org/title/AMDGPU#Installation)  
+_**NOTE:**_ Wayland is included here so it is marked as an explicit install  
+_My system uses and AMD graphics card, it should be self-evident that this step will be different with an NVidia or Intel card._  
+
+> `micro /etc/mkinitcpio.conf`  
+EDIT the coniguration file : Change the `HOOKS` and `MODULES` entries  
+`HOOKS=(base udev modconf block filesystems fsck)`  
+`MODULES=(amdgpu radeon)`  
+
+> `micro /etc/mkinitcpio.d/linux-zen.preset`  
+> `rm /boot/initramfs-linux-zen-fallback.img` (Optional: Remove the extra entry generated by the pacman hook)  
+EDIT the coniguration file : Remove the fallback preset (line 7)  
+_Since I have multiple kernels installed, I really don't need two fallback images as well._  
+
+> `mkinitcpio -P`  
+Regenerate the initramfs image  
+
+### More packages
+- networkmanager-dinit
+- git
+- less
+- man-db
+- openssh
+- neofetch 
+- python 
+//
+- gdisk*
+- dosfstools* (provides tools for FAT filesystem)
+- xfsprogs* (provides tools for XFS filesystem)
+
+> `pacman -S `_`<the above list>`_  
+
+### Users
 > `groupadd dragon`  
 Create the user group `dragon`  
 
-> `useradd -d /home -s /usr/bin/zsh -g dragon drayux`  
+> `useradd -d /home -s /bin/zsh -g dragon drayux`  
 Create my personal user account ; Home directory is simply `/home`  
 Successul execution can be veriied with `cat /etc/passwd`  
 _This is somewhat dubious except that I am the sole user of this computer and always plan to be._   
@@ -240,25 +276,60 @@ _This is somewhat dubious except that I am the sole user of this computer and al
 Give main account full ownership of `/home`  
 
 **Passwords**  
-As the sole person who understands Linux where I live, I omit passwords on my system.  
+Having no password, and simply not setting a password are two different states. As the sole person who understands Linux where I live, I omit passwords on my account.  
+
+    > passwd -d drayux
+    > passwd root
+    New password: ***
+    Retype new password: ***
+
 However if this changes, use `passwd` or `passwd <user>` to set a password.  
+To change back to no password, `passwd -d <user>`  
 
-If I change my mind again, `passwd -d <user>`  
+## _**System is ready for reboot**_
 
-### Networking coniguration
-> `s6-rc -u change NetworkManager-srv`  
+## Final setup
+### Networking configuration
+> `dinitctl start NetworkManager`  
+> `dinitctl enable NetworkManager` (Autostart everytime)  
+> ~~`s6-rc -u change NetworkManager-srv`~~
 > `nmcli d wifi list`  
 > `nmcli d --ask wifi connect <SSID>`  
 > `nmcli con show` _(Optional, good sanity check)_  
 Configure a wireless network with NetworkManager (system will always connect to this network now)  
 _**TODO:**_ Determine how to specify a device if multiple are available  
 
+### Audio packages
+- pipewire
+- pipewire-audio
+- wireplumber
+
+### Desktop packages
+- xdg-desktop-portal-hyprland
+- xdg-user-dirs
+- xdg-utils
+- hyprland
+- firefox (select pipewire-jack and ttf-droid)
+
 # Notes
-## mkinitcpio
+## System Image
 General config located in `/etc/mkinitcpio.conf`  
 Preset config(s) located in `/etc/mkinitcpio.d/`  
 ~~Commandline options located in `/etc/kernel/cmdline`~~  
 _Appears to be irrelevant if using GRUB_  
+
+## List available shells
+> `chsh -l`  
+
+## Using `dinit`
+[Github dinit Guide](https://github.com/davmac314/dinit/blob/master/doc/getting_started.md)  
+
+## Verify UEFI mode
+If the directory `/sys/firmware/efi` exists, then the system was booted with UEFI.  
+[Source (AskUbuntu)](https://askubuntu.com/questions/162564/how-can-i-tell-if-my-system-was-booted-as-efi-uefi-or-bios#answer-162896)  
+
+## Networking
+Network Manager (`networkmanager`) installs `wpa_supplicant` as a dependency. However the nature of network manager providing a service to handle saved connections means that we do not want to interface with `wpa_cli` directly (if this service as running) as the two configurations will conflict, even if they both specify the same network.  
 
 ## Swap (file)
 _My system has 128GB of RAM so I have taken the liberty to assume that we are safe without making a swap file. Below is the process if I change my mind._  
