@@ -1,9 +1,10 @@
-# Aliases to reboot with specific OS
-alias reboot-uefi="systemctl reboot --firmware-setup"
-alias reboot-win="systemctl reboot --boot-loader-entry=00-windows.conf"
+#!/bin/zsh
+# This alias allows me to specify git config values in a file other than ~/.gitconfig
+# Note however that using the git config --add ... will generate a new ~/.gitconfig
+alias git='git -c include.path="~/.config/git.conf"'
 
-# Aliases for debugging utilities
-alias debug-kwin="qdbus org.kde.KWin /KWin org.kde.KWin.showDebugConsole"
+# Print all directories with a trailing '/'
+#alias ls="ls -p"
 
-# Miscellaneous aliases
-# alias de="startplasma-wayland" # (Moved to scripts.zsh)
+# Search for packages with fancy output
+# alias pacss="yay -Ss $@ --color=always | less -r --quit-if-one-screen"

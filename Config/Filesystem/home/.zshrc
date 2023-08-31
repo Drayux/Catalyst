@@ -1,13 +1,16 @@
 # -- ENVIRONMENT VARIABLES --
-export GIT_CONFIG_GLOBAL="$/HOME/.config/gitconfig"
 
-# Parent directory for zsh scripts
-export ZSH_CONFIG_DIR="$HOME/.config/zsh"
+export EDITOR="/usr/bin/micro"
+export GIT_CONFIG_GLOBAL="$HOME/.config/git.conf"
+export WINEPREFIX="$HOME/.local/share/wine"
+export ZSH_CONFIG="$HOME/.config/zsh"
 
 # -- SCRIPTS --
-# Configure OH-MY-ZSH
-source $ZSH_CONFIG_DIR/ohmyzsh/config.sh
 
-# Alias scripts (usually complex single commands with many parameters)
-source $ZSH_CONFIG_DIR/aliases.zsh
-source $ZSH_CONFIG_DIR/scripts.zsh
+# ZSH (and ohmyzsh) config
+source $ZSH_CONFIG/config.sh
+source $ZSH_CONFIG/ohmyzsh/config.zsh
+
+# Aliases
+source $ZSH_CONFIG/aliases.zsh
+source $ZSH_CONFIG/scripts.zsh

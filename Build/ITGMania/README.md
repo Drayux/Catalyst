@@ -1,35 +1,42 @@
 # Setup
 ###### All dependencies are referred to as their pacman package names
 ### Make Dependencies (TODO)
-- cmake  
-- git  
-- make  
+- cmake
+- git
+- make _(for CMake unix makefiles)_  
   
 ### Dependencies (TODO)
-- libusb-compat  
+- libusb-compat
+- yasm (alternatilvey nasm)
   
 # Install
-### Clone the repo (pwd assumed to be ~/Downloads/)
->`git clone --depth=1 --recursive https://github.com/itgmania/itgmania.git ITGMania`  
-`cd ITGMania/`  
+### Clone the repo (pwd assumed to be `~/Downloads/Repositories/`)
+> ~~`git clone --depth=1 --recursive https://github.com/itgmania/itgmania.git itgmania`~~  
+> `git clone --depth 1 git@github.com:itgmania/itgmania.git`  
+> `cd itgmania`  
+> `git submodule update --init`  
+_I've learned that this is not an alias for a recursive clone...they perform two slightly different tasks and I do not yet know exactly what that is._
   
 ### Generate build files with CMake
 > `cd Build`  
 _^^Build is included with the repo_  
-`cmake -G "Unix Makefiles" ..`  
+`cmake -Wno-dev -G "Unix Makefiles" ..`  
 _^^This is the default so -G may not be necessary_  
-`cmake ..`
+~~`cmake ..`~~  
   
 ### Compile and install
-`make && make install`  
+`sudo make install`  
   
 # Notes
 Build Reference -> https://github.com/itgmania/itgmania/tree/release/Build  
+FFmpeg binutils bug -> https://github.com/itgmania/itgmania/issues/136  
   
 ### Portable mode
-It appears that a portable build is possible with `-DCMAKE_INSTALL_LOCAL_ONLY=1`  
-_^^Though the repo suggests that make alone creates a portable version by default (I do not remember what what responsible for my .desktop entry however)_  
-Further, the install location can be specified with `-DCMAKE_INSTALL_PREFIX=<path>`  
+~~It appears that a portable build is possible with `-DCMAKE_INSTALL_LOCAL_ONLY=1`~~  
+~~_^^Though the repo suggests that make alone creates a portable version by default (I do not remember what what responsible for my .desktop entry however)_~~  
+I am unable to determine where I found this information, and no flag exists in the CMakeLists, so I don't expect this to be accurate.  
+
+The install location can be specified with `-DCMAKE_INSTALL_PREFIX=<path>`  
 
 ### Song installation
 From [itgmania/Songs/instructions.txt](https://github.com/itgmania/itgmania/blob/release/Songs/instructions.txt):
@@ -138,15 +145,20 @@ ITGMania seems to prevent the scroll wheel from working in electron-based applic
 
 # To-do
 ### Determine how to show Fantastic+ events on the post-song histogram
+It seems this might have been a bug in my existing version of Simply Love.  
+
 ### Determine how to configure (global) timing window settings
 ### Add option to enable per-beat metronome clap
 The default functionality once is per measure, which isn't particularlly useful on _most_ songs.  
 This is likely a theme setting.  
   
 ### Determine how to enable DDR-style combo coloring (aka immediately show color of combo)
-This appears to be a theme option as this is present in the A3 theme  
+This appears to be a theme option as this is present in the A3 theme.  
 
 ### ~~DDR.A3 Theme: Fix the scores to show them normalized to 1,000,000 (not 100,000,000)~~
+This happens with any new scores earned with the A3 theme (the discrepancy is a score save incompatibility.)
+
+### Change user config folder from ~/.itgmania to ~/.config/itgmania
 
 ### Verify and prune dependencies
 ### Add pacman support

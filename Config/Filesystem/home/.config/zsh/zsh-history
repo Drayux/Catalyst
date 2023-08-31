@@ -1,0 +1,1344 @@
+: 1693294600:0;mkdir .config/zsh
+: 1693294600:0;ls
+: 1693294600:0;pwd
+: 1693294600:0;ls -al
+: 1693294600:0;sudo chown drayux:dragon /home
+: 1693294600:0;sudo chown -r drayux:dragon /home
+: 1693294600:0;sudo chown -R drayux:dragon /home
+: 1693294600:0;ls -al
+: 1693294600:0;mkdir .config/zsh
+: 1693294600:0;ls .config
+: 1693294600:0;ls -p .config
+: 1693294600:0;ls /etc
+: 1693294600:0;sudo mkdir /etc/conf.d
+: 1693294600:0;sudo mv /etc/hostname /etc/conf.d
+: 1693294600:0;ls /etc/conf.d
+: 1693294600:0;sudo mv /etc/conf.d/hostname /etc/
+: 1693294600:0;sudo rm /etc/conf.d
+: 1693294600:0;sudo rm -r /etc/conf.d
+: 1693294600:0;ls
+: 1693294600:0;ls /home
+: 1693294600:0;pacman -Ss xdg
+: 1693294600:0;pacman -Sii xdg-desktop-portal-hyprland
+: 1693294600:0;micro /etc/pacman.conf
+: 1693294600:0;pacman -S pipewire wireplumber
+: 1693294600:0;sudo pacman -S pipewire wireplumber
+: 1693294600:0;pacman -S man-db
+: 1693294600:0;sudo pacman -S man-db
+: 1693294600:0;pacman -Ss xdg
+: 1693294600:0;pacman -S xdg-desktop-portal-hyprland xdg-user-dirs xdg-utils
+: 1693294600:0;sudo pacman -S xdg-desktop-portal-hyprland xdg-user-dirs xdg-utils
+: 1693294600:0;micro /etc/xdg/user-dirs.conf
+: 1693294600:0;micro /etc/xdg/user-dirs.defaults
+: 1693294600:0;exit
+: 1693294600:0;ls
+: 1693294600:0;xdg-user-dirs-update
+: 1693294600:0;ls
+: 1693294600:0;ls
+: 1693294600:0;ls -al
+: 1693294600:0;ls *
+: 1693294600:0;rm -r *
+: 1693294600:0;ls
+: 1693294600:0;ls -al
+: 1693294600:0;micro /etc/xdg/autostart/xdg-user-dirs.desktop
+: 1693294600:0;micro /etc/xdg/user-dirs.conf
+: 1693294600:0;micro ~/.config/user-dirs.conf
+: 1693294600:0;xdg-user-dirs-update
+: 1693294600:0;ls
+: 1693294600:0;ls -al
+: 1693294600:0;xdg-user-dirs-update
+: 1693294600:0;ls
+: 1693294600:0;micro /etc/xdg/user-dirs.conf
+: 1693294600:0;micro /etc/xdg/user-dirs.defaults
+: 1693294600:0;micro ~/.config/user-dirs.conf
+: 1693294600:0;cp /etc/xdg/user-dirs.defaults ~/.config/user-dirs.
+: 1693294600:0;ls ~/.config
+: 1693294600:0;cd .config
+: 1693294600:0;ls
+: 1693294600:0;mv user-dirs. user-dirs.conf
+: 1693294600:0;ls
+: 1693294600:0;micro user-dirs.conf
+: 1693294600:0;ls
+: 1693294600:0;micro user-dirs.dirs
+: 1693294600:0;rm user-dirs.dirs
+: 1693294600:0;ls
+: 1693294600:0;rm user-dirs.locale
+: 1693294600:0;ls
+: 1693294600:0;xdg-user-dirs-update
+: 1693294600:0;ls
+: 1693294600:0; cd ..
+: 1693294600:0;ls
+: 1693294600:0;cd .config
+: 1693294600:0;ls
+: 1693294600:0;rm user-dirs.dirs user-dirs.locale
+: 1693294600:0;ls
+: 1693294600:0;micro user-dirs.conf
+: 1693294600:0;xdg-user-dirs-update
+: 1693294600:0;ls
+: 1693294600:0;ls ~
+: 1693294600:0;cd ~
+: 1693294600:0;rm -r *
+: 1693294600:0;xdg-user-dirs-update
+: 1693294600:0;ls
+: 1693294600:0;rm -r *
+: 1693294600:0;ls
+: 1693294600:0;ls -al
+: 1693294600:0;micro .config/user-dirs.dirs
+: 1693294600:0;rm .config/user-dirs.dirs .config/user-dirs.locale
+: 1693294600:0;micro .config/user-dirs.conf
+: 1693294600:0;pwd
+: 1693294600:0;ls
+: 1693294600:0;xdg-user-dirs-update
+: 1693294600:0;ls
+: 1693294600:0;rm -r *
+: 1693294600:0;ls
+: 1693294600:0;sudo mv .config/user-dirs.conf /etc/xdg/user-dirs.conf
+: 1693294600:0;ls .config
+: 1693294600:0;rm .config/user-dirs.dirs
+: 1693294600:0;rm .config/user-dirs.locale
+: 1693294600:0;ls
+: 1693294600:0;ls /etc/xdg
+: 1693294600:0;sudo mv /etc/xdg/user-dirs.conf /home
+: 1693294600:0;sudo rm /etc/xdg/user-dirs.defaults
+: 1693294600:0;ls /etc/xdg
+: 1693294600:0;pacman -S xdg
+: 1693294600:0;sudo pacman -S xdg
+: 1693294600:0;sudo pacman -S xdg-user-dirs
+: 1693294600:0;ls /etc/xdg
+: 1693294600:0;sudo mv /home/user-dirs.conf /etc/xdg/user-dirs.defaults
+: 1693294600:0;xdg-user-dirs-update
+: 1693294600:0;ls /home
+: 1693294600:0;pwd
+: 1693294600:0;mkdir Projects Content
+: 1693294600:0;ls
+: 1693294600:0;cd projects
+: 1693294600:0;cd Projects
+: 1693294600:0;ls
+: 1693294600:0;micro .zshrc
+: 1693294600:0;pwd
+: 1693294600:0;cd ..
+: 1693294600:0;micro .zshrc
+: 1693294600:0;git
+: 1693294600:0;micro .zshrc
+: 1693294600:0;git config
+: 1693294600:0;git config -l
+: 1693294600:0;git config --set user.name Drayux
+: 1693294600:0;git config --add user.name Drayux
+: 1693294600:0;git config --global --add user.name Drayux
+: 1693294600:0;ls -al
+: 1693294600:0;cat .gitconfig
+: 1693294600:0;git config -l
+: 1693294600:0;git config -l
+: 1693294600:0;mv .gitconfig .config/git.cfg
+: 1693294600:0;git config -l
+: 1693294600:0;git config --global --set user.name Drayuxx
+: 1693294600:0;git config --global --add user.name Drayuxx
+: 1693294600:0;git config -l
+: 1693294600:0;ls
+: 1693294600:0;ls -al
+: 1693294600:0;rm .gitconfig
+: 1693294600:0;git config -l
+: 1693294600:0;micro .zshrc
+: 1693294600:0;ls /etc
+: 1693294600:0;ls /etc/ssh
+: 1693294600:0;ls -p /etc/ssh
+: 1693294600:0;micro /etc/ssh/ssh_config
+: 1693294600:0;micro /etc/ssh/sshd_config
+: 1693294600:0;ssh wyvern.drayux.com
+: 1693294600:0;ls
+: 1693294600:0;ls -al
+: 1693294600:0;ls -al .config
+: 1693294600:0;ls -al .local
+: 1693294600:0;mkdir .local/ssh
+: 1693294600:0;micro /etc/ssh/ssh_config
+: 1693294600:0;ssh wyvern.drayux.com
+: 1693294600:0;ssh wyvern.drayux.com
+: 1693294600:0;ls -al
+: 1693294600:0;ls .ssh
+: 1693294600:0;ls .ssh/known_hosts
+: 1693294600:0;rm -rf .ssh
+: 1693294600:0;ls
+: 1693294600:0;ls -al
+: 1693294600:0;micro /etc/ssh/ssh_config
+: 1693294600:0;ssh wyvern.drayux.com
+: 1693294600:0;ls -al
+: 1693294600:0;ls -al .local
+: 1693294600:0;ls -al .local/ssh
+: 1693294600:0;micro .zshrc
+: 1693294600:0;neofetch
+: 1693294600:0;sudo pacman -S dolphin
+: 1693294600:0;sudo pacman -S pipewire-audio
+: 1693294600:0;pacman -Ss codium
+: 1693294600:0;micro &
+: 1693294600:0;micro
+: 1693294600:0;ps aux | grep micro
+: 1693294600:0;pkill micro
+: 1693294600:0;ps aux | grep micro
+: 1693294600:0;pkill -KIll micro
+: 1693294600:0;ps aux | grep micro
+: 1693294600:0;micro
+: 1693294600:0;pacman -Ss firefox
+: 1693294600:0;sudo pacman -S firefox
+: 1693294600:0;firefox &
+: 1693294600:0;firefox -ProfileManager
+: 1693294600:0;pacman -Ss bitwarden
+: 1693294600:0;pacman -Ss bit warden
+: 1693294600:0;firefox &
+: 1693294600:0;cat ~/.local/ssh/id_rsa.pub
+: 1693294600:0;cd ~/Projects
+: 1693294600:0;git clone git@github.com:Drayux/Catalyst.git
+: 1693294600:0;ls
+: 1693294600:0;pwd
+: 1693294600:0;ls
+: 1693294600:0;pwd
+: 1693294600:0;cd ..
+: 1693294600:0;ls
+: 1693294600:0;cd Projects
+: 1693294600:0;ls
+: 1693294600:0;cd Catalyst
+: 1693294600:0;git pull
+: 1693294600:0;pacman -S pipewire
+: 1693294600:0;pacman -Ss pipewire
+: 1693294600:0;pacman -Ss firewire
+: 1693294600:0;sudo pacman -S pipewire-pulse pipewire-jack
+: 1693294600:0;ls ~/.config
+: 1693294600:0;ls ~/.config/hypr
+: 1693294600:0;ls /etc
+: 1693294600:0;ls /etc/zsh
+: 1693294600:0;ls /etc/X11
+: 1693294600:0;ls /etc/X11/xinit
+: 1693294600:0;ls /etc/X11/xinit/xinitrc.d
+: 1693294600:0;micro ~/.zshrc
+: 1693294600:0;mv ~/.config/git.cfg ~/.config/git.conf
+: 1693294600:0;source ~/.zshrc
+: 1693294600:0;alias git
+: 1693294600:0;pwd
+: 1693294600:0;micro ~/.config/hypr/hyprland.conf
+: 1693294600:0;xdg-user-dirs-update
+: 1693294600:0;ls /home
+: 1693294600:0;man ln
+: 1693294600:0;~
+: 1693294600:0;ln -s Config .config
+: 1693294600:0;ls
+: 1693294600:0;ls .config
+: 1693294600:0;ls -al .config
+: 1693294600:0;rm ~/.config/Config
+: 1693294600:0;ls .config
+: 1693294600:0;ln -s /home/Config /home/.config
+: 1693294600:0;ls
+: 1693294600:0;ls .config
+: 1693294600:0;rm ~/.config/Config
+: 1693294600:0;ls .config
+: 1693294600:0;ln -s /home/.config /home/Config
+: 1693294600:0;ls
+: 1693294600:0;ls Config
+: 1693294600:0;ls -al
+: 1693294600:0;ls
+: 1693294600:0;cd Downloads
+: 1693294600:0;mkdir Repositories
+: 1693294600:0;cd Repositories
+: 1693294600:0;git clone https://aur.archlinux.org/yay.git
+: 1693294600:0;mv yay Yay
+: 1693294600:0;ls
+: 1693294600:0;cd Yay
+: 1693294600:0;pacman -Ss yay
+: 1693294600:0;pacman -Ss notification daemon
+: 1693294600:0;pacman -Sii dunst
+: 1693294600:0;pacman -Qii | grep dbus
+: 1693294600:0;pacman -Ss dbus
+: 1693294600:0;dinitctl list
+: 1693294600:0;sudo dinitctl list
+: 1693294600:0;ls /usr/share
+: 1693294600:0;ls /usr/share/wayland-
+: 1693294600:0;ls /usr/share/wayland-sessions
+: 1693294600:0;micro /usr/share/wayland-sessions/hyprland.desktop
+: 1693294600:0;man dbus-run-sessions
+: 1693294600:0;man dbus-run-session
+: 1693294600:0;pacman -Sii mako
+: 1693294600:0;pacman -Qi dbus
+: 1693294600:0;pacman -S --asexplicit dbus-dinit
+: 1693294600:0;sudo pacman -S --asexplicit dbus-dinit
+: 1693294600:0;ls /etc/dinit.d
+: 1693294600:0;micro /etc/dinit.d/dbus
+: 1693294600:0;ls /etc/dinit.d/boot
+: 1693294600:0;ls /etc/dinit.d/boot.d
+: 1693294600:0;dinitctl enable dbus
+: 1693294600:0;sudo dinitctl enable dbus
+: 1693294600:0;ls /etc/dinit.d/boot.d
+: 1693294600:0;pacman -Qo /etc/dinit.d/logind
+: 1693294600:0;ls /etc | grep seat
+: 1693294600:0;ls /etc | grep login
+: 1693294600:0;rm -rf /etc/elogind
+: 1693294600:0;pacman -Qo /etc/elogind/logind.conf
+: 1693294600:0;sudo rm -rf /etc/elogind
+: 1693294600:0;ls /etc
+: 1693294600:0;micro /etc/vconsole.conf
+: 1693294600:0;pacman -Qo /etc/vconsole.conf
+: 1693294600:0;pacman -Qi elogind
+: 1693294600:0;pacman -Q elogind
+: 1693294600:0;sudo pacman -Rs elogind
+: 1693294600:0;sudo pacman -S elogind
+: 1693294600:0;sudo pacman -S elogind --asdeps
+: 1693294600:0;pacman -Qi elogind
+: 1693294600:0;pacman -Ss dunst
+: 1693294600:0;sudo pacman -S dunst
+: 1693294600:0;dunst
+: 1693294600:0;which dunst
+: 1693294600:0;micro ~/.config/hypr/hyprland.conf
+: 1693294600:0;pacman -Ss qpw
+: 1693294600:0;pacman -Ss qpwgraph
+: 1693294600:0;sudo pacman -Ss artix archlinux
+: 1693294600:0;sudo pacman -Ss artix
+: 1693294600:0;micro /etc/pacman.conf
+: 1693294600:0;pacman -Sy
+: 1693294600:0;sudo pacman -Sy
+: 1693294600:0;pacman -Ss bitwarden
+: 1693294600:0;pacman -Ss codium
+: 1693294600:0;pacman -Ss vscodium
+: 1693294600:0;pacman -Ss artix-archlinux-support
+: 1693294600:0;pacman -Ss steam
+: 1693294600:0;sudo pacman -S artix-archlinux-support
+: 1693294600:0;micro /etc/pacman.conf
+: 1693294600:0;pacman-key --populate archlinux
+: 1693294600:0;sudo pacman-key --populate archlinux
+: 1693294600:0;micro /etc/pacman.d/mirrorlist
+: 1693294600:0;micro /etc/pacman.conf
+: 1693294600:0;pacman -Ss rnnoise
+: 1693294600:0;pacman -Sy
+: 1693294600:0;sudo pacman -Sy
+: 1693294600:0;pacman -Sy
+: 1693294600:0;pacman -Ss rnnoise
+: 1693294600:0;pacman -Ss grub-customizer
+: 1693294600:0;micro /etc/pacman.conf
+: 1693294600:0;pacman -Syy
+: 1693294600:0;sudo pacman -Syy
+: 1693294600:0;pacman -Ss rnnoise
+: 1693294600:0;pacman -Si zramen
+: 1693294600:0;micro /etc/makepkg.conf
+: 1693294600:0;cd ~/Downloads/Repositories
+: 1693294600:0;ls
+: 1693294600:0;cd Yay
+: 1693294600:0;ls
+: 1693294600:0;makepkg
+: 1693294600:0;pacman -Ss go
+: 1693294600:0;sudo pacman -S --asdeps go
+: 1693294600:0;pacman -Qii go
+: 1693294600:0;man makepkg
+: 1693294600:0;makepkg
+: 1693294600:0;pacman -Ss carla
+: 1693294600:0;ls
+: 1693294600:0;sudo pacman -U yay-12.1.2-1-x86_64.pkg.tar.zst
+: 1693294600:0;yay -Y --gendb
+: 1693294600:0;yay -Y --devel --save
+: 1693294600:0;df -h
+: 1693294600:0;pacman -Sp nvidia
+: 1693294600:0;pacman -S nvidia
+: 1693294600:0;sudo pacman -S nvidia
+: 1693294600:0;sudo pacman -Sp nvidia
+: 1693294600:0;clear
+: 1693294600:0;pacman -Ss rnnoise
+: 1693294600:0;pacman -Ss rnnoise --ignoregroup=extra
+: 1693294600:0;pacman -Ss --ignoregroup=extra rnnoise
+: 1693294600:0;pacman -Sl world
+: 1693294600:0;pacman -Ssl world
+: 1693294600:0;pacman -Ss world/rnnoise
+: 1693294600:0;pacman -Ss world rnnoise
+: 1693294600:0;pacman -Ss rnnoise
+: 1693294600:0;yay -Ss rnnoise
+: 1693294600:0;man yay
+: 1693294600:0;yay -Ss qpwgraph
+: 1693294600:0;yay -S qpwgraph
+: 1693294600:0;qpwgraph &
+: 1693294600:0;pkill -KILL qpwgraph
+: 1693294600:0;cd ~/.config
+: 1693294600:0;ls
+: 1693294600:0;cd zsh
+: 1693294600:0;ls
+: 1693294600:0;pwd
+: 1693294600:0;cat ~/Projects/Catalyst/Config/Filesystem/home/.config/zsh/ohmyzsh/README.md
+: 1693294600:0;ZSH="$HOME/.config/zsh/ohmyzsh" curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh
+: 1693294600:0;ZSH="$HOME/.config/zsh/ohmyzsh" & curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh
+: 1693294600:0;ZSH="$HOME/.config/zsh/ohmyzsh" && curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh
+: 1693294600:0;ZSH="$HOME/.config/zsh/ohmyzsh"
+: 1693294600:0;echo ZSH
+: 1693294600:0;echo $ZSH
+: 1693294600:0;curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh
+: 1693294600:0;ls
+: 1693294600:0;echo $ZSH
+: 1693294600:0;ZSH="$HOME/.config/zsh/ohmyzsh" sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+: 1693294600:0;exit
+: 1693294600:0;ls
+: 1693294600:0;neofetch
+: 1693294600:0;ssh-keygen
+: 1693294600:0;ls ~/.local/ssh
+: 1693294600:0;cat ~/.local/ssh/id_rsa.pub
+: 1693294600:0;cd Projects
+: 1693294600:0;git clone git@github.com:Drayux/Catalyst.git
+: 1693294600:0;ls
+: 1693294600:0;pacman -Ss hyprland
+: 1693294600:0;pacman -S hyprland
+: 1693294600:0;sudo pacman -S hyprland
+: 1693294600:0;ls /etc
+: 1693294600:0;hyprland
+: 1693294600:0;Hyprland
+: 1693294600:0;pacman -Sii seatd
+: 1693294600:0;pacman -S seatd-dinit
+: 1693294600:0;sudo pacman -S seatd-dinit
+: 1693294600:0;dinitctl enable seatd
+: 1693294600:0;dinitctl enable seatd-dinit
+: 1693294600:0;dinit status networkmanager
+: 1693294600:0;dinit status NetworkManager
+: 1693294600:0;sudo dinitctl enable seatd-dinit
+: 1693294600:0;sudo dinitctl enable seatd
+: 1693294600:0;pacman -Sii seatd
+: 1693294600:0;which Hyprland
+: 1693294600:0;ls /usr/bin | less
+: 1693294600:0;cat /usr/bin/Hyprland
+: 1693294600:0;clear
+: 1693294600:0;which zsh
+: 1693294600:0;ls /run
+: 1693294600:0;ls /run/systemd
+: 1693294600:0;dinitcli -l
+: 1693294600:0;dinitctl -l
+: 1693294600:0;dinitctl --list
+: 1693294600:0;dinitctl list
+: 1693294600:0;sudo dinitctl list
+: 1693294600:0;sudo dinitctl disable elogind
+: 1693294600:0;sudo dinitctl disable logind
+: 1693294600:0;ls /etc/dinit.d/boot.d
+: 1693294600:0;cd /etc/dinit.d/boot.d
+: 1693294600:0;ls
+: 1693294600:0;ls seatd
+: 1693294600:0;ls .config
+: 1693294600:0;pwd
+: 1693294600:0;~/.config
+: 1693294600:0;ls
+: 1693294600:0;cd hypr
+: 1693294600:0;ls
+: 1693294600:0;micro hyprland.conf
+: 1693294600:0;sudo pacman -S alacritty
+: 1693294600:0;sudo pacman -Ss alacritty
+: 1693294600:0;sudo pacman -Ss terminal | lesss
+: 1693294600:0;sudo pacman -Ss terminal | less
+: 1693294600:0;micro hyprland.conf
+: 1693294600:0;sudo pacman -S kitty
+: 1693294600:0;sudo pacman -S python
+: 1693294600:0;sudo pacman -S kitty
+: 1693294600:0;Hyprland
+: 1693294540:0;cp Projects/Catalyst/Config/Filesystem/home/.config/zsh/ohmyzsh/custom/themes/agnoster-tweak.zsh-theme .config/zsh/ohmyzsh/custom/themes
+: 1693294552:0;micro .config/zsh/ohmyzsh/config.zsh
+: 1693294594:0;ls
+: 1693294600:0;logout
+: 1693294737:0;micro Projects/Catalyst/Config/Filesystem/home/.config/zsh/ohmyzsh/config.sh
+: 1693294775:0;rm .zsh_history
+: 1693294777:0;hello
+: 1693294781:0;ls -al
+: 1693294788:0;ls
+: 1693294802:0;sh -c $(ls)
+: 1693294816:0;sh -c ls
+: 1693294822:0;zsh -c ls
+: 1693294828:0;micro .zshrc
+: 1693294836:0;micro .config/zsh/aliases.zsh
+: 1693294851:0;micro .config/zsh/ohmyzsh/con
+: 1693294854:0;micro .config/zsh/ohmyzsh/config.zsh
+: 1693294863:0;logout
+: 1693294869:0;neofetch
+: 1693294959:0;echo $$ | ps aux
+: 1693294986:0;ps -p $$
+: 1693295002:0;ps aux
+: 1693295019:0;ls /sys/firmware/efi
+: 1693295078:0;pacman -Ss cmatrix
+: 1693295128:0;sudo pacman -S cmatrix
+: 1693295131:0;cmatrix
+: 1693295169:0;neofetch
+: 1693295221:0;dbus-run-session Hyprland
+: 1693295231:0;cmatrix
+: 1693295445:0;pacman -S pipewire-alsa
+: 1693295448:0;sudo pacman -S pipewire-alsa
+: 1693295470:0;sudo pacman -Ss rofi
+: 1693295482:0;sudo pacman -Ss rofi | less
+: 1693295510:0;sudo pacman -S rofi
+: 1693295525:0;pacman -Si startup-notification
+: 1693295535:0;sudo pacman -S rofi
+: 1693295563:0;micro .config/hypr/hyprland.conf
+: 1693295595:0;Hyprland
+: 1693295622:0;micro .config/hypr/hyprland.conf
+: 1693295666:0;rofi
+: 1693295702:0;rofi -show window
+: 1693295708:0;rofi -show run
+: 1693295754:0;micro .config/hypr/hyprland.conf
+: 1693295984:0;micro .config/zsh/ohmyzsh/themes/darkblood.zsh-theme
+: 1693296099:0;cd .config/zsh/ohmyzsh
+: 1693296100:0;ls
+: 1693296129:0;mv custom/themes/agnoster-tweak.zsh-theme custom/themes/agnoster.zsh-theme
+: 1693296144:0;micro .config/zsh/ohmyzsh/themes/darkblood.zsh-theme
+: 1693296153:0;micro themes/darkblood.zsh-theme
+: 1693296265:0;micro lib/prompt_info_functions.zsh
+: 1693296292:0;ls lib/
+: 1693296310:0;micro lib/theme-and-appearance.zsh
+: 1693296354:0;micro lib/misc.zsh
+: 1693296360:0;man zshmisc
+: 1693296432:0;echo %y
+: 1693296435:0;echo $%y
+: 1693296437:0;man zshmisc
+: 1693296484:0;zsh -c "echo %y"
+: 1693296487:0;zsh -c "echo %y%"
+: 1693296506:0;micro ~/.zshrc
+: 1693296579:0;print -P %y
+: 1693296651:0;if [-P %y] \
+then echo hi\
+\
+;\
+;
+: 1693296672:0;if [-P %y] ; then echo hi\
+fi
+: 1693296701:0;micro .config/zsh/config.sh
+: 1693296709:0;micro .config/zsh/ohmyzsh/config.zsh
+: 1693296912:0;echo hello
+: 1693296931:0;logout
+: 1693296949:0;sudo reboot
+: 1693297007:0;neofetch
+: 1693297029:0;Hyprland
+: 1693297046:0;neofetch
+: 1693297540:0;pacman -Ss waybar
+: 1693297548:0;sudo pacman -S waybar
+: 1693297618:0;sudo pacman -S otf-font-awesome
+: 1693297634:0;sudo pacman -D --asexplicit ttf-droid
+: 1693297682:0;pacman -Ss font
+: 1693297739:0;sudo pacman -S awesome-terminal-fonts
+: 1693297755:0;pacman -Sl awesome-terminal-fonts
+: 1693297765:0;pacman -Ssl awesome-terminal-fonts
+: 1693297770:0;pacman -Ql awesome-terminal-fonts
+: 1693297790:0;pacman -Ql otf-font-awesome
+: 1693297829:0;sudo pacman -Rs otf-font-awesome
+: 1693297876:0;sudo pacman -Rs awesome-terminal-fonts
+: 1693297881:0;clear
+: 1693297890:0;pacman -Ss ttf font
+: 1693298240:0;sudo pacman -S nerd-fonts
+: 1693298342:0;sudo pacman -S ttf-carlito ttf-dejavu ttf-fira-code ttf-font-awesome ttf-roboto
+: 1693298408:0;sudo pacman -S ttf-jetbrains-mono-nerd
+: 1693298427:0;pacman -Ss ttf-jetbrains-mono
+: 1693298446:0;pacman -Rs ttf-roboto
+: 1693298449:0;sudo pacman -Rs ttf-roboto
+: 1693298458:0;sudo pacman -S ttf-roboto-nerd
+: 1693298461:0;sudo pacman -S ttf-roboto
+: 1693298470:0;sudo pacman -Ss font awesome nerd
+: 1693298476:0;sudo pacman -Ss fira code nerd
+: 1693298489:0;sudo pacman -Rs ttf-fira-code
+: 1693298509:0;sudo pacman -S ttf-firacode-nerd
+: 1693298519:0;pacman -Ss dejavu nerd
+: 1693298526:0;sudo pacman -Rs ttf-dejavu
+: 1693298534:0;sudo pacman -S ttf-dejavu-nerd
+: 1693298555:0;pacman -Ss carlito nerd
+: 1693298596:0;pacman -S ttf-ubuntu-nerd
+: 1693298598:0;sudo pacman -S ttf-ubuntu-nerd
+: 1693298669:0;ls .config/kitty
+: 1693298761:0;micro .config/kitty/kitty.conf
+: 1693298919:0;sudo pacman -S nerd-fonts
+: 1693298974:0;micro .config/kitty/kitty.conf
+: 1693299105:0;kitty +list-fonts --psnames
+: 1693299133:0;micro .config/kitty/kitty.conf
+: 1693299634:0;kitty --help
+: 1693299663:0;neofetch
+: 1693299899:0;micro .config/kitty/kitty.conf
+: 1693299907:0;micro .config/hypr/hyprland.conf
+: 1693299988:0;hyprctl monitors
+: 1693300105:0;sudo reboot
+: 1693300198:0;Hyprland
+: 1693300218:0;micro .config/hypr/hyprland.conf
+: 1693300602:0;pacman -Ss hyprpaper
+: 1693300611:0;sudo pacman -S hyprpaper
+: 1693300716:0;dinitctl enable pipewire
+: 1693300718:0;sudo dinitctl enable pipewire
+: 1693300722:0;sudo dinitctl enable Pipewire
+: 1693300781:0;micro .config/hypr/hyprland.conf
+: 1693300824:0;Hyprland
+: 1693300899:0;micro .config/hypr/hyprland.conf
+: 1693300940:0;cd Projects/Catalyst/Config/Filesystem
+: 1693300940:0;ls
+: 1693300944:0;ls etc
+: 1693300950:0;ls etc/modprobe.d
+: 1693300958:0;sudo cp etc/modprobe.d /etc/modprobe.d
+: 1693300964:0;sudo cp etc/modprobe.d/scarlett.conf /etc/modprobe.d
+: 1693300968:0;sudo reboot
+: 1693301005:0;Hyprland
+: 1693301219:0;pkill -KILL hyprland
+: 1693301224:0;psaux
+: 1693301229:0;ps aux | grep hypr
+: 1693301245:0;micro .config/hypr/hyprland.conf
+: 1693301256:0;Hyprland
+: 1693301341:0;micro .config/hypr/hyprland.conf
+: 1693301445:0;ps aux | grep pipe
+: 1693301475:0;micro .config/hypr/hyprland.conf
+: 1693301480:0;reboot
+: 1693301482:0;sudo reboot
+: 1693301533:0;pipewire && pipewire-pulse && wireplumber
+: 1693301547:0;pipewire && pipewire-pulse && wireplumber &
+: 1693301561:0;clear
+: 1693301565:0;ps aux | grep wire
+: 1693301567:0;ps aux | grep pipe
+: 1693301579:0;sudo pipewire &&
+: 1693301580:0;sudo pipewire &
+: 1693301618:0;su
+: 1693301657:0;Hyprland
+: 1693301674:0;su
+: 1693301773:0;dbus-run-session Hyprland
+: 1693301784:0;su
+: 1693343993:0;cd ~/Config/zsh/
+: 1693343994:0;ls
+: 1693343997:0;micro aliases.zsh
+: 1693344022:0;ls
+: 1693344030:0;mkdir scripts
+: 1693344039:0;micro scripts.zsh
+: 1693344108:0;micro aliases.zsh
+: 1693344124:0;ls
+: 1693344129:0;micro scripts/pacss.zsh
+: 1693344156:0;exit
+: 1693344173:0;~/.config/zsh
+: 1693344174:0;ls
+: 1693344177:0;pacss
+: 1693344180:0;pacss hello world!
+: 1693344185:0;cd ..
+: 1693344187:0;pacss test
+: 1693344248:0;cd zsh
+: 1693344252:0;micro scripts.zsh
+: 1693344286:0;source ./scripts.zsh
+: 1693344291:0;scripttest
+: 1693344348:0;micro scripts.zsh
+: 1693344397:0;source ./scripts.zsh
+: 1693344401:0;cd ..
+: 1693344409:0;source zsh/scripts.zsh
+: 1693344421:0;cd zsh
+: 1693344423:0;micro scripts.zsh
+: 1693344481:0;source scripts.zsh
+: 1693344485:0;micro scripts.zsh
+: 1693344491:0;source scripts.zsh
+: 1693344495:0;ls
+: 1693344500:0;micro scripts.zsh
+: 1693344534:0;micro scripts/pacss.zsh
+: 1693344543:0;source scripts.zsh
+: 1693344545:0;pacss
+: 1693344548:0;pacss hello world!
+: 1693344551:0;micro scripts/pacss.zsh
+: 1693344605:0;pacss
+: 1693344611:0;pacss codium
+: 1693344700:0;pacss rofi
+: 1693344729:0;cd ..
+: 1693344731:0;ls
+: 1693344737:0;micro yay/config.json
+: 1693344822:0;pacss rofi
+: 1693344855:0;source zsh/scripts.zsh
+: 1693344856:0;pacss rofi
+: 1693344896:0;pacss codium
+: 1693344912:0;micro zsh/scripts.zsh
+: 1693344948:0;which realpath
+: 1693344950:0;micro zsh/scripts.zsh
+: 1693344972:0;source zsh/scripts.zsh
+: 1693344982:0;micro zsh/scripts.zsh
+: 1693344989:0;realpath zsh
+: 1693344995:0;micro zsh/scripts.zsh
+: 1693345029:0;source zsh/scripts.zsh
+: 1693345033:0;micro zsh/scripts.zsh
+: 1693345042:0;source zsh/scripts.zsh
+: 1693345045:0;micro zsh/scripts.zsh
+: 1693345073:0;source zsh/scripts.zsh
+: 1693345078:0;pacss codium
+: 1693345084:0;cd zsh
+: 1693345085:0;pacss codium
+: 1693345089:0;cd ~
+: 1693345090:0;pacss codium
+: 1693345098:0;cd .config
+: 1693345104:0;micro zsh/scripts.zsh
+: 1693345135:0;source zsh/scripts.zsh
+: 1693345143:0;pacss dinit
+: 1693345171:0;micro yay/config.json
+: 1693345406:0;pacss neofetch
+: 1693345428:0;pacss neofetch --sortby=baseid
+: 1693345450:0;pacss --sortby=modified neofetch
+: 1693345597:0;yay -Ss rnnoise
+: 1693345612:0;yay -Ss --sortby id rnnoise
+: 1693345617:0;yay -Ss --sortby name rnnoise
+: 1693345634:0;yay -Ss --sortby modified rnnoise
+: 1693345676:0;micro yay/config.json
+: 1693345867:0;sudo pacman -S hyprpaper
+: 1693345879:0;pacman -Qi hyprpaper
+: 1693345936:0;micro hypr/hyprland.conf
+: 1693346062:0;cp hypr/hyprland.conf hypr/keybinds.conf
+: 1693346069:0;micro hypr/keybinds.conf
+: 1693346114:0;micro hypr/hyprland.conf
+: 1693346152:0;ls hypr
+: 1693346179:0;touch hypr/rules.conf
+: 1693346186:0;micro hypr/hyprland.conf
+: 1693346246:0;cd hypr
+: 1693346246:0;ls
+: 1693346249:0;cp hyprland.conf rules.conf
+: 1693346252:0;micro rules.conf
+: 1693346271:0;micro hyprland.conf
+: 1693348048:0;micro hypr/keybinds.conf
+: 1693348053:0;micro keybinds.conf
+: 1693348128:0;pacss xdg dinit
+: 1693348243:0;ps aux | grep xdg
+: 1693348864:0;pacss userservd
+: 1693348946:0;cd ~/Downloads
+: 1693348947:0;ls
+: 1693348950:0;cd Repositories/q
+: 1693348969:0;cd Repositories
+: 1693348969:0;ls
+: 1693348978:0;mv Yay yay
+: 1693348979:0;ls
+: 1693349025:0;mkdir dinit-userservd
+: 1693349028:0;cd dinit-userservd
+: 1693349058:0;git clone git@github.com:Xynonners/dinit-userservd-PKGBUILD.git .
+: 1693349064:0;ls
+: 1693349083:0;cd dinit-userservd
+: 1693349089:0;makepkg
+: 1693349095:0;sudo pacman -S meson
+: 1693349102:0;sudo pacman -S meson ninja
+: 1693349110:0;makepkg
+: 1693349117:0;ls
+: 1693349126:0;sudo pacman -U dinit-userservd-0.1.1-1-any.pkg.tar.zst
+: 1693349152:0;micro /etc/pam.d/login
+: 1693349225:0;dinit userservd
+: 1693349230:0;sudo dinit userservd
+: 1693349236:0;sudo dinitctl enable userservd
+: 1693349249:0;sudo dinitctl enable dinit-userservd
+: 1693349321:0;~
+: 1693349696:0;cd .config
+: 1693349697:0;ls
+: 1693349706:0;mkdir dinit.d
+: 1693349727:0;ps aux | grep dbus
+: 1693349761:0;cd ~/Downloads/Repositories
+: 1693349762:0;ls
+: 1693349763:0;cd dinit-userservd
+: 1693349763:0;ls
+: 1693349787:0;git clone git@github.com:Xynonners/dinit-userservd-services.git
+: 1693349793:0;cd dinit-userservd-services
+: 1693349793:0;ls
+: 1693349803:0;ls scripts
+: 1693349868:0;ls
+: 1693349892:0;ls /etc/dinit.d
+: 1693349895:0;ls /etc/dinit.d/scripts
+: 1693349912:0;cp scripts/dbus-session /etc/dinit.d/scripts
+: 1693349915:0;sudo cp scripts/dbus-session /etc/dinit.d/scripts
+: 1693349918:0;ls /etc/dinit.d/scripts
+: 1693349929:0;sudo chmod +x /etc/dinit.d/scripts/dbus-session
+: 1693349935:0;ls -l /etc/dinit.d/scripts
+: 1693349957:0;micro /etc/dinit.d/scripts/dbus-pre
+: 1693349968:0;ls -l /etc/dinit.d/scripts
+: 1693350000:0;ls 
+: 1693350002:0;ls services
+: 1693350020:0;cp services/dbus.user ~/.config/dinit.d/
+: 1693350028:0;reboot
+: 1693350030:0;sudo reboot
+: 1693350092:0;ps aux | grep dbus
+: 1693350108:0;sudo micro /etc/pam.d/login
+: 1693350125:0;pacman -Rs dinit-userservd
+: 1693350128:0;sudo pacman -Rs dinit-userservd
+: 1693350156:0;ls ~/.config/dinit.d
+: 1693350160:0;rm -rf ~/.config/dinit.d
+: 1693350164:0;ls ~/.config
+: 1693350182:0;cd /etc/dinit.d
+: 1693350182:0;ls
+: 1693350184:0;cd scripts
+: 1693350184:0;ls
+: 1693350191:0;ls -l
+: 1693350196:0;rm dbus-session
+: 1693350201:0;sudo rm dbus-session
+: 1693350203:0;ls
+: 1693350210:0;cd ..
+: 1693350211:0;ls
+: 1693350213:0;ls boot.d
+: 1693350218:0;micro dbus
+: 1693350358:0;dbus-run-session Hyprland
+: 1693350378:0;~
+: 1693350379:0;ls
+: 1693350413:0;pipewire & pipewire-pulse
+: 1693350423:0;ps aux | grep wire
+: 1693350435:0;wireplumber &
+: 1693350472:0;cd ..
+: 1693350478:0;ls modprobe.d
+: 1693350481:0;cat modprobe.d/scarlett.conf
+: 1693350493:0;ps aux | grep wire
+: 1693350822:0;cd pipewire
+: 1693350823:0;ls
+: 1693350829:0;sudo rm pipewire.conf
+: 1693350830:0;ls
+: 1693350856:0;cd ~/Projects/Catalyst
+: 1693350857:0;ls
+: 1693350868:0;Config/Filesystem
+: 1693350868:0;ls
+: 1693350870:0;cd etc
+: 1693350871:0;ls
+: 1693350886:0;sudo cp -r pipewire /etc/
+: 1693350889:0;ls
+: 1693350892:0;ls pipewire.conf.d
+: 1693350902:0;sudo cp -r wireplumber /etc/
+: 1693350906:0;cd ../wireplumber
+: 1693350907:0;ls
+: 1693350914:0;rm README.md
+: 1693350918:0;sudo README.md
+: 1693350922:0;sudo rm README.md
+: 1693350923:0;ls
+: 1693350937:0;micro scripts/policy-node.lua
+: 1693351457:0;sudo reboot
+: 1693351521:0;dbus-run-session Hyprland
+: 1693351543:0;pipewire & pipewire-pulse
+: 1693351556:0;wireplumber & 
+: 1693351726:0;pacss cider
+: 1693351791:0;yay -Si cider
+: 1693351813:0;yay -S cider
+: 1693351908:0;micro /usr/share/wayland-sessions
+: 1693351911:0;micro /usr/share/wayland-sessions/hyprland.desktop
+: 1693352362:0;pacss itg
+: 1693352399:0;yay -Si itgmania
+: 1693352402:0;yay -Si itgmania-bin
+: 1693352641:0;yay -S itgmania-bin
+: 1693353199:0;pacss steam
+: 1693353529:0;yay -S steam
+: 1693353767:0;df -h
+: 1693353859:0;ls ~/.steam/steam/
+: 1693354677:0;yay -Ss vencord
+: 1693354703:0;yay -S vencord-desktop-bin
+: 1693354783:0;yay -S webcord-vencord-git
+: 1693354885:0;yay -Rs webcord-vencord-git
+: 1693354901:0;yay -S vencord-desktop-bin
+: 1693354955:0;yay -Ql vencord-desktop-bin
+: 1693354978:0;cat /usr/share/applications/vencord-desktop.desktop
+: 1693354989:0;/opt/vencord-desktop/vencord-desktop&
+: 1693362534:0;pacss minecraft
+: 1693362581:0;yay -S prismlauncher
+: 1693363374:0;killall minecraft
+: 1693363379:0;killall java
+: 1693363467:0;ps aux | grep wire
+: 1693363478:0;wireplumber &
+: 1693364148:0;micro .config/hypr/hyprland.conf
+: 1693364267:0;micro .config/hypr/keybinds.conf
+: 1693374795:0;reboot
+: 1693374800:0;sudo reboot
+: 1693375162:0;ls /etc/dinit.d
+: 1693375179:0;micro /etc/dinit.d/tty2
+: 1693375194:0;ls /etc/dinit.d
+: 1693375217:0;sudo cp /etc/dinit.d/tty2 /etc/dinit.d/tty7
+: 1693375220:0;sudo cp /etc/dinit.d/tty2 /etc/dinit.d/tty8
+: 1693375224:0;micro /etc/dinit.d/tty6
+: 1693375230:0;micro /etc/dinit.d/tty7
+: 1693375243:0;micro /etc/dinit.d/tty1
+: 1693375246:0;micro /etc/dinit.d/tty2
+: 1693375254:0;micro /etc/dinit.d/tty3
+: 1693375292:0;micro /etc/dinit.d/tty8
+: 1693375310:0;ls /etc/dinit.d
+: 1693375321:0;micro /etc/dinit.d/loginready
+: 1693375336:0;ls /etc/dinit.d
+: 1693375404:0;cd Downloads/Repositories
+: 1693375405:0;ls
+: 1693375407:0;cd dinit-userservd
+: 1693375407:0;ls
+: 1693375412:0;cd dinit-userservd
+: 1693375413:0;ls
+: 1693375419:0;sudo pacman -U dinit-userservd-0.1.1-1-any.pkg.tar.zst
+: 1693375428:0;micro /etc/pam.d/login
+: 1693375466:0;ls /etc/pam.d
+: 1693375485:0;micro /etc/pam.d/system-login
+: 1693375600:0;pacman -Sii elogind
+: 1693375660:0;pacman -Qii elogind
+: 1693375685:0;pacman -Qii seatd
+: 1693375702:0;sudo dinitctl list
+: 1693375713:0;ls /etc/dinit.d
+: 1693375727:0;sudo dinitctl enable seatd
+: 1693376149:0;sudo dinitctl enable dinit-userservd
+: 1693376177:0;cd /etc/dinit.d
+: 1693376181:0;ls
+: 1693376186:0;ls boot.d
+: 1693376198:0;sudo dinitctl enable dinit-userservd
+: 1693376206:0;micro dinit-userservd
+: 1693376220:0;ls
+: 1693376237:0;ls live.d
+: 1693376239:0;ls mount.d
+: 1693376250:0;cat logind
+: 1693376260:0;sudo dinitctl list
+: 1693376265:0;ls
+: 1693376347:0;pacman -Qo /etc/dinit.d/dinit-userservd
+: 1693376415:0;dinitctl
+: 1693376418:0;dinitctl status
+: 1693376423:0;dinitctl list
+: 1693376431:0;reboot
+: 1693376434:0;sudo reboot
+: 1693376495:0;dinitctl list
+: 1693376509:0;sudo dinitctl list
+: 1693376517:0;sudo dinitctl enable tty7
+: 1693376520:0;sudo dinitctl enable tty8
+: 1693376536:0;sudo dinitctl enable dinit-userservd
+: 1693376545:0;cd /etc/dinit.d
+: 1693376547:0;ls -al
+: 1693376560:0;ls
+: 1693376566:0;ls -al | less
+: 1693376577:0;ls
+: 1693376581:0;ls boot
+: 1693376588:0;ls boot.d
+: 1693376594:0;ls
+: 1693376596:0;ls scripts
+: 1693376606:0;micro scripts/vconsole
+: 1693376644:0;micro /etc/vconsole.conf
+: 1693376647:0;micro scripts/vconsole
+: 1693376663:0;sudo dinitctl disable tty7
+: 1693376666:0;sudo dinitctl disable tty8
+: 1693376675:0;sudo reboot
+: 1693376741:0;cd /etc/dinit.d
+: 1693376749:0;micro scripts/vconsole
+: 1693376763:0;ls
+: 1693376772:0;micro vconsole
+: 1693376787:0;sudo dinitctl list
+: 1693376806:0;ls
+: 1693376808:0;ls -a
+: 1693376822:0;ls config
+: 1693376831:0;ls boot.d
+: 1693376839:0;micro config/cgroups.conf
+: 1693376849:0;micro config/rc.shutdown
+: 1693376878:0;micro config/rc.local
+: 1693376886:0;ls /etc/local.d
+: 1693376888:0;ls /etc/local
+: 1693376892:0;ls
+: 1693376899:0;ls mount.d
+: 1693376903:0;ls getty.d
+: 1693376918:0;ls -al getty.d
+: 1693376937:0;man ln
+: 1693377014:0;ls
+: 1693377038:0;sudo ln -s -t getty.d tty7
+: 1693377043:0;ls -l getty.d
+: 1693377054:0;sudo rm getty.d/tty7
+: 1693377056:0;ls -l getty.d
+: 1693377088:0;sudo ln -s getty.d/tty7 ./tty7
+: 1693377095:0;sudo ln -s ./tty7 getty.d/tty7 
+: 1693377099:0;ls -l getty.d
+: 1693377112:0;rm getty.d/tty7
+: 1693377114:0;sudo rm getty.d/tty7
+: 1693377119:0;sudo ln -s ../tty7 getty.d/tty7 
+: 1693377123:0;ls -l getty.d
+: 1693377129:0;sudo ln -s ../tty8 getty.d/tty8
+: 1693377135:0;micro scripts/vconsole
+: 1693377142:0;ls
+: 1693377150:0;ls boot.d
+: 1693377155:0;micro dbus
+: 1693377456:0;ls
+: 1693377460:0;micro setup
+: 1693377471:0;ls
+: 1693377473:0;micro dinit-userservd
+: 1693377500:0;ls /etc/dinit.d
+: 1693377503:0;cd /etc/dinit.d
+: 1693377506:0;ls dinit-userservd
+: 1693377508:0;cat dinit-userservd
+: 1693377510:0;micro dinit-userservd
+: 1693377518:0;cat dinit-userservd
+: 1693377519:0;ls
+: 1693377614:0;sudo dinitctl enable dinit-userservd
+: 1693377621:0;cat dbus
+: 1693377625:0;cat dinit-userservd
+: 1693377739:0;sudo dinitctl enable boot
+: 1693377766:0;cat tty7
+: 1693377873:0;sudo dinitctl start dinit-userservd
+: 1693377970:0;sudo dinitctl status elogind
+: 1693377975:0;sudo dinitctl status boot
+: 1693378003:0;sudo pacman -S elogind-dinit
+: 1693378012:0;pacman -Q | grep seatd
+: 1693378042:0;sudo dinitctl status elogind
+: 1693378047:0;sudo dinitctl enable elogind
+: 1693378051:0;sudo dinitctl enable dinit-userservd
+: 1693378113:0;sudo dinitctl enable dinit-userser
+: 1693378401:0;ls boot.d
+: 1693378416:0;sudo dinitctl disable seatd
+: 1693378462:0;mkdir ~/.config/dinit.d
+: 1693378468:0;cd ~
+: 1693378472:0;cd Config/dinit.d
+: 1693378474:0;ls
+: 1693378496:0;mkdir boot.d
+: 1693378497:0;ls
+: 1693378584:0;sudo reboot
+: 1693378703:0;dinitctl
+: 1693378705:0;dinitctl list
+: 1693378836:0;cd Downloads/Repositories/dinit-userservd
+: 1693378837:0;ls
+: 1693378959:0;ls dinit-userservd-services
+: 1693378976:0;cp -r dinit-userservd-services ~/.config/dinit.d
+: 1693378985:0;cd ~/.config/dinit.d
+: 1693378985:0;ls
+: 1693378991:0;mv dinit-userservd-services/* .
+: 1693378992:0;ls
+: 1693378994:0;rm -r dinit-userservd-services
+: 1693378998:0;ls
+: 1693379010:0;ls scripts
+: 1693379018:0;rm LICENSE README.md
+: 1693379018:0;ls
+: 1693379020:0;ls services
+: 1693379025:0;mv services/* .
+: 1693379027:0;rm -r services
+: 1693379027:0;ls
+: 1693379030:0;rm pipewire-media-session.user
+: 1693379031:0;ls
+: 1693379040:0;dinitctl enable dbus
+: 1693379079:0;ls scripts
+: 1693379091:0;dinitctl enable dbus.user
+: 1693379099:0;dinitctl disable dbus.user
+: 1693379132:0;mkdir -p ~/.local/share/dinit
+: 1693379172:0;ls
+: 1693379179:0;micro dbus.user
+: 1693379187:0;ls
+: 1693379248:0;sudo mkdir /etc/dinit.d/user
+: 1693379259:0;sudo cp -r scripts /etc/dinit.d/user
+: 1693379275:0;ls /etc/dinit.d/user
+: 1693379277:0;ls /etc/dinit.d/user/scripts
+: 1693379281:0;micro dbus.user
+: 1693379285:0;ls
+: 1693379291:0;dinitctl enable dbus.user
+: 1693379305:0;dinitctl disable dbus.user
+: 1693379465:0;ls -l /etc/dinit.d/user/scripts
+: 1693379474:0;sudo chmod +x /etc/dinit.d/user/scripts/dbus-session
+: 1693379477:0;dinitctl enable dbus.user
+: 1693379481:0;ps aux | grep dubs
+: 1693379482:0;ps aux | grep dbus
+: 1693379758:0;dinitctl enable pipewire.user pipewire-pulse.user
+: 1693379760:0;dinitctl enable pipewire.user
+: 1693379764:0;dinitctl enable pipewire-pulse.user
+: 1693379767:0;dinitctl enable wireplumber.user
+: 1693379783:0;ls
+: 1693379787:0;ls scripts
+: 1693379791:0;rm -r scripts
+: 1693379791:0;ls
+: 1693379797:0;Hyprland
+: 1693379822:0;~
+: 1693379884:0;restart
+: 1693379886:0;reboot
+: 1693379888:0;sudo reboot
+: 1693379947:0;Hyprland
+: 1693379973:0;sudo dmesg
+: 1693380047:0;ps aux | grep wire
+: 1693380850:0;sudo reboot
+: 1693380903:0;Hyprland
+: 1693380942:0;pacss proton
+: 1693380962:0;yay -Ss proton
+: 1693380975:0;micro .config/yay/config.json
+: 1693380988:0;yay -Ss proton
+: 1693380993:0;pacss proton
+: 1693381062:0;yay -Sii protonplus
+: 1693381124:0;pacss proton ge
+: 1693381145:0;pacss protonge
+: 1693381148:0;pacss proton-ge
+: 1693381176:0;yay -Si proton-ge-custom
+: 1693381476:0;yay -S protonplus
+: 1693383085:0;yay -Rs protonplus
+: 1693383128:0;pacman -Q | grep graph
+: 1693383170:0;yay -Ss protontricks
+: 1693383181:0;yay -S protontricks-git
+: 1693383263:0;cd Projects/Catalyst
+: 1693383264:0;ls
+: 1693383317:0;cd Config/Filesystem
+: 1693383318:0;ls
+: 1693383320:0;cd etc
+: 1693383320:0;ls
+: 1693383326:0;ls pipewire
+: 1693383329:0;ls pipewire/jack.conf.d
+: 1693383331:0;ls pipewire/jack.conf.d/10-props.conf
+: 1693383333:0;cat pipewire/jack.conf.d/10-props.conf
+: 1693383359:0;cd /etc/pipewire
+: 1693383360:0;ls
+: 1693383362:0;ls jack.conf.d
+: 1693383367:0;cat jack.conf.d/10-props.conf
+: 1693383380:0;micro jack.conf.d/10-props.conf
+: 1693383425:0;cd ../wireplumber
+: 1693383425:0;ls
+: 1693383429:0;cd policy.lua.d
+: 1693383430:0;ls
+: 1693383433:0;cat 50-scarlett-policy.lua
+: 1693383434:0;cd ..
+: 1693383436:0;cd scripts
+: 1693383436:0;ls
+: 1693383439:0;micro policy-scarlett.lua
+: 1693383987:0;protonticks
+: 1693383989:0;protontricks
+: 1693383995:0;protontricks 214490
+: 1693384951:0;protontricks --gui
+: 1693385195:0;ls
+: 1693385204:0;cat wrapper.cfg
+: 1693385213:0;cat system.reg
+: 1693385219:0;ls
+: 1693385223:0;cat user.reg
+: 1693385273:0;ps aux | grep pulse
+: 1693385599:0;/
+: 1693385602:0;ls
+: 1693385604:0;ls mnt
+: 1693385607:0;lsblk
+: 1693385613:0;mount /dev/sda1 /mnt
+: 1693385615:0;sudo mount /dev/sda1 /mnt
+: 1693385617:0;cd /mnt
+: 1693385618:0;ls
+: 1693385673:0;cp -r ~/.local/ssh/ .
+: 1693385675:0;sudo cp -r ~/.local/ssh/ .
+: 1693385677:0;ls
+: 1693385679:0;cd ssh
+: 1693385679:0;ls
+: 1693385685:0;sudo rm known_hosts
+: 1693385686:0;ls
+: 1693386288:0;cd /home/.local/share/Steam/steamapps/compatdata/214490
+: 1693386290:0;ls
+: 1693386296:0;cat config_info
+: 1693386312:0;cat version
+: 1693386314:0;cat tracked_files
+: 1693386321:0;ls
+: 1693386323:0;cd pfx
+: 1693386323:0;ls
+: 1693386388:0;ls drive_c
+: 1693386394:0;ls drive_c/Program\ Files
+: 1693386397:0;ls drive_c/Program\ Files\ \(x86\)
+: 1693386400:0;ls drive_c/Program\ Files\ \(x86\)/Steam
+: 1693386406:0;ls drive_c/Program\ Files\ \(x86\)/Steam/steamapps
+: 1693386463:0;ls drive_c/users/steamuser/*
+: 1693386480:0;ls drive_c/windows
+: 1693386509:0;cat system.reg | grep alsa
+: 1693386516:0;cat user.reg | grep alsa
+: 1693386531:0;cat user.reg | grep pulse
+: 1693386565:0;cat userdef.reg | grep alsa
+: 1693386576:0;micro user.reg
+: 1693386608:0;protontricks -gui
+: 1693386611:0;protontricks --gui
+: 1693386631:0;clear
+: 1693386646:0;cat user.reg | grep Audio
+: 1693386653:0;cp user.reg user-back.reg
+: 1693386662:0;protontricks --gui
+: 1693386738:0;diff user.reg user-back.reg
+: 1693392540:0;~
+: 1693392545:0;pacss kde
+: 1693392567:0;yay -Si amarok
+: 1693392615:0;pacss kde
+: 1693392831:0;yay -Si dolphin-nospace
+: 1693392928:0;pacman -Si kinit
+: 1693392951:0;pacman -Si kde-cli-tools
+: 1693392986:0;pacss plasma
+: 1693393101:0;pacman -S plasma-desktop
+: 1693393103:0;sudo pacman -S plasma-desktop
+: 1693393411:0;ls /usr/share/wayland
+: 1693393415:0;ls /usr/share/wayland-sessions
+: 1693393426:0;ls /usr/share/ | grep session
+: 1693393432:0;ls /usr/share/xsessions
+: 1693393443:0;micro /usr/share/xsessions/plasma.desktop
+: 1693393466:0;/usr/bin/startplasma-wayland
+: 1693415690:0;ps aux | grep xdg
+: 1693415783:0;ps aux | grep dbus
+: 1693416175:0;ls /usr/share/xsessions
+: 1693416189:0;ls /usr/share/wayland-sessions
+: 1693416207:0;cat /usr/share/xsessions
+: 1693416210:0;cat /usr/share/xsessions/plasma.desktop
+: 1693418986:0;sudo pacman -S gamescope
+: 1693419059:0;protontricks
+: 1693419126:0;winecfg
+: 1693419260:0;micro .config/zsh/config.sh
+: 1693419265:0;micro .zshrc
+: 1693419343:0;ls .local
+: 1693419357:0;ls .local/share
+: 1693419381:0;ls .config
+: 1693419405:0;micro /etc/ssh/ssh_config
+: 1693419433:0;mv .local/ssh .config
+: 1693419435:0;ls .config
+: 1693419476:0;winecfg
+: 1693419788:0;micro /etc/ssh/ssh_config
+: 1693420410:0;micro .config/yay/config.json
+: 1693420946:0;ls .local
+: 1693420948:0;ls .cache
+: 1693421394:0;micro /etc/xdg/user-dirs.defaults
+: 1693421717:0;gamescope -- steam steam://run/214490
+: 1693422179:0;waybar &
+: 1693422191:0;killall waybar
+: 1693422317:0;ls ~/Downloads/Repositories/
+: 1693422340:0;ls ~/Downloads/Repositories/dinit-userservd
+: 1693422868:0;yay -Ql dinit-userservd
+: 1693422959:0;pacss turnstile
+: 1693423196:0;micro /etc/pam.d/system-lo
+: 1693423200:0;micro /etc/pam.d/system-login
+: 1693423397:0;sudo dinitctl list
+: 1693423993:0;gamescope -- steam steam://run/214490
+: 1693424231:0;cd Downloads/Repositories/dinit-userservd/dinit-userservd-services
+: 1693424232:0;ls
+: 1693424235:0;ls services
+: 1693424439:0;ls ~/.config/dinit.d
+: 1693424481:0;ls
+: 1693424493:0;ls /etc/dinit.d
+: 1693424495:0;ls /etc/dinit.d/user
+: 1693424535:0;ls /etc/dinit.d/user/scripts
+: 1693425102:0;logout
+: 1693425124:0;xdg-desktop-portal &
+: 1693425142:0;ls /usr/bin | grep xdg
+: 1693425195:0;pacman -Ss xdg-desktop-portal
+: 1693425202:0;pacman -Qo xdg-desktop-portal
+: 1693425210:0;pacman -Ql xdg-desktop-portal
+: 1693425214:0;pacman -Ql xdg-desktop-portal | less
+: 1693425235:0;/usr/lib/xdg-desktop-portal &
+: 1693425249:0;Hyprland
+: 1693425436:0;gamescope -- steam steam://run/214490
+: 1693425597:0;gamescope -f -- steam steam://run/214490
+: 1693425720:0;killall steam
+: 1693425723:0;killall gamescope
+: 1693425727:0;killall steam
+: 1693425736:0;killall kitty
+: 1693425759:0;gamescope -h 1440 -- steam steam://run/214490
+: 1693425777:0;gamescope -H 1440 -- steam steam://run/214490
+: 1693425842:0;gamescope -- steam steam://run/214490
+: 1693425873:0;plasmashell&
+: 1693425922:0;killall plasmashell
+: 1693425930:0;killall firefox
+: 1693425935:0;plasmashell&
+: 1693426216:0;touch Desktop/test
+: 1693428762:0;clear
+: 1693428779:0;ps aux | grep dbus
+: 1693428831:0;startplasma-wayland
+: 1693428870:0;ps aux | grep kwin
+: 1693428886:0;ps aux | grep startplasma
+: 1693428940:0;ps -He
+: 1693429028:0;ps -Heu
+: 1693429041:0;ps -Hea
+: 1693429077:0;ps aux | grep kwin
+: 1693429135:0;/usr/bin/kwin_wayland_wrapper -XWayland && plasmashell
+: 1693429144:0;/usr/bin/kwin_wayland_wrapper && plasmashell
+: 1693429163:0;ps -He
+: 1693429193:0;killall kwin_*
+: 1693429194:0;killall kwin_
+: 1693429196:0;killall kwin_wayland
+: 1693429214:0;killall kwin_wayland_wrapper
+: 1693429247:0;/usr/bin/kwin_wayland_wrapper --xwayland & plasmashell
+: 1693429271:0;DISPLAY=:0 firefox &
+: 1693429298:0;killall kwin_wayland_wrapper
+: 1693429303:0;clear
+: 1693429311:0;/usr/bin/startplasma-wayland
+: 1693429325:0;ps -Je
+: 1693429326:0;ps -He
+: 1693429348:0;ps aux | grep plasma
+: 1693430593:0;tar -xf Desktop/KDE-Rounded-Corners-0.4.2.tar.gz
+: 1693430594:0;ls
+: 1693430601:0;cd KDE-Rounded-Corners-0.4.2
+: 1693430601:0;ls
+: 1693430611:0;mkdir build && cd build
+: 1693430619:0;cmake ..
+: 1693430625:0;ls
+: 1693430630:0;make install
+: 1693430653:0;sudo make install
+: 1693431111:0;wine --replace &
+: 1693431129:0;kin --replace &
+: 1693431134:0;kwin --replace &
+: 1693431158:0;pacman -Ql plasma-desktop | grep kwin
+: 1693431186:0;/usr/bin/startplasma-wayland
+: 1693431274:0;sudo reboot
+: 1693431324:0;/usr/bin/startplasma-wayland
+: 1693431507:0;Hyprland
+: 1693432193:0;pacman -Si kmenuedit
+: 1693432202:0;pacman -Si kio
+: 1693432251:0;uname -r
+: 1693432257:0;reboot
+: 1693432259:0;sudo reboot
+: 1693432340:0;Hyprland
+: 1693432410:0;pacman -Ql xdg-desktop-portal-hyprland
+: 1693432422:0;/usr/lib/xdg-desktop-portal-hyprland & 
+: 1693432437:0;/usr/lib/xdg-desktop-portal & /usr/lib/xdg-desktop-portal-hyprland
+: 1693432452:0;ps aux | grep xdg
+: 1693432581:0;pacss dolphin
+: 1693432603:0;yay -Si meld
+: 1693432610:0;pacss dolphin
+: 1693432664:0;sudo pacman -S dolphin dolphin-plugins
+: 1693432674:0;rofi
+: 1693432689:0;rofi show window
+: 1693432695:0;rofi -show window
+: 1693432701:0;rofi show window
+: 1693432709:0;rofi -show combi
+: 1693432914:0;gamescope -W 2560 -H 1440 -r 140 -e -- steam -gamepadui
+: 1693433067:0;gamescope -W 2560 -H 1440 -r 140 -e -- steam steam://run/214490
+: 1693433378:0;micro .config/hypr/hyprland.conf
+: 1693434035:0;gamescope --help
+: 1693434069:0;gamescope -W 2560 -H 1440 -r 140 -e -b -- steam steam://run/214490
+: 1693434091:0;gamescope -W 2560 -H 1440 -r 140 -e -f -- steam steam://run/214490
+: 1693434117:0;killall kitty
+: 1693434124:0;gamescope -W 2560 -H 1440 -r 140 -e -f -- steam steam://run/214490
+: 1693434195:0;gamescope -W 2560 -H 1440 -r 140 -e -- steam steam://run/214490
+: 1693434221:0;Hyprland
+: 1693434248:0;gamescope -W 2560 -H 1440 -r 144 -e -f -- steam steam://run/214490
+: 1693435730:0;yay -Ss eww taskbar
+: 1693435733:0;yay -Ss eww
+: 1693435746:0;pacman -Ss eww
+: 1693435837:0;yay -S eww-tray-wayland-git
+: 1693435975:0;eww &
+: 1693435981:0;eww daemon
+: 1693435991:0;mkdir .config/eww
+: 1693435992:0;eww daemon
+: 1693436007:0;eww ping
+: 1693436014:0;eww pont
+: 1693436014:0;eww pong
+: 1693436048:0;eww inspector
+: 1693436181:0;touch /home/.config/eww/eww.yuck
+: 1693436184:0;eww daemon
+: 1693436190:0;eww open
+: 1693436192:0;eww open test
+: 1693436199:0;micro /home/.config/eww/eww.yuck
+: 1693436313:0;micro /home/.config/eww/scripts/getvol
+: 1693436323:0;touch /home/.config/eww/scripts/getvol
+: 1693436326:0;mkdir /home/.config/eww/scripts/
+: 1693436328:0;micro /home/.config/eww/scripts/getvol
+: 1693436370:0;eww reload
+: 1693436382:0;eww close-all
+: 1693436384:0;eww reload
+: 1693436407:0;eww close test
+: 1693436489:0;eww kill
+: 1693436493:0;ls .config/eww
+: 1693436496:0;cd ..
+: 1693436498:0;cd ~
+: 1693436501:0;rm -r .config/eww
+: 1693436506:0;ls -a
+: 1693436927:0;eww help
+: 1693436952:0;eww state
+: 1693444653:0;yay -Ss stray
+: 1693444823:0;cd Projects/Catalyst
+: 1693444824:0;ls
+: 1693444908:0;git pull
+: 1693444949:0;cd Config/Filesystem
+: 1693444949:0;ls
+: 1693444960:0;mv etc/pipewire home/.config
+: 1693444963:0;ls home/.config
+: 1693444968:0;ls home/.config/pipewire
+: 1693444994:0;mv etc/wireplumber home/.config
+: 1693445042:0;ls
+: 1693445519:0;cat /etc/pacman.conf
+: 1693445579:0;micro /etc/pacman.conf
+: 1693445657:0;ls /etc
+: 1693445662:0;ls etc
+: 1693445667:0;cp /etc/pacman.conf .
+: 1693445672:0;ls -l pacman.conf
+: 1693445730:0;micro /home/.config/yay/config.json
+: 1693445737:0;ls home/.config
+: 1693445739:0;ls home/.config/yay
+: 1693445747:0;micro home/.config/yay/config.json
+: 1693445844:0;cp /home/.config/yay/config.json home/.config/yay
+: 1693445850:0;micro home/.config/yay/config.json
+: 1693445861:0;ls -s home/.config/yay/config.json
+: 1693445865:0;ls -l home/.config/yay/config.json
+: 1693445896:0;cd home/.config
+: 1693445897:0;ls
+: 1693445921:0;cp -r ~/.config/hypr .
+: 1693445921:0;ls
+: 1693445923:0;ls hypr
+: 1693445942:0;ls .itgmania
+: 1693445948:0;ls -r .itgmania
+: 1693445951:0;ls -R .itgmania
+: 1693445994:0;yay -Ql itgmania
+: 1693446013:0;yay -Ql itgmania | less
+: 1693446741:0;ls .itgmania
+: 1693446744:0;ls .itgmania/Songs
+: 1693448298:0;micro ../../../../Build/ITGMania/README.md
+: 1693449849:0;ls
+: 1693449858:0;cd Downloads
+: 1693449859:0;cd Repositories
+: 1693449860:0;ls
+: 1693449880:0;git clone git@github.com:itgmania/itgmania.git --recursive --depth 1 
+: 1693449919:0;ls ~/.itgmania
+: 1693451238:0;cd ..
+: 1693451238:0;ls
+: 1693451239:0;ls -a
+: 1693451251:0;ls -a ~
+: 1693451539:0;cp ~/.zshrc .
+: 1693451542:0;cat .zshrc
+: 1693451567:0;ls ~/.config/zsh
+: 1693451610:0;rm -r .config/zsh
+: 1693451623:0;cp -r ~/.config/zsh .config

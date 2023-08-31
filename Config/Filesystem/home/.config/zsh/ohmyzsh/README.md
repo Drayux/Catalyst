@@ -5,7 +5,7 @@ _It must still be cloned from the repository_
 
 
 ## Additional Notes
-I need to determine if any plugins were installed externally, I cannot remember if my current configuration comes included with oh-my-zsh or not.  
-It has been confirmed, zsh-autosuggestions is an external plugin
+~~I need to determine if any plugins were installed externally, I cannot remember if my current configuration comes included with oh-my-zsh or not.~~  
+It has been confirmed, `zsh-autosuggestions` is an external plugin  
 
 _**TODO:**_ Add feature to `config.sh` to check if we are in a TTY and select the theme accordingly (as the agnoster characters don't render well in the TTY)  
