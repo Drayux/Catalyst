@@ -166,11 +166,12 @@ _**NOTE:**_ The `-f` flag will force an overwrite
 > `mkdir /mnt/boot /mnt/home` ~~(Use `-p` for nested directories)~~  
 > `mount /dev/nvme1n1p1 /mnt/boot`  
 > `mount /dev/nvme0n1p1 /mnt/home`  
-_**TODO:**_ Ensure that this creates the intended config in `/etc/fstab`  
+~~_**TODO:**_ Ensure that this creates the intended config in `/etc/fstab`~~ _**Done!**_  
 
 ## Core system install
 > `basestrap /mnt base base-devel amd-ucode dinit elogind-dinit ~~seatd-dinit~~`  
 Init system of choice: [`dinit`](https://wiki.artixlinux.org/Main/Dinit)  
+_**NOTE:**_ `amd-ucode` should be skipped if it already exists in the ESP partition (`/mnt/boot`)  
 _Is it accurate to call this the GNU half of the operating system??_  
 
 > `basestrap /mnt linux-lts linux-zen linux-lts-headers linux-firmware micro zsh`  
@@ -192,6 +193,8 @@ _It was previously `systemd-boot` and then after the **second** time an update b
 Install relevant packages (`os-prober` is optional but will be convenient considering I will be dual-booting)  
 
 > `grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=grub`  
+Similarly to above, this can also be skipped if grub is already installed in the boot partition  
+
 > `grub-mkconfig -o /boot/grub/grub.cfg`  
 Install grub for a UEFI setup  
 _GRUB config file `/etc/default/grub` available in this repository (rerun `grub-mkconig` after making changes.)_  
@@ -200,9 +203,9 @@ _GRUB config file `/etc/default/grub` available in this repository (rerun `grub-
 Provide grub with a locale file  
 
 ### System configuration chores
-> `dinitctl enable seatd`  
-Enable the user management service (used by Hyprland later on)  
-_**TODO:**_ Verify if this step is required or not  
+> ~~`dinitctl enable seatd`~~  
+~~Enable the user management service (used by Hyprland later on)~~  
+~~_**TODO:**_ Verify if this step is required or not~~  
 
 > `ln -sf /usr/share/zoneinfo/US/Mountain /etc/localtime`  
 > `hwclock --systohc`  
@@ -250,6 +253,7 @@ Regenerate the initramfs image
 
 ### More packages
 - networkmanager-dinit
+- wireless-regdb*
 - less
 - man-db
 - openssh
@@ -257,6 +261,7 @@ Regenerate the initramfs image
 //
 - git
 - python  
+- go
 - cmake  
 - meson  
 - ninja  
@@ -325,6 +330,10 @@ _This step is optional, instead we can copy to the default directory and move it
 _**TODO:**_ Finish the `copy-config.zsh` script!
 
 ### Package repositories
+> `pacman-key --init`  
+> `pacman-key --populate artix`  
+Add the artix linux GPG keys  
+
 **Update `/etc/pacman.conf`**  
 _This step is also optional if we copy the config from the repo, but it's good to enumerate._
 
@@ -341,6 +350,7 @@ _This step is also optional if we copy the config from the repo, but it's good t
     [lib32]
     Include = /etc/pacman.d/mirrorlist
 
+    # The above should be included by default, we are adding the following:
     [universe]
     Server = https://mirror.pascalpuffke.de/artix-universe/$arch
     Server = https://mirrors.qontinuum.space/artixlinux-universe/$arch
@@ -350,6 +360,15 @@ _This step is also optional if we copy the config from the repo, but it's good t
     Server = https://mirror1.artixlinux.org/universe/$arch
     Server = https://universe.artixlinux.org/$arch
 
+> `pacman -Sy`  
+Download the new database files  
+
+> `pacman -S artix-archlinux-support`  
+> `pacman-key --populate archlinux`  
+Install the compatibility configuration  
+
+**Update `/etc/pacman.conf` again...**  
+
     #### Arch ####
     [extra]
     Include = /etc/pacman.d/mirrorlist-arch
@@ -357,21 +376,12 @@ _This step is also optional if we copy the config from the repo, but it's good t
     [community]
     Include = /etc/pacman.d/mirrorlist-arch
 
-    [multilib]
-    Include = /etc/pacman.d/mirrorlist-arch
-
 > `pacman -Sy`  
-Download the new database files  
-
-> `pacman-key --populate archlinux`  
-Add the arch linux repo GPG keys  
-
-> `pacman -S artix-archlinux-support`  
-Install the systemd compatibility scripts  
+Download the rest of the database  
 
 **Install Yay**  
 _More information in `Build/Yay/README.md`_
-> `sudo pacman -S --asdeps go`  
+> ~~`sudo pacman -S --asdeps go`~~  
 > `git clone https://aur.archlinux.org/yay.git`  
 > `cd yay`  
 > `makepkg`  
