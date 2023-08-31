@@ -105,6 +105,10 @@ This can also be applied to packages that are already installed:
 
 	pacman -Fy <path/to/package>
 
+### Show the files associated with a given (installed) package
+
+	pacman -Ql <package>
+
 ### Read list of packages (upon which to operate) from stdin
 	pacman <operation> -
 

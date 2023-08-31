@@ -51,14 +51,14 @@ _These are notes regarding my desktop environment and configuration, notably all
 _Consult the `xdg-user-dirs` configuration_  
 
 **Contents**
+- Config (`ln -s /home/.config /home/Config`)
 - Content
 - Desktop
 - Documents
 - Downloads
 - Media (contains Media/Music and Media/Videos)
 - Projects
-
-_**TODO:**_ Consider making a link from `~/Config` to `~/.config`  
+ 
 _**TODO:**_ Add note from discord on hidden files  
 
 # Troubleshooting

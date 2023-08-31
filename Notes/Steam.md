@@ -45,7 +45,7 @@ The wine (proton) prefix can be modified to force the use of a specific sound li
 2) Select the game of interest  
 3) Select default prefix (_**TODO:**_ Determine if every game has its own set of prefixes or not)  
 4) Select change settings  
-5) Check `sound=pulse` (alternatively `sound=alsa`)  
+5) Check `sound=alsa` ~~(alternatively `sound=pulse`)~~  
 6) Press OK / Close (multiple times) to apply and exit  
   
 ### Games are unexpectedly crashing

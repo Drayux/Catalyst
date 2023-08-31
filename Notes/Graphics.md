@@ -7,6 +7,7 @@ A potential fix for the monitor EDID error (display)
 https://wiki.archlinux.org/title/kernel_mode_setting#Forcing_modes  
 
 ### Kernel parameters
-`amdgpu.sg_display=0`
+`amdgpu.sg_display=0`  
+Unfortunately upon further testing, this parameter seems to have no effect.    
 
 ### _**TODO:**_ Fan config

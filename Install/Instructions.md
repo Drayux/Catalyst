@@ -169,7 +169,7 @@ _**NOTE:**_ The `-f` flag will force an overwrite
 _**TODO:**_ Ensure that this creates the intended config in `/etc/fstab`  
 
 ## Core system install
-> `basestrap /mnt base base-devel amd-ucode dinit ~~elogind-dinit~~ seatd-dinit`  
+> `basestrap /mnt base base-devel amd-ucode dinit elogind-dinit ~~seatd-dinit~~`  
 Init system of choice: [`dinit`](https://wiki.artixlinux.org/Main/Dinit)  
 _Is it accurate to call this the GNU half of the operating system??_  
 
@@ -179,7 +179,7 @@ Backup kernel: `linux-lts` (use this when building custom modules)
 
 > `fstabgen -U /mnt >> /mnt/etc/fstab`  
 Generate the filesystem table  
-VERIFY the entries manually : Extraneous mounts may be shown, for example
+VERIFY : Extraneous mounts may be shown, for example
 
 > `artix-chroot /mnt`  
 Change root into the fresh install!  
@@ -209,7 +209,7 @@ _**TODO:**_ Verify if this step is required or not
 Specify and sync the time zone  
 
 > `micro /etc/locale.gen`  
-EDIT the locale file : Uncomment the locale of choice (`en_US.UTF-8 UTF-8`)  
+EDIT : Uncomment the locale of choice (`en_US.UTF-8 UTF-8`)  
 > `locale-gen`  
 
 > `chsh root`  
@@ -222,7 +222,7 @@ Set the hostname ; Needs to be ran as root
 ---
 **DANGER ZONE : sudo config**  
 > `EDITOR=/usr/bin/micro visudo /etc/sudoers`  
-EDIT sudoers file : Add dragon group to sudoers  
+EDIT : Add dragon group to sudoers  
 ```
 ## Custom version: allow members of group dragon to execute any command
 ## Would require password if user has one set
@@ -236,7 +236,7 @@ _**NOTE:**_ Wayland is included here so it is marked as an explicit install
 _My system uses and AMD graphics card, it should be self-evident that this step will be different with an NVidia or Intel card._  
 
 > `micro /etc/mkinitcpio.conf`  
-EDIT the coniguration file : Change the `HOOKS` and `MODULES` entries  
+EDIT : Change the `HOOKS` and `MODULES` entries  
 `HOOKS=(base udev modconf block filesystems fsck)`  
 `MODULES=(amdgpu radeon)`  
 
@@ -250,13 +250,23 @@ Regenerate the initramfs image
 
 ### More packages
 - networkmanager-dinit
-- git
 - less
 - man-db
 - openssh
-- neofetch 
-- python 
+- neofetch  
 //
+- git
+- python  
+- cmake  
+- meson  
+- ninja  
+//  
+- pipewire
+- pipewire-audio
+- pipewire-pulse
+- pipewire-jack
+- wireplumber  
+//  
 - gdisk*
 - dosfstools* (provides tools for FAT filesystem)
 - xfsprogs* (provides tools for XFS filesystem)
@@ -299,17 +309,113 @@ To change back to no password, `passwd -d <user>`
 Configure a wireless network with NetworkManager (system will always connect to this network now)  
 _**TODO:**_ Determine how to specify a device if multiple are available  
 
-### Audio packages
-- pipewire
-- pipewire-audio
-- wireplumber
+### SSH setup : Requires a personal key saved in the bootable medium
+Many of these config files would be nice to have before installing a WM/DE, but to clone this repo from GitHub I need either my password manager or my SSH key. Generating a new key and typing it into the interface (likely via a mobile device) would be a nightmare. 
 
-### Desktop packages
-- xdg-desktop-portal-hyprland
-- xdg-user-dirs
-- xdg-utils
-- hyprland
-- firefox (select pipewire-jack and ttf-droid)
+> `micro /etc/ssh/ssh_config`  
+EDIT : Change all paths from `~/.ssh` to `~/.config/ssh`  
+_This step is optional, instead we can copy to the default directory and move it after copying the config from this repo._  
+
+> `mkdir -p /mnt/usb && mount /dev/sda1 /mnt/usb`  
+> `cp -r /dev/sda1/ssh /home/.config`  
+
+### Config files
+> `git clone git@github.com:Drayux/Catalyst.git ~/Projects/Catalyst`  
+> ~~`sudo /home/Projects/Catalyst/copy-config.zsh`~~  
+_**TODO:**_ Finish the `copy-config.zsh` script!
+
+### Package repositories
+**Update `/etc/pacman.conf`**  
+_This step is also optional if we copy the config from the repo, but it's good to enumerate._
+
+    #### Artix ####
+    [system]
+    Include = /etc/pacman.d/mirrorlist
+
+    [world]
+    Include = /etc/pacman.d/mirrorlist
+
+    [galaxy]
+    Include = /etc/pacman.d/mirrorlist
+
+    [lib32]
+    Include = /etc/pacman.d/mirrorlist
+
+    [universe]
+    Server = https://mirror.pascalpuffke.de/artix-universe/$arch
+    Server = https://mirrors.qontinuum.space/artixlinux-universe/$arch
+    Server = https://mirror1.cl.netactuate.com/artix/universe/$arch
+    Server = https://ftp.crifo.org/artix-universe/$arch
+    Server = https://artix.sakamoto.pl/universe/$arch
+    Server = https://mirror1.artixlinux.org/universe/$arch
+    Server = https://universe.artixlinux.org/$arch
+
+    #### Arch ####
+    [extra]
+    Include = /etc/pacman.d/mirrorlist-arch
+
+    [community]
+    Include = /etc/pacman.d/mirrorlist-arch
+
+    [multilib]
+    Include = /etc/pacman.d/mirrorlist-arch
+
+> `pacman -Sy`  
+Download the new database files  
+
+> `pacman-key --populate archlinux`  
+Add the arch linux repo GPG keys  
+
+> `pacman -S artix-archlinux-support`  
+Install the systemd compatibility scripts  
+
+**Install Yay**  
+_More information in `Build/Yay/README.md`_
+> `sudo pacman -S --asdeps go`  
+> `git clone https://aur.archlinux.org/yay.git`  
+> `cd yay`  
+> `makepkg`  
+> `sudo pacman -U yay-...-x86_64.pkg.tar.zst`  
+_**NOTE:**_ This should be ran as a normal user ; Cloning with git as root will create ~~weird~~ annoying permissions issues  
+
+**Update `~/.config/yay/config.json`**  
+_Included is just changes ; This file is also available in the config repository._  
+
+    "sortby": "name"
+    "removemake": "yes"
+    "bottomup": true
+    "devel": true
+    "diffmenu": false
+
+### User dinit services
+[dinit-userservd - GitHub](https://github.com/Xynonners/dinit-userservd)  
+[turnstile (alternative project) - GitHub](https://github.com/chimera-linux/turnstile)  
+_`dinit-userservd` was forked from `turnstile` when turnstile was still only dinit-userservd._
+
+**Dependency Notes**  
+`dinit-userservd` requires `meson` as a make dependency  
+`pam` is required for permissions negotiation  
+Finally, an `elogind` service must also be running (which means it depends on `elogind-dinit` which replaces `seatd-dinit`)  
+
+> `git clone git@github.com:Xynonners/dinit-userservd-PKGBUILD.git ~/Downloads/Repositories/dinit-userservd`  
+Clone the PKGBUILD repo  
+
+> `cd ~/Downloads/Repositories/dinit-userservd/dinit-userservd`  
+> `sudo makepkg -i` (`-s` is omitted as dependencies should be installed ; elogind technically requires manual intervention)  
+Install the package (essentially the dinit service file and the pam object)  
+_**TODO:**_ Consider making a copy of these files in this repository for the sake of backup
+
+> `micro /etc/pam.d/system-login`  
+EDIT : Append the dinit_userservd.so entry  
+`session   optional   pam_dinit_userservd.so`  
+
+> `mkdir -p ~/.config/dinit.d/boot.d` (service directory)  
+> `mkdir -p ~/.local/share/dinit` (service log directory)  
+> `sudo dinitctl enable dinit-userservd`  
+Enable the `dinit-userservd` service  
+
+### _Install the rest of the config files_
+### _Begin setup of the [desktop environment](./Desktop.md)..._
 
 # Notes
 ## System Image
@@ -324,9 +430,20 @@ _Appears to be irrelevant if using GRUB_
 ## Using `dinit`
 [Github dinit Guide](https://github.com/davmac314/dinit/blob/master/doc/getting_started.md)  
 
+For my system, `dinit` appears to be considerably faster than both s6 and systemd.  
+If running `dinitctl`, forgetting to use `sudo` will show a file not found error.  
+
+Further, if a service depends on another, and that service is not running (rather, does not exist in the case of dinit-userservd and elogind) then dinit will report that it cannot find the service description.  
+
 ## Verify UEFI mode
 If the directory `/sys/firmware/efi` exists, then the system was booted with UEFI.  
 [Source (AskUbuntu)](https://askubuntu.com/questions/162564/how-can-i-tell-if-my-system-was-booted-as-efi-uefi-or-bios#answer-162896)  
+
+## Check what shell is running
+> `ps -p $$`  
+`$$` is the PID of the current shell  
+
+## **TODO:** Force kill a task (via name or PID)
 
 ## Networking
 Network Manager (`networkmanager`) installs `wpa_supplicant` as a dependency. However the nature of network manager providing a service to handle saved connections means that we do not want to interface with `wpa_cli` directly (if this service as running) as the two configurations will conflict, even if they both specify the same network.  
@@ -343,3 +460,9 @@ Add to fstab configuration (nano /etc/fstab)
   >+ /mnt/swap   none   swap   sw   0 0
 Can be tested with (mount -a && swapon -a)
 ```
+
+## Directory symlinks
+For some reason this is the least intuitive unix tool.  
+To create a symbolic link _from_ DIR_A _to_ DIR_B:  
+
+    ln -s path/to/DIR_B path/to/DIR_A
