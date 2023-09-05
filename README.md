@@ -6,6 +6,7 @@ Please feel encouraged to use the github discussions feature for any configurati
 
 # To-do
 - Write a script that runs through `Config/Filesystem/` and checks for differences between the files located here and those on the system (ensure script ignores any files with the name of README.md)
+- Some of the packages on the install guide can (and probably should) be moved to later phase as many are not immediately necessary
 - Finish the To-do list  
 
 # Directory Structure

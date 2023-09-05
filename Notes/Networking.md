@@ -14,3 +14,9 @@ This seems to be necessary for Wifi 6 and 6E to work, but I have still not been 
 ### Additional resources
 https://github.com/morrownr/USB-WiFi/blob/main/home/USB_WiFi_Adapters_that_are_supported_with_Linux_in-kernel_drivers.md  
 https://github.com/morrownr/USB-WiFi/discussions/63  
+
+# Troubleshooting
+### mt7921e \<serial\>: driver own failed
+The majority of modern motherboards appear to be equpped with networking hardware that requires the mt7921e driver. Frequently, I would start my system and see many "driver own" messages, suggesting that the device failed to initialize.  
+
+The cause of this seems to be something related to Windows (naturally) supposedly regarding storing the device state for fast boot. Alas, the only fix I've yet found is after launching (and then closing) a Windows install, the computer must be fully disconnected from power to reset the state. This is not an issue when launching Linux on its own.  
