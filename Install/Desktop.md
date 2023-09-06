@@ -42,7 +42,7 @@ _**NOTE:**_ Prefer `ttf-droid` for fonts, and `*-vlc` for media playback
 - kscreen
 - kgamma5
 - kwayland-integration
-- plasma-nm
+- plasma-nm (_**TODO:**_ disable modem manager to stop log spam)
 - plasma-pa
 - xdg-desktop-portal / xdg-desktop-portal-kde  
 - dolphin / dolphin-plugins / (ark) (consider dolphin-root alternative)
@@ -77,10 +77,10 @@ _**NOTE:**_ ^^It appears that the answer lies within `/usr/share/dbus-*/services
 - kio-admin
 - kfind
 - plasma-systemmonitor
-- ksystemlog
+- ~~ksystemlog~~
 - partitionmanager
 - alsa-scarlett-gui
-- flameshot* (alternatively grim / slurp / wl-clipboard)
+- flameshot* (~~alternatively grim / slurp~~ / wl-clipboard)
 - rofi / eww (package eww-tray-wayland-git) / (also [stray?](https://github.com/oknozor/stray))
 - plasma-firewall
 - wine
