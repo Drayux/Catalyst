@@ -9,8 +9,8 @@ local rule = {
 		},
 	},
 	apply_properties = {
-		["api.acp.probe-rate"] = 96000,
-		-- ["api.acp.probe-rate"] = 192000,
+		["api.acp.probe-rate"] 		= 96000,
+		-- ["api.acp.probe-rate"] 	= 192000,
 
 		-- THE FOLLOWING PARAMETERS ARE PROVIDED AS AN EXAMPLE, SEE:
 		-- https://gitlab.freedesktop.org/pipewire/wireplumber/-/blob/master/src/config/main.lua.d/50-alsa-config.lua

@@ -6,5 +6,10 @@ alias git='git -c include.path="~/.config/git.conf"'
 # Print all directories with a trailing '/'
 #alias ls="ls -p"
 
-# Search for packages with fancy output
-# alias pacss="yay -Ss $@ --color=always | less -r --quit-if-one-screen"
+# Include Arch Linux packages for consideration
+# TODO: Find alternative means of privlege elevation
+#alias pacman-arch='sudo pacman --config=/etc/pacman-arch.conf'
+
+# Power management
+alias reboot='sudo reboot'
+alias shutdown='sudo poweroff'

@@ -175,8 +175,9 @@ _**NOTE:**_ `amd-ucode` should be skipped if it already exists in the ESP partit
 _Is it accurate to call this the GNU half of the operating system??_  
 
 > `basestrap /mnt linux-lts linux-zen linux-lts-headers linux-firmware micro zsh`  
-Primary kernel of choice: `linux-zen` (it sounds like the realtime scheduling will prove beneficial for streaming)  
-Backup kernel: `linux-lts` (use this when building custom modules)  
+~~Primary kernel of choice: `linux-zen` (it sounds like the realtime scheduling will prove beneficial for streaming)~~  
+~~Backup kernel: `linux-lts` (use this when building custom modules)~~  
+Prefer `linux-lts` as the zen scheduling produces inconsistent latencies with occasional lag spikes
 
 > `fstabgen -U /mnt >> /mnt/etc/fstab`  
 Generate the filesystem table  
@@ -473,7 +474,8 @@ _Appears to be irrelevant if using GRUB_
 [Github dinit Guide](https://github.com/davmac314/dinit/blob/master/doc/getting_started.md)  
 
 For my system, `dinit` appears to be considerably faster than both s6 and systemd.  
-If running `dinitctl`, forgetting to use `sudo` will show a file not found error.  
+~~If running `dinitctl`, forgetting to use `sudo` will show a file not found error.~~  
+There exists a root instance of dinit, and once installed a seperate user instance. Without the relevant parameter, dinit will assume the instance of interest based off of the user who runs the `dinitctl` command. TLDR: running `sudo dinitctl ...` will connect to the system instance of dinit, whereas just `dinitctl ...` connects to the user's instance. If the user's instance is not running, `dinitctl` will output a file not found error.  
 
 Further, if a service depends on another, and that service is not running (rather, does not exist in the case of dinit-userservd and elogind) then dinit will report that it cannot find the service description.  
 

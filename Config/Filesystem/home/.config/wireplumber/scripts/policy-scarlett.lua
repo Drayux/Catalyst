@@ -42,7 +42,7 @@ function createLink (sink_port, source_port)
 	link:activate(Features.ALL)
 end
 
--- Helper function to handle the multiude of playback ports to link
+-- Helper function to handle the multitude of playback ports to link
 function tryConnectPlayback (device_node)
 	local num_ports = device_node:get_n_ports()
 	if ( num_ports == 0 ) then
@@ -61,15 +61,18 @@ function tryConnectPlayback (device_node)
 		-- Coming from C, this looks really gross not being a switch but alas
 		-- TODO: Consider swapping this to a table, which can be fed as an argument to this script for easy config
 		if ( channel == 0 ) then
-			target_name = "virtual-games"
-		elseif ( channel == 1 ) then
 			target_name = "virtual-system"
+		elseif ( channel == 1 ) then
+			target_name = "virtual-games"
 		elseif ( channel == 2 ) then
 			target_name = "virtual-music"
 		elseif ( channel == 3 ) then
 			target_name = "virtual-voice"
 		elseif ( channel == 4 ) then
 			target_name = "virtual-stream"
+		-- Also add a rule for the speaker passthrough node
+		elseif ( channel == 5 ) then
+			target_name = "virtual-speakers"
 		end
 
 		-- Port should not be linked (ex: AUX17 would hit this)
@@ -77,7 +80,25 @@ function tryConnectPlayback (device_node)
 			goto continue
 		end
 
+		-- In rare cases, the audio interface may initialize before the virtual devices
+		-- (Though, I've only observed this when restarting wireplumber on its own--which this seems to cause additional internal errors)
+		-- TLDR: The current solution is assume wireplumber will never crash and that this will never happen
 		local target_si = linkables_om:lookup {Constraint { "node.name", "=", target_name }}
+		-- if ( target_si == nil ) then
+		-- 	-- local test_var = device_node["bound-id"]		-- Closure testing
+		-- 	linkables_om:connect("objects-changed", function (om, port)
+		-- 		-- Log.warning("connection made: " .. tostring(test_var))
+		-- 		Log.debug("Objects changed, attempting to ")
+
+		-- 		-- The correct reference appears to be stored with the closure when this function is bound (TODO: NEEDS VERIFICATION)
+		-- 		-- TODO: This will create an infinite feedback loop
+		-- 		-- ^^Instead, we need to create an additional helper function which takes in the device node and this closure
+		-- 		-- ^^It will attempt to remove this closure binding from the object manager, and then tryConnectPlayback()
+		-- 		tryConnectPlayback(device_node)
+		-- 	end)
+		-- 	return
+		-- end
+
 		local target_node = target_si:get_associated_proxy("node")
 		if ( target_node == nil ) then
 			Log.warning("No node found with the name of '" .. target_name .. "', skipping")
@@ -156,7 +177,7 @@ end)
 jack_om = ObjectManager {
   Interest {
     type = "port",
-	-- This appears to be a unique feature to jack devices
+	-- This appears to be a unique feature to jack clients
 	Constraint { "port.name", "#", "channel_*" },
 	Constraint { "port.direction", "=", "out" },
   }

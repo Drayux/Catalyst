@@ -2,6 +2,8 @@
 
 export EDITOR="/usr/bin/micro"
 export GIT_CONFIG_GLOBAL="$HOME/.config/git/global"
+export LESSHISTFILE="$HOME/.local/share/lesshst"
+export MOZ_ENABLE_WAYLAND=1
 export WINEPREFIX="$HOME/.local/share/wine"
 export ZSH_CONFIG="$HOME/.config/zsh"
 

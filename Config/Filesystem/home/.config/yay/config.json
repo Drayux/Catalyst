@@ -7,7 +7,7 @@
 	"makepkgbin": "makepkg",
 	"makepkgconf": "",
 	"pacmanbin": "pacman",
-	"pacmanconf": "/etc/pacman.conf",
+	"pacmanconf": "/etc/pacman-arch.conf",
 	"redownload": "no",
 	"answerclean": "",
 	"answerdiff": "",

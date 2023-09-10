@@ -2,7 +2,7 @@
 -- MODIFICATIONS:
 --    Add custom_routes table on line 29
 --    Add lookupCustomRoute on line 329
---    Add call to lookupCustomRoute on line 780
+--    Add call to lookupCustomRoute on line 789
 
 -- Receive script arguments from config.lua
 local config = ... or {}
@@ -30,18 +30,19 @@ self.pending_error_timer = nil
 -- systemctl --user restart wireplumber pipewire pipewire-pulse
 
 local custom_routes = {
+	-- System Audio
+	["virtual-system"] = {
+		"plasmashell",
+		"firefox",
+    "firedragon",
+    "steam",
+	},
+
   -- Game Audio (default)
 	["virtual-games"] = {
     "wine-preloader",
     "itgmania",
  	},
-
-	-- System Audio
-	["virtual-system"] = {
-		"plasmashell",
-		"firefox",
-    "steam",
-	},
 
 	-- Music (and video) Players
 	["virtual-music"] = {
@@ -53,6 +54,7 @@ local custom_routes = {
 	-- Communication Applications
 	["virtual-voice"] = {
 		"Discord",
+    "electron",     -- This is literally the binary name of vencord-desktop smh my head
 	},
 
 	-- Stream Audio
@@ -335,8 +337,19 @@ end
 -- A bit of extraneous code exists to make returning to default functionality trivial
 -- Return false --> Use default node
 function lookupCustomRoute (properties)
-  -- Ensure a defined target doesn't already exist and that the target is a sink
+  -- Ensure a defined target doesn't already exist and is also a sink
   if ( getTargetDirection(properties) == "output" or properties["node.target"] ~= nil ) then
+    return false
+  end
+
+  -- Only route audio in this way if one of the virtual nodes is selected as default
+  local default_id = getDefaultNode(properties, "input")
+  local default_node_si = linkables_om:lookup {
+      Constraint { "node.id", "=", tostring(default_id) }
+  }
+  local default_node = default_node_si:get_associated_proxy ("node")
+  -- Log.warning( "ID: " .. default_id .. " | Value: " .. tostring(default_node.properties["custom.routing"]) )
+  if ( default_node.properties["custom.routing"] ~= "scarlett" ) then
     return false
   end
 
@@ -345,6 +358,7 @@ function lookupCustomRoute (properties)
     Constraint { "bound-id", "=", properties["client.id"], type = "gobject" }
   }
   local bin = client["properties"]["application.process.binary"]
+  Debug.dump_table(client.properties)
   if ( bin == nil ) then
     return false
   end

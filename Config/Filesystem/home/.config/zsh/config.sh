@@ -10,4 +10,4 @@ bindkey -e
 # Compinstall (supposedly handled by ohmyzsh instead)
 # zstyle :compinstall filename '/home/.zshrc'
 # autoload -Uz compinit
-# compinit
+# compinit -d ~/.local/share/zcompdump

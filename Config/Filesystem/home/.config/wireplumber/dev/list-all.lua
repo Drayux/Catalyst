@@ -49,6 +49,8 @@ obj_mgr:connect("installed", function (om)
 
     print ("\t" .. id .. ": " .. global_props["device.name"]
                 .. " (" .. global_props["device.description"] .. ")")
+    -- Debug.dump_table(obj.properties)
+    -- print()
   end
 
   -- Common function to print nodes
@@ -63,6 +65,10 @@ obj_mgr:connect("installed", function (om)
       print ("\t" .. id .. ": " .. tostring(global_props["object.path"])
                 .. " (" .. tostring(global_props["node.description"]) .. ")")
     end
+
+    Debug.dump_table(node.properties)
+    print()
+
   end
 
   --
