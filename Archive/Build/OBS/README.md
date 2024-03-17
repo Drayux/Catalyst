@@ -15,7 +15,7 @@
 - ~~libajantv2~~ (optional - not building aja)
 - python (optional)
 - sndio (optional)
-- swig (optional)
+- swig (optional - needed for scripting?)
 - ~~systemd-libs~~ (optional - hopefully supplied by something in S6...needed for v4l?)
 - v4l-utils (optional)
 - v4l2loopback-dkms (optional)
@@ -76,6 +76,16 @@
 ### Mystery dependencies
 - onevpl (dependency of ffmpeg-obs so that checks out)
 - libdatachannel (seems to be necessary for building the websocket, hence the absense from the AUR pkgbuild)
+
+### Extra note: Packages installed from mostly fresh install to build OBS
+(Many graphics-dependent things installed already such as wayland, steam, etc.)
+- ffmpeg-obs
+- swig
+- nlohmann_json
+- websocketpp
+- asio
+- _carla_
+- _lsp-plugins-lv2_
 
 # Install
 ### Clone the repo

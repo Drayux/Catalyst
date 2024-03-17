@@ -10,6 +10,7 @@ Please feel encouraged to use the github discussions feature for any configurati
 - Finish the To-do list  
 
 # Directory Structure
+### THIS IS OUT OF DATE NOW--I'M STILL FIGURING OUT THE NEW HIERARCHY
 ## Build
 Manually compiled applications (not handled by package manager)  
 Includes references to specific Git repo / branch, notes on dependencies and build troubleshooting  
@@ -26,7 +27,6 @@ Notes regarding installation and initial setup of the OS (include microsoft in E
 List of systemd services to enable (or disable)  
 Includes files such as a comprehensive list of packages to explicitly install  
   
-
 ## Notes
 Miscellaneous notes of various tricks and troubleshooting (ex. finding the package responsible for a file w/ pacman or launch parameters for steam games)  
 Also included are things like a "system TODO list"  
