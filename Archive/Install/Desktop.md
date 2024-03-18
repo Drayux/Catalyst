@@ -93,8 +93,8 @@ _**NOTE:**_ ^^It appears that the answer lies within `/usr/share/dbus-*/services
 - pavucontrol*
 
 ## Styling
-### _**TODO:**_ KDE-rounded-corners
-_A continuation of shape-corners that works on 5.27!_
+### _**TODO:**_ [KDE-rounded-corners](https://github.com/matinlotfali/KDE-Rounded-Corners)  
+_A continuation of shape-corners that works on 5.27!_  
 
 # _**TODO:**_ Extra stuff
 ### Fonts
@@ -120,3 +120,7 @@ _A continuation of shape-corners that works on 5.27!_
 - rofi
 - waybar
 - firefox (select pipewire-jack and ttf-droid)
+
+### KDE extensions
+https://github.com/paulmcauley/klassy  
+https://github.com/EliverLara/AndromedaLauncher  

@@ -1,7 +1,9 @@
 # System configuration
 > ### Basic config edits (aka system install chores)
 
-**\[[⇽ Previous](./01-base.md) | [Next ⇾](./03-hardware.md)\]**  
+**\[ [⇽ Previous](./01-base.md) | [Next ⇾](./03-hardware.md) \]**  
+
+_This phase does not depend upon the bootable medium, but it is most convenient to continue this phase while still in the `artix-chroot` environment._  
 
 ## Hostname
 > **Catalyst:** `echo catalyst > /etc/hostname`  
@@ -63,7 +65,7 @@ Remove the existing image generated when pacman runs the inital initramfs hook
     > +/- | COMPRESSION="cat"
 
 > `mkinitcpio -P`  
-Regenerate the initramfs image (just like above)  
+Regenerate the initramfs image (same process as above)  
 _Even with only one preset, it's still easier to type `-P` than `-p default`._
 
 ### Additional notes
@@ -71,7 +73,7 @@ _Even with only one preset, it's still easier to type `-P` than `-p default`._
 - The majority of the missing firmwares are provided by the package `linux-firmware-qlogic` and relevant for **Catalyst** and **Chitin** is the AUR package `upd72020x-fw` for the `xhci_pci` module.
 - `fsck` is a filesystem check hook which can be appended to the end of HOOKS. However, the filesystem check binary does not seem to be included while autodetect is ran, which seems to cause some errors in the image.
 - If something _does_ go haywire with the default image, the system can be restored with the bootable medium made in [**00-installer.md**](./00-installer.md). Mount `/dev/nvme1n1p2` to `/mnt` and subsequently `/dev/nvme1n1p1` to `/mnt/boot`, `artix-chroot`, tweak the config, and regenerate the fallback image.
-- To [specify a custom default TTY font](https://wiki.archlinux.org/title/Linux_console#Persistent_configuration), adding the `consolefont` hook after the `modconf` hook will add the configuration specified in `/etc/vconsole.conf` to the image.
+- To [specify a custom default TTY font](https://wiki.archlinux.org/title/Linux_console#Persistent_configuration), adding the `consolefont` hook after the `modconf` hook will add the configuration specified in `/etc/vconsole.conf` to the image. (`powerline-console-fonts` provides some great patched console fonts.)
 
 ## Bootloader
 _For now, we prefer a minimal grub configuration to make troubleshooting more convenient._
@@ -94,7 +96,7 @@ _This is the same service we used during [01-base.md](./01-base.md) to ensure th
 
 ---
 
-_This portion requires an internet connection, which will be present if the system was not restarted. If it was, temporarily jump to [05-environment.md](./05-environment.md#networking) for networking setup._
+_This portion requires an internet connection, which will be present if the system was not restarted. If it was, temporarily jump to [04-environment.md](./04-environment.md#networking) for networking setup._
 
 ## Additional files
 It is finally a good opportunity to clone this repo! This is easily the easiest way to obtain the remainder of the configuration/hardware files, rather than retyping them from scratch. We will clone with HTTPS as I don't like to set up an SSH key until the user creation step (in the environment phase.)  
@@ -117,7 +119,12 @@ In order to keep artix packages and arch/AUR packages seperate, I have a split c
 Generate a mirrorlist with the five fastest Artix mirrors
 _Optionally remove the original mirrorlist with `rm /etc/pacman.d/mirrorlist`._
 
-> `/usr/src/catalyst/System/Scripts/arch-mirrorlist.sh`  
+> `/usr/src/catalyst/System/Scripts/arch-mirror-list.sh`  
 Download the official Arch Linux repository mirror list and generate a list of the five fastest mirrors  
 _Only United states mirrors are considered. There are **many** mirrors so this command takes a few minutes to run! (Upon testing it took just over 5:30.)_  
 
+### Keyring
+Arch packages are signed with a different set of official keys. Those are available in the `archlinux-keyring` package.
+
+> `pacman -S archlinux-keyring`  
+_This won't be needed until we refresh our local database, but I like to check this box early._  

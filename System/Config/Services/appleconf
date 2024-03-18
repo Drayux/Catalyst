@@ -1,0 +1,19 @@
+#!/usr/bin/openrc-run
+
+# Custom service to send some sane initialization params to the Apple hardware on boot
+# Seems to work fine at default runlevel
+
+name="AppleConf"
+description="Configure Apple hardware"
+
+depend() {
+    need udev
+    after sysfs
+}
+
+start() {
+    echo 0 > /sys/bus/pci/devices/0000\:01\:00.0/d3cold_allowed											# Allow sleep
+    echo -n 25 > /sys/class/backlight/acpi_video0/brightness											# "Medium" display brightness
+    echo -n 2 > /sys/bus/hid/drivers/apple-ibridge-hid/0003:05AC:8600.0001/fnmode						# Touchbar mode: FN-keys
+    echo -n 80 > /sys/bus/spi/drivers/applespi/spi-APP000D\:00/leds/spi\:\:kbd_backlight/brightness		# Keyboard backlight
+}

@@ -1,13 +1,13 @@
 # Hardware configuration
 > ### Additional configuration for uncommon hardware support
 
-**\[[⇽ Previous](./02-config.md) | [Next ⇾](./04-core.md)\]**  
+**\[ [⇽ Previous](./02-config.md) | [Next ⇾](./04-environment.md) \]**  
 
 _As the hardware varies significantly across both machines, this file is formatted slightly differently: The major headers are used to differentiate which hardware configuration is relevant to each system, respectively._  
 
-# Common
 #### **Repo clone dir indicated as `.../` (`/usr/src/catalyst/` if continuing from [02-config.md](./02-config.md))**
 
+# Common
 ## DKMS
 DKMS stands for "Dynamic Kernel Module Support" and is a toolchain to automate the inclusion of out-of-tree modules (aka kernel-level drivers) in the system. Linux is described as a "monolithic" kernel which mostly refers to how drivers are handled: All Linux drivers (that have succeeded the necessary checks and standards) are compiled directly into the kernel itself. That said, it is not unable to support modules that it does not already include. These modules are built "out-of-tree" against each kernel version. Naturally this can become cumbersome for every kernel update. The role of DKMS is to automate this process.  
 
@@ -43,7 +43,7 @@ Specify an EDID firmware override with the kernel parameter `drm.edid_firmware=.
 
 [Arch Wiki - Kernel Mode Setting](https://wiki.archlinux.org/title/Kernel_mode_setting#Forcing_modes_and_EDID)  
 
-### Useful utilities
+### Utility programs
 [EDID Binary Decoding Utility (`edid-decode`)](https://github.com/a1ive/edid-decode)  
 [EDID Generator Utility (`edid-generator`; Depends on `edid-decode` and `dosfstools`)](https://github.com/akatrevorjay/edid-generator)  
 
@@ -67,6 +67,23 @@ _This is an optional component, though its absence is immediately apparent in la
     > +   | USB_DENYLIST="05ac:8600"
 Explicitly prevent the iBridge from autosuspending, consistent with `usbhid` devices.  
 _**TODO:** This technically may not be necessary as the iBridge is an HID device. That said, it requires an additional platform module to function, and therefore might act up. Adding this rule enforces the expected autosuspend policy._  
+
+## Swapfile
+_This procedure applies to either system...although with 128GB of memory in Catalyst, I skip this step on that machine._  
+
+> `dd if=/dev/zero of=/mnt/swap bs=1M count=8196`  
+Create empty 8GiB file at `/mnt/swap`  
+_Change `count` to specify an alternative size._  
+
+> `chmod 600 /mnt/swap`  
+Set read/write permissions for owner only (aka root)  
+
+> `mkswap /mnt/swap`  
+Convert the `/mnt/swap` into a swapfile  
+
+> `echo '/mnt/swap	none	swap	sw	0 0' >> /etc/fstab`  
+Add the swapfile to the filesystem table so that it is mounted on system boot  
+_Can be tested with `mount -a && swapon -a`._
 
 # Desktop (`catalyst`)
 ## Razer Tartarus V2 Keypad
@@ -117,7 +134,7 @@ Install the Cirrus HDA module with the included script
 ## Apple SPI (keyboard and touchpad)
 As of kernel version 5.3, the `applespi` module is included in-tree, requiring no additional steps. This is the module responsible for the functionality of the keyboard and trackpad.  
 
-[Bootlin Elixir - applespi.c](https://elixir.bootlin.com/linux/latest/source/drivers/input/keyboard/applespi.c)  
+[Kernel Source Tree - applespi.c](https://elixir.bootlin.com/linux/latest/source/drivers/input/keyboard/applespi.c)  
 
 ### Libinput local overrides
 Optionally, the touchpad behavior can be configured through `libinput` with the local overrides file.  
@@ -157,6 +174,15 @@ _If all was successful, the touchbar should turn on immediately upon running `mo
 [Touchbar Issue Report](https://github.com/roadrunner2/macbook12-spi-driver/issues/42#issuecomment-602160740)  
 [usbmuxd Incompatibility](https://github.com/libimobiledevice/usbmuxd/issues/138)  
 
+### Libinput local overrides
+> `micro /usr/share/libinput/local-overrides.quirks`  
+
+    > +   | [MacBookPro Touchbar]
+    > +   | MatchBus=usb
+    > +   | MatchVendor=0x05AC
+    > +   | MatchProduct=0x8600
+    > +   | AttrKeyboardIntegration=internal
+
 ### Usbmuxd configuration
 Currently, `usbmuxd` believes it necessary to hook _every_ Apple USB device, which includes the iBridge. This unbinds the iBridge module when the udev rule is ran, which prevents the touchbar from functioning. This can be fixed by removing the VID:PID match in `/usr/lib/rules.d/39-usbmuxd.rules`: `|5ac/8600/*` (which corresponds to 05AC:8600.)  
 _This match is present four times in the file._  
@@ -165,7 +191,8 @@ _This match is present four times in the file._
 Overwrite the existing udev rule  
 
 ### Touchbar function mode
-The touchbar function state can be changed with the sysfs entry: `/sys/bus/hid/drivers/apple-ibridge-hid/0003:05AC:8600:0001/fnmode`  
+The touchbar function state can be changed with the sysfs entry: `/sys/bus/hid/drivers/apple-ibridge-hid/0003:05AC:8600:0001/fnmode`.  
+_Interface two is the ambient light sensor._  
 
     > 0 ➤ "Disable" the <fn> key; Touchbar will display only function buttons
     > 1 ➤ Touchbar defaults to utility keys; Holding <fn> will display function buttons
@@ -180,15 +207,17 @@ Alas, if you're like me, you saw this memo after wiping the partition table and 
 
 To use the included firmware, the sub-tree of `apple-efi` should be placed into the `EFI` directory in the ESP partition (i.e. `/boot/EFI/<APPLE/...>`.)  
 
+System sleep is another thing of note: Currently suspend seems fully functional, with the strange caveat that waking from sleep takes nearly two minutes. The device is otherwise responsive, too. Hibernate does _not_ seem to work out of the box.  
+
 ### Configuration service
 Many sensible defaults or otherwise preferable hardware settings on the laptop are managed via sysfs entries, and are not preserved across boots. The [appleconf](/System/Config/Services/appleconf) service is a custom OpenRC service which applies some more desirable parameters on boot.  
 
 > `cp .../System/Config/Services/appleconf /etc/init.d/`  
-> `rc-update add appleconf`  
+> `rc-update add appleconf default`  
 Install and enable the custom `appleconf` service  
 
 ### Backlight brightness
-The display backlight brightness can be modified with the sysfs entry: `/sys/class/backlight/acpi_video0/brightness`. Setting this to 0 completely turns off the display.  
+The display backlight brightness can be modified with the sysfs entry: `/sys/class/backlight/acpi_video0/brightness`. Setting this to 90 appears to be the maximum, and 0 completely turns off the display.  
 _This is set to a medium-low brightness of 25 in [custom OpenRC service](#configuration-service)._ 
 
 [Arch Wiki - Backlight](https://wiki.archlinux.org/title/Backlight#ACPI)  

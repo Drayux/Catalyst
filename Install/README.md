@@ -25,13 +25,12 @@ _^^Some information is out of date, but I found the presentation to be incredibl
 [**installer**](./00-installer.md) ➤➤ Setup of the bootable installation medium  
 [**base**](./01-base.md) ➤➤ Base system install: bootloader, init system, kernel, networking, and package manager  
 [**config**](./02-config.md) ➤➤ System-wide configuration  
-[**hardware**](./03-hardware.md) ➤➤ Additional components for full HW support (firmware, modules, dkms, etc.)
-[**core**](./04-core.md) ➤➤ Essential system operation: core packages and system services  
-[**environment**](./05-environment.md) ➤➤ User accounts and additional configuration (**TODO:** Include the pipewire and autostart, custom sessions directory, and zsh fun!)  
-[**packages**](./06-packages.md) ➤➤ Remaining system packages (**TODO install yay!**)  
-[**gnome**](./07a-gnome.md) ➤➤ Gnome desktop environment  
-[**hyprland**](./07b-hyprland.md) ➤➤ Hyprland "desktop environment"  
-[**flatpak**](./08-flatpak.md) ➤➤ Flatpak applications and respective tweaks  
+[**hardware**](./03-hardware.md) ➤➤ Additional components for full HW support (firmware, modules, dkms, etc.)  
+[**environment**](./04-environment.md) ➤➤ User accounts and system functionality  
+[**packages**](./05-packages.md) ➤➤ Remaining system packages  
+[**gnome**](./06a-gnome.md) ➤➤ Gnome desktop environment  
+[**hyprland**](./06b-hyprland.md) ➤➤ Hyprland "desktop environment"  
+[**flatpak**](./07-flatpak.md) ➤➤ Flatpak applications and respective tweaks  
 
 _**TODO:** Move these to an Applications/ (needs alternative name) folder that has information for setting up any major additional systems: gaming, VMs, OBS....advanced audio scripting and my NAS setup still need locations._  
 [**games**](./09a-games.md) ➤➤ Linux gaming setup (+VR)  

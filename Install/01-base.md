@@ -1,7 +1,7 @@
 # Base system install
 > ### The most important steps: System will be bootable after this phase
 
-**\[[⇽ Previous](./00-installer.md) | [Next ⇾](./02-config.md)\]**  
+**\[ [⇽ Previous](./00-installer.md) | [Next ⇾](./02-config.md) \]**  
 
 ## Booting
 Use the installation medium created in [**00-installer.md**](./00-installer.md) to boot into the Artix Linux installer.
@@ -13,8 +13,9 @@ Use the installation medium created in [**00-installer.md**](./00-installer.md) 
 **Password** : artix  
 
 ### Additional Notes
-- On Chitin, the 13" MacBook Pros have weird EDID data that reports 2800x1800 as a supported video mode, when in fact, this mode is not supported properly by the display. This results in the console output rendering offscreen at the bottom and to the right of the display, which makes the TTY install quantifiably more challenging. Adding `i915.modeset=0` as a kernel parameter will disable KMS for the Intel graphics module and keep the (correctly-selected) resolution from Grub. Accomplish this by pressing `e` on the Artix boot entry, and appending the paramter to the end of the line beginning with `linux`.
 - The system can also be accessed as a non-root user with the username/password: `artix`/`artix`
+- On Chitin, the 13" MacBook Pros have weird EDID data that reports 2800x1800 as a supported video mode, when in fact, this mode is not supported properly by the display. This results in the console output rendering offscreen at the bottom and to the right of the display, which makes the TTY install quantifiably more challenging. Adding `i915.modeset=0` as a kernel parameter will disable KMS for the Intel graphics module and keep the (correctly-selected) resolution from Grub. Accomplish this by pressing `e` on the Artix boot entry, and appending the paramter to the end of the line beginning with `linux`.
+- [Arch Wiki - Intel Graphics](https://wiki.archlinux.org/title/Intel_graphics)
 
 ## Networking (Wireless)
 ### Unblock the adapter
@@ -174,7 +175,7 @@ _Anything installed while in this environment will be persistent, as this **is**
 **TODO:** Verify that pacman's out-of-the-box config has parallel downloads enabled.  
 ~~`sed -i 's/#Parallel/Parallel/' /etc/pacman.conf`~~  
 
-> `pacman -S openrc mkinitcpio linux linux-headers linux-firmware grub efibootmgr elogind-openrc networkmanager-openrc openntpd-openrc less mandb man-pages openssh git`  
+> `pacman -S openrc mkinitcpio linux linux-headers linux-firmware grub efibootmgr elogind-openrc networkmanager-openrc openntpd-openrc less mandb man-pages openssh git zsh`  
 Install the remaining essential packages  
 
 > `grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=grub`  
@@ -189,8 +190,9 @@ Set a root password
 _Optionally use the `-d` flag to set the password as \<no password\>. I feel obligated to remind the user, however, that this is **not** recommended (even though I've done this myself.)_  
 
 ### Additional notes
-- If reinstalling without wiping the EFI partition, the microcode will already be present in said partition, hence causing some "file already exists" type conflicts with pacman. This can be mitigated most easily by specifying the `--overwrite` option (i.e. `pacman -S --overwrite amd-ucode`.)  
+- If reinstalling without wiping the EFI partition, the microcode will already be present in said partition, hence causing some "file already exists" type conflicts with pacman. This can be mitigated most easily by specifying the `--overwrite` option (i.e. `pacman -S --overwrite amd-ucode`) or by simply not installing the package.  
 - Optionally, `openssh-openrc` can be installed and the system can be set up remotely once the daemon is running. I do not do this however, so configuration for this is omitted.
+- When rebooting, you will need to exit the `artix-chroot` environment in order to perform the `reboot` or `poweroff` commands from the command line.
 - For the sake of technicality, I consider setting the root password to be a better fit for [system configuration](./02-config.md) except that the system is "not independently bootable" without one set.
 - Though the system is now bootable, it is recommended to complete [hardware configuration](./03-hardware.md) before rebooting.
-- When rebooting, you will need to exit the `artix-chroot` environment in order to perform the `reboot` or `poweroff` commands from the command line.
+- The root password can be "re-reset" by accessing the system via the installation medium and running the `passwd` utility again.
