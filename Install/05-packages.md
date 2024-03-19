@@ -4,8 +4,8 @@
 **\[ [⇽ Previous](./04-environment.md) | [Next ⇾](./06a-gnome.md) \]**  
 
 > `cat /System/Scripts/packages.list | yay -`  
-Install the package list: [packages.list](/System/Scripts/packages.list)  
-_**AUR** packages placed into seperate list: [packages-aur.list](/System/Scripts/packages-aur.list)_
+Install the package list: [packages.list](/System/Packages/packages.list)  
+_**AUR** packages placed into seperate list: [packages-aur.list](/System/Packages/packages-aur.list)_
 
 # Base
 _Packages that are **already installed** from previous steps._  

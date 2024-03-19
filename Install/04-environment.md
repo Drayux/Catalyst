@@ -66,7 +66,7 @@ _The logging location is set via the config file: [artix-pipewire-launcher.conf]
 _**TODO:** The microphone may depend on Carla and LSP plugins to function here, as the Pipewire config will feature a Carla rack after my revisions._  
 
 ### Terminal
-The XDG `.desktop` spec allows shortcuts for traditional programs, as well as terminal-mode programs (such as micro.) [`xdg-terminal-exec`](https://github.com/Vladimir-csp/xdg-terminal-exec/tree/master) is a wrapper script that allows the user to specify a default terminal emulator in a graphical user environment (specifically as it pertains to `glibc`). 
+The XDG `.desktop` spec allows shortcuts for traditional programs, as well as terminal-mode programs (such as micro.) [`xdg-terminal-exec`](https://github.com/Vladimir-csp/xdg-terminal-exec/tree/master) is a wrapper script that allows the user to specify a default terminal emulator in a graphical user environment (specifically as it pertains to `glib2`). 
 
 > `git clone https://github.com/Vladimir-csp/xdg-terminal-exec.git /home/Downloads/Repositories`  
 > `cp /home/Downloads/Repositories/xdg-terminal-exec/xdg-terminal-exec /usr/bin/xdg-terminal-exec`  
@@ -121,6 +121,8 @@ _This will test both the key on Github, as well as the known hosts store._
 I'm split between a two differing organization options. I consider Catalyst to be a project, so it should be placed into my projects directory, except that if I want to symlink my dotfiles, I want a location that feels intentionally more "static" like `/usr/src/catalyst`. This leaves me with the options:  
 - Move the repo to `/home/Projects/` now that my user directory exists (probably easier to clone again since we need to change ownership, as well as the remotes to their SSH counterparts)
 - Keep the repo in `/usr/src/`, change ownership and remotes, and then symlink select dotfiles (with `ln -s <path/to/target> <link>`)
+
+The source code for the explicit list of terminal executables can be found [here](https://gitlab.gnome.org/GNOME/glib/-/blob/main/gio/gdesktopappinfo.c#L2694).  
 
 ## AUR Helper ([`yay`](https://github.com/Jguer/yay))
 _All yay operations should be ran at user level._

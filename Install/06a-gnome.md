@@ -80,8 +80,9 @@ Customize xcursor theme (GTK): `gsettings set org.gnome.desktop.interface cursor
 (dark mode, disable hot corners, workspaces on primary only, disable screen blank, sleep after an hour)
 
 ## UX todo
+- **System tray!**
 - No desktop icons
-- Cannot minimize applications
+- Cannot minimize applications (I can hide with `super + pgdn` though)
 - Move gnome-shell top bar to the bottom (look into the `Just perfection` shell extension)
 - Cursor customization (wait for hyprland setup since cursors are more involved for that one)
 - AGS shell config (technically more of a TODO for hyprland)
