@@ -1,0 +1,17 @@
+#!/bin/sh
+shopt -s extglob
+STATUS=$(upower -i /org/freedesktop/UPower/devices/battery_BAT0 | grep -E "percentage|state")
+CHARGE="Unknown"
+for val in $STATUS; do
+	case $val in
+		+(0|1|2|3|4|5|6|7|8|9).*)
+		CHARGE=$val
+		;;
+		charging)
+		STATE="(+)"
+		;;
+		discharging)
+		STATE="(-)"
+	esac
+done
+echo $CHARGE $STATE
