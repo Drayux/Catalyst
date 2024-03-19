@@ -8,10 +8,10 @@ for val in $STATUS; do
 		CHARGE=$val
 		;;
 		charging)
-		STATE="(+)"
+		STATE="(⚡)"
 		;;
-		discharging)
-		STATE="(-)"
+		# discharging)
+		# STATE="(-)"
 	esac
 done
 echo $CHARGE $STATE
