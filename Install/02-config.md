@@ -73,7 +73,7 @@ _Even with only one preset, it's still easier to type `-P` than `-p default`._
 - The majority of the missing firmwares are provided by the package `linux-firmware-qlogic` and relevant for **Catalyst** and **Chitin** is the AUR package `upd72020x-fw` for the `xhci_pci` module.
 - `fsck` is a filesystem check hook which can be appended to the end of HOOKS. However, the filesystem check binary does not seem to be included while autodetect is ran, which seems to cause some errors in the image.
 - If something _does_ go haywire with the default image, the system can be restored with the bootable medium made in [**00-installer.md**](./00-installer.md). Mount `/dev/nvme1n1p2` to `/mnt` and subsequently `/dev/nvme1n1p1` to `/mnt/boot`, `artix-chroot`, tweak the config, and regenerate the fallback image.
-- To [specify a custom default TTY font](https://wiki.archlinux.org/title/Linux_console#Persistent_configuration), adding the `consolefont` hook after the `modconf` hook will add the configuration specified in `/etc/vconsole.conf` to the image. (`powerline-console-fonts` provides some great patched console fonts.)
+- To [specify a custom default TTY font](https://wiki.archlinux.org/title/Linux_console#Persistent_configuration), adding the `consolefont` hook after the `modconf` hook will add the configuration specified in `/etc/vconsole.conf` to the image. (`powerline-console-fonts`<sup>AUR</sup> provides some great patched console fonts.)
 
 ## Bootloader
 _For now, we prefer a minimal grub configuration to make troubleshooting more convenient._

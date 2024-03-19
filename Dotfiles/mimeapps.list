@@ -1,0 +1,11 @@
+[Default Applications]
+inode/directory=org.gnome.Nautilus.desktop
+application/xml=micro.desktop
+text/plain=micro.desktop
+application/x-shellscript=micro.desktop
+
+[Added Associations]
+inode/directory=org.gnome.Nautilus.desktop;
+application/xml=micro.desktop;
+text/plain=micro.desktop;
+application/x-shellscript=micro.desktop;

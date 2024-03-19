@@ -30,7 +30,7 @@ _^^Some information is out of date, but I found the presentation to be incredibl
 [**packages**](./05-packages.md) ➤➤ Remaining system packages  
 [**gnome**](./06a-gnome.md) ➤➤ Gnome desktop environment  
 [**hyprland**](./06b-hyprland.md) ➤➤ Hyprland "desktop environment"  
-[**flatpak**](./07-flatpak.md) ➤➤ Flatpak applications and respective tweaks  
+[**flatpak**](./07-software.md) ➤➤ Flatpak applications and respective tweaks  
 
 _**TODO:** Move these to an Applications/ (needs alternative name) folder that has information for setting up any major additional systems: gaming, VMs, OBS....advanced audio scripting and my NAS setup still need locations._  
 [**games**](./09a-games.md) ➤➤ Linux gaming setup (+VR)  

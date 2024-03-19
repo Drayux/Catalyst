@@ -28,33 +28,35 @@ self.pending_error_timer = nil
 
 -- To restart wireplumber after updating this table:
 -- systemctl --user restart wireplumber pipewire pipewire-pulse
+-- ...or if you're using a *real* init system:
+-- artix-pipewire-launcher restart &
 
 local custom_routes = {
 	-- System Audio
 	["virtual-system"] = {
 		"plasmashell",
 		"firefox",
-    "firedragon",
-    "steam",
+		"firedragon",
+		"steam",
 	},
 
   -- Game Audio (default)
 	["virtual-games"] = {
-    "wine-preloader",
-    "itgmania",
+		"wine-preloader",
+		"itgmania",
  	},
 
 	-- Music (and video) Players
 	["virtual-music"] = {
 		"cider",
-    "muffon",
-    "vlc",
+		"muffon",
+		"vlc",
 	},
 
 	-- Communication Applications
 	["virtual-voice"] = {
 		"Discord",
-    "electron",     -- This is literally the binary name of vencord-desktop smh my head
+		"electron",     -- This is literally the binary name of vencord-desktop smh my head
 	},
 
 	-- Stream Audio

@@ -46,6 +46,7 @@ Specify an EDID firmware override with the kernel parameter `drm.edid_firmware=.
 ### Utility programs
 [EDID Binary Decoding Utility (`edid-decode`)](https://github.com/a1ive/edid-decode)  
 [EDID Generator Utility (`edid-generator`; Depends on `edid-decode` and `dosfstools`)](https://github.com/akatrevorjay/edid-generator)  
+[WXEDID (EDID editor; looks promising but I haven't tried it yet)](https://aur.archlinux.org/packages/wxedid)
 
 The generator is a bit unwieldy. First create an Xorg.conf modeline (there are examples in the repo) alongside the output of `hwinfo --monitor` (requires `hwinfo` to be installed as well) and run it through `modeline2edid`. A new `.S` file with the resolution in the modeline will be created. Ensure `edid-decode` is on the PATH and compile it with `make`.  
 
@@ -210,9 +211,9 @@ To use the included firmware, the sub-tree of `apple-efi` should be placed into 
 System sleep is another thing of note: Currently suspend seems fully functional, with the strange caveat that waking from sleep takes nearly two minutes. The device is otherwise responsive, too. Hibernate does _not_ seem to work out of the box.  
 
 ### Configuration service
-Many sensible defaults or otherwise preferable hardware settings on the laptop are managed via sysfs entries, and are not preserved across boots. The [appleconf](/System/Config/Services/appleconf) service is a custom OpenRC service which applies some more desirable parameters on boot.  
+Many sensible defaults or otherwise preferable hardware settings on the laptop are managed via sysfs entries, and are not preserved across boots. The [appleconf](/System/Scripts/appleconf) service is a custom OpenRC service which applies some more desirable parameters on boot.  
 
-> `cp .../System/Config/Services/appleconf /etc/init.d/`  
+> `cp .../System/Scripts/appleconf /etc/init.d/`  
 > `rc-update add appleconf default`  
 Install and enable the custom `appleconf` service  
 

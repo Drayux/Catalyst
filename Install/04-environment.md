@@ -63,8 +63,14 @@ The Artix Linux packaging of `pipewire` provides the additional utility `/usr/bi
 > `ln -s /usr/share/applications/pipewire.desktop /home/.config/autostart`  
 _The logging location is set via the config file: [artix-pipewire-launcher.conf](/Dotfiles/artix-pipewire-launcher.conf)._  
 
+_**TODO:** The microphone may depend on Carla and LSP plugins to function here, as the Pipewire config will feature a Carla rack after my revisions._  
+
 ### Terminal
-**TODO: XDG-terminal-exec**
+The XDG `.desktop` spec allows shortcuts for traditional programs, as well as terminal-mode programs (such as micro.) [`xdg-terminal-exec`](https://github.com/Vladimir-csp/xdg-terminal-exec/tree/master) is a wrapper script that allows the user to specify a default terminal emulator in a graphical user environment (specifically as it pertains to `glibc`). 
+
+> `git clone https://github.com/Vladimir-csp/xdg-terminal-exec.git /home/Downloads/Repositories`  
+> `cp /home/Downloads/Repositories/xdg-terminal-exec/xdg-terminal-exec /usr/bin/xdg-terminal-exec`  
+_The terminals specified in the config will be installed from the package list in [05-packages.md](./05-packages.md)._
 
 ### Starship
 Starship is my ZSH "theme" of course, supporting nearly endless configuration options.  
@@ -72,7 +78,9 @@ Starship is my ZSH "theme" of course, supporting nearly endless configuration op
 
 > `curl -sS https://starship.rs/install.sh | sh`
 Install starship shell prompt binaries via curl  
-_The prompt initalization script is already present in the [.zshrc](/Dotfiles/zsh/.zshrc) file._
+_The prompt initalization script is already present in the [.zshrc](/Dotfiles/zsh/.zshrc) file._  
+
+_**TODO:** I may want to modify this to use the starship package (`extra/starship`) instead. This entire section can likely be removed in that case._
 
 ### SSH
 An SSH identity should be generated for authentication with various services (notably git!)
@@ -160,7 +168,12 @@ _This is the directory specified in the config; It exists to minimize the list s
 Enable the LY display manager service  
 _We select TTY7 in the config as OpenRC defaults to spawning gettys on 1-6 and we won't use Xorg._  
 
+## Bootloader
+_**TODO:** Extra fancy grub config with the awesome monika background...Currently pending me finalizing my grub config alltogether._  
+
 ## Fonts
+_This is an overview of the selected font packages, they are included in the package list to be installed in [05-packages.md](./05-packages.md)._
+
 ### System
 `ttf-noto-nerd` ➤➤ [Noto Sans (Google)](https://fonts.google.com/noto/specimen/Noto+Sans)  
 `ttf-ubuntu-nerd` ➤➤ [Ubuntu (Google)](https://fonts.google.com/specimen/Ubuntu)  
@@ -181,7 +194,7 @@ _**TODO:** Some starndard(?) symbols are still missing...I need to figure out wh
 `ttf-nerd-fonts-symbols-mono` ➤➤ Collection of symbols for [nerd fonts](https://www.nerdfonts.com/)  
 
 ### Console
-`powerline-console-fonts` ➤➤ [Terminus](https://terminus-font.sourceforge.net/) console font patched with powerline symbols  
+~~`powerline-console-fonts` ➤➤ [Terminus](https://terminus-font.sourceforge.net/) console font patched with powerline symbols~~  
 
 ### Additional notes
 Fontconfig is a powerful tool that lets multiple fonts be effectly combined together. It generally comes as a dependency with any GUI-related software, and will fallback to other fonts if the current glyph is absent in the selected font. Subsequently, this makes it harder to customize which icons to use, so my ambition is to minimize the number of duplicates found in these "extra" font packages.  
