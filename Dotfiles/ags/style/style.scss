@@ -1,0 +1,25 @@
+/* 
+ * This is mostly a placeholder!
+ *
+ * Currently we are processing every applet style
+ * This solution works, though I have dreams of processing
+ * only the applets that are being used for any given workspace.
+ *
+ * I may consider adding some form of "for window in windows"
+ * loop that pulls the class and assumes the filename before generating
+ * this file.
+ *
+ * However, that solution could have some issues down the road
+ * for any applets that have multiple instances or get regenerated.
+ */
+
+
+/* Global style variables */
+$theme-bg: #151515;
+$theme-fg: #EEEEEE;
+$theme-accent: #551BDF;
+$theme-debug: green;
+
+/* Process all applet styles */
+@import "corners.scss";
+@import "panel.scss";

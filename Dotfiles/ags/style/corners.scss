@@ -1,0 +1,32 @@
+$corner-radius: 16px;
+$corner-offset: 0px;
+/* $shadow-offset: 50px; */
+
+/* Also works as window.corners */
+/* As it currently sits, the shadows are cast on the sides of
+ * the screen as well as coming from the bar. This is a side-
+ * effect of wanting the corners to emit shadows.
+ * If I wished to change this, I could make just the bar emit
+ * a shadow by doing the same technique in the inspiration
+ * files, where I make the `bounds` class stretch far outside
+ * of the screen width, and have it emit the shadows.
+ */
+.corners {
+	background-color: transparent; /* $testglobal */
+
+	.bounds {
+		margin: 0px;
+		/* background-color: red; */
+		/* border-bottom: 8px solid red; */
+		/* overflow: hidden; */
+	}
+
+	.shape {
+		background-color: transparent;
+		
+		margin: $corner-offset;
+		border-radius: 0 0 $corner-radius $corner-radius;
+		box-shadow: 0 0 0 ($corner-radius + $corner-offset) $theme-bg,
+			inset 0 0 8px black;
+	}
+}

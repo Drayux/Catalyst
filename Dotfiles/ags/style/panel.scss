@@ -1,0 +1,9 @@
+/* 
+ * This file specifies styles for all panel applet buttons.
+ * The applets that are spawned from these buttons, however,
+ * have their styles defined individually.
+ */
+.panel {
+	color: $theme-fg;
+	background-color: $theme-bg;
+}
