@@ -1,0 +1,13 @@
+[Desktop Entry]
+Version=1.0
+Name[de]=PipeWire Mediensystem
+Name=PipeWire Media System
+Categories=Audio;AudioVideo
+Comment[de]=Das PipeWire Mediensystem starten
+Comment=Start the PipeWire Media System
+Exec=/usr/bin/artix-pipewire-launcher restart
+Terminal=false
+Type=Application
+X-GNOME-HiddenUnderSystemd=true
+X-KDE-HiddenUnderSystemd=true
+X-systemd-skip=true
