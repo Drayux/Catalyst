@@ -1,19 +1,24 @@
 #!/bin/sh
 
+# From ~/.config/artix-pipewire-launcher.conf
+ARTIX_PIPEWIRE_LOG="$HOME/.var/log/audio/pipewire.log"
+ARTIX_PIPEWIRE_PULSE_LOG="$HOME/.var/log/audio/pipewire-pulse.log"
+ARTIX_WIREPLUMBER_LOG="$HOME/.var/log/audio/wireplumber.log"
+
 # WARNING: This script assumes being run inside XDG compliant session,
 # which means D-Bus session instance is expected to be correctly set up
 # prior to this script starting. If that is not true, things may break!
 
 DATE_FORMAT='+%Y-%m-%dT%H:%M:%S%Z'
 
-CONF="${XDG_CONFIG_HOME}/artix-pipewire-launcher.conf"
-if [ -f "${CONF}" ]; then
-	. "${CONF}"
-else
-	ARTIX_PIPEWIRE_LOG='/dev/null'
-	ARTIX_PIPEWIRE_PULSE_LOG='/dev/null'
-	ARTIX_WIREPLUMBER_LOG='/dev/null'
-fi
+# CONF="${XDG_CONFIG_HOME}/artix-pipewire-launcher.conf"
+# if [ -f "${CONF}" ]; then
+# 	. "${CONF}"
+# else
+# 	ARTIX_PIPEWIRE_LOG='/dev/null'
+# 	ARTIX_PIPEWIRE_PULSE_LOG='/dev/null'
+# 	ARTIX_WIREPLUMBER_LOG='/dev/null'
+# fi
 for L in \
 	"${ARTIX_PIPEWIRE_LOG}" \
 	"${ARTIX_PIPEWIRE_PULSE_LOG}" \
@@ -34,15 +39,15 @@ if [ "${#}" -gt 0 ]; then
 	if [ "${1}" = 'restart' ]; then
 		restart
 	else
-		echo "Unrecognised argument." >&2
-		echo "Usage: artix-pipewire-launcher [restart]" >&2
+		echo "Unrecognized argument." >&2
+		echo "Usage: $0 [restart]" >&2
 		exit 1
 	fi
 fi
 
 if pgrep -u "${USER}" -x pipewire\|wireplumber 1>/dev/null 2>&1; then
 	echo "PipeWire already running, exiting." >&2
-	echo "(Use 'artix-pipewire-launcher restart' to restart PipeWire and WirePlumber.)" >&2
+	echo "(Use '$0 restart' to restart the PipeWire Media System.)" >&2
 	exit 1
 fi
 

@@ -56,12 +56,17 @@ Every entry in the repo's [config](/Config) directory observes the expected conf
 _This command will need to be tweaked if `.config` already exists: `cp -r .../Dotfiles/* /home/.config`._  
 
 ### Audio
-Pipewire + wireplumber is the ultimate audio setup. Both of these services are user-level, meaning that they should initialize and terminate with the user's session. This can be configured in a number of ways (such as systemd user services, hyprland `exec-once`, user environment config, etc.) For the most convenient interoperability between Gnome and Hyprland, we place a `.desktop` entry into the autostart directory: `~/.config/autostart/`.  
+Pipewire + wireplumber services are user-level, meaning that they should initialize and terminate with the user's session. This can be configured in a number of ways (such as systemd user services, hyprland `exec-once`, user environment config, etc.) For the most convenient interoperability between Gnome and Hyprland, we place a `.desktop` entry into the autostart directory: `~/.config/autostart/`.  
 
-The Artix Linux packaging of `pipewire` provides the additional utility `/usr/bin/artix-pipewire-launcher` as well as a `.desktop` entry for this.  
+~~The Artix Linux packaging of `pipewire` provides the additional utility `/usr/bin/artix-pipewire-launcher` as well as a `.desktop` entry for this.~~  
+_It appears that this was since removed from the pipewire packaging. The [script](/System/Scripts/audio-exec) and [desktop entry](/Dotfiles/autostart/audio.desktop) are both available (since modified.)_
 
-> `ln -s /usr/share/applications/pipewire.desktop /home/.config/autostart`  
-_The logging location is set via the config file: [artix-pipewire-launcher.conf](/Dotfiles/artix-pipewire-launcher.conf)._  
+~~> `ln -s /usr/share/applications/pipewire.desktop /home/.config/autostart`~~  
+~~_The logging location is set via the config file: [artix-pipewire-launcher.conf](/Dotfiles/artix-pipewire-launcher.conf)._~~  
+
+> `cp .../System/Scripts/audio-exec /usr/bin/`  
+Add the launcher script to the system executables  
+_The desktop entry now exists **only** in the dotfiles._
 
 _**TODO:** The microphone may depend on Carla and LSP plugins to function here, as the Pipewire config will feature a Carla rack after my revisions._  
 
@@ -69,7 +74,7 @@ _**TODO:** The microphone may depend on Carla and LSP plugins to function here, 
 The XDG `.desktop` spec allows shortcuts for traditional programs, as well as terminal-mode programs (such as micro.) [`xdg-terminal-exec`](https://github.com/Vladimir-csp/xdg-terminal-exec/tree/master) is a wrapper script that allows the user to specify a default terminal emulator in a graphical user environment (specifically as it pertains to `glib2`). 
 
 > `git clone https://github.com/Vladimir-csp/xdg-terminal-exec.git /home/Downloads/Repositories`  
-> `cp /home/Downloads/Repositories/xdg-terminal-exec/xdg-terminal-exec /usr/bin/xdg-terminal-exec`  
+> `cp /home/Downloads/Repositories/xdg-terminal-exec/xdg-terminal-exec /usr/bin/`  
 _The terminals specified in the config will be installed from the package list in [05-packages.md](./05-packages.md)._
 
 ### Starship
@@ -146,8 +151,9 @@ Refresh the database with the new repositories
 > `micro /etc/makepkg.conf`  
 
 	> +/- | MAKEFLAGS="j12"
-Allow pacman/yay to use multiple threads when buildling packages from source  
-_This option is found on line 51 of `/etc/makepkg.conf`. I like to set this value to half of the number of threads available on my system (`nproc` / 2)_  
+	> +/- | OPTIONS=(strip docs !libtool !staticlibs emptydirs zipman purge !debug lto)
+Edit makepkg config: Use multiple threads when building packages from source and disable the extraneous debug build  
+_These options are found on lines 51 and 96 of `/etc/makepkg.conf` respectively. I like to set the number of jobs to half that of the number of threads available to my system (`nproc` / 2)_  
 
 ## Display Manager ([`ly`](https://github.com/fairyglade/ly))
 A minimal console greeter that looks pretty and features _most_ of the configuration options I want.  

@@ -1,4 +1,30 @@
-# Audio (Pipewire/Wireplumber) Scripting Notes
+# Pipewire + Wireplumber Config/Scripting
+
+## Overview
+### Pipewire
+### Wireplumber
+
+## Utilities
+(CLI tools: pw-cli, pw-jack?, pactl, wpexec, wpctl, wpcli, ...)  
+^^Breakdown with respect to what they do (i.e. sink volume (libpulse), spawning nodes, playing sounds, viewing statuses, etc.)
+
+Also include custom scripts (ideally one to find the name of clients easily for the match)
+
+### GUI
+- pavucontrol
+
+## Config
+_Break this into the types of things since they're shared...examples to follow._
+### Graph
+### Devices
+### Nodes (+wireplumber's special nodes)
+### (Things like filter chains or carla nodes?)
+
+## Routing
+### Input
+### Output
+
+(also need a place to talk about other large-scale audio applications such as Carla and audio plugins/effects....etc)
 
 ---
 > _Archived content._

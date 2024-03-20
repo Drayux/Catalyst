@@ -29,7 +29,6 @@ xdg-user-dirs
 xdg-desktop-portal-gtk
 xdg-utils
 pacman-contrib
-clock-tui
 neofetch
 catimg
 lm_sensors
@@ -46,6 +45,7 @@ gdb
 strace
 valgrind
 python
+rust
 cmake
 meson
 ninja

@@ -111,8 +111,10 @@ This may prove a beneficial supplimental tool to gnome-control-panel, although a
 #### Navigation
 
     > Hide all normal window: <super> + d
+    > Move window one monitor down: <disabled>
     > Move window one monitor to the left: <disabled>
     > Move window one monitor to the right: <disabled>
+    > Move window one monitor up: <disabled>
     > Move window one workspace to the left: <shift> + <super> + left
     > Move window one workspace to the right: <shift> + <super> + right
     > Move window to workspace 1: <shift> + <super> + 1
@@ -140,11 +142,15 @@ This may prove a beneficial supplimental tool to gnome-control-panel, although a
 #### Windows
 
     > Close window: <super> + q
-    > Hide window: <super> + pgdn
-    > Maximize window: <super> + pgup
-    > Toggle fullscreen mode: <super> + F11
-    > View split on left: <disabled>
-    > View split on right: <disabled>
+    > Hide window: <super> + down
+    > Lower window below other windows: <super> + pgdn
+    > Maximize window: <disabled>
+    > Raise window above other windows: <super> + pgup
+    > Restore window: <disabled>
+    > Toggle fullscreen mode: <shift> + <super> + up
+    > Toggle maximization state: <super> + up
+    > View split on left: <ctrl> + <super> + left
+    > View split on right: <ctrl> + <super> + right
 
 ## Bugs
 ### Could not connect to Wayland server (**major issue**)

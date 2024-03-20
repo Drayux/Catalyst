@@ -129,6 +129,7 @@ _Software whose primary use is for **development**._
 
 ## Languages
 - `python`
+- `rust`
 
 ## Building
 - `cmake`
