@@ -4,7 +4,8 @@ export CARGO_HOME="$HOME/.cache/cargo"
 export EDITOR="/usr/bin/micro"
 export GIT_CONFIG_GLOBAL="$HOME/.config/git/global"
 export LC_CTYPE="en_US.UTF-8"	# https://github.com/spaceship-prompt/spaceship-prompt/issues/726#issuecomment-534231326
-export LESSHISTFILE="$HOME/.local/zsh/lesshst"
+export LESSHISTFILE="$HOME/.cache/zsh/lesshst"
+export PYTHON_HISTORY="$HOME/.cache/zsh/pyhst"
 export WINEPREFIX="$HOME/.local/wine"
 
 

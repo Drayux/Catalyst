@@ -1,9 +1,10 @@
 #!/bin/sh
 
-HISTFILE="$HOME/.local/zsh/zshhst"
-HISTSIZE=4096
-SAVEHIST=4096
+HISTFILE="$HOME/.cache/zsh/zshhst"
+HISTSIZE=5000
+SAVEHIST=5000
 setopt autocd extendedglob
+setopt hist_ignore_all_dups
 unsetopt beep nomatch notify
 
 bindkey -e

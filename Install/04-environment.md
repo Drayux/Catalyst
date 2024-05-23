@@ -185,6 +185,7 @@ _This is an overview of the selected font packages, they are included in the pac
 ### System
 `ttf-noto-nerd` ➤➤ [Noto Sans (Google)](https://fonts.google.com/noto/specimen/Noto+Sans)  
 `ttf-ubuntu-nerd` ➤➤ [Ubuntu (Google)](https://fonts.google.com/specimen/Ubuntu)  
+`ttf-opensans` ➤➤ [Open Sans (Google)](https://fonts.google.com/specimen/Open+Sans)  
 
 ---
 

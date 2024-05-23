@@ -16,32 +16,30 @@
 - `nautilus`
 
 # Flatpaks
+- Blender
+- Firefox
 - Flatseal
 - Font Manager
-- VSCodium
-- Firefox
-- Spotify
-- Discord (Vesktop)
-- OBS
-- VLC
-- Blender
 - GIMP
 - Inkscape
+- Spotify
+- Discord (Vesktop)
+- VLC
+- VSCodium
 - ...
-- (steam)
-- (maybe lutris?)
 - (bitwarden)
-- (davinci resolve)
-- (prism launcher)
 
-# Installed in other phases
-## Gaming
-- Steam (flatpak)
-    - `steam-devices-git`<sup>AUR</sup>
-    - AdwSteamGtk (a bit buggy but looks really nice)
+## Dedicated documentation
+- Steam (games.md)
+- Lutris (games.md)
+- Prism Launcher (games.md)
+- OBS Studio (content.md)
+- Davinci Resolve (content.md)
 
-## Virtualization
-(TODO)
+## Miscellaneous Add-ons
+- `steam-devices-git`<sup>AUR</sup>
+- AdwSteamGtk (a bit buggy but looks really nice)
+- OBS VkCapture (https://github.com/nowrep/obs-vkcapture)
 
 # Application info and configuration
 ## Browser

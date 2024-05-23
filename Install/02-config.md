@@ -115,6 +115,8 @@ In order to keep artix packages and arch/AUR packages seperate, I have a split c
 > `cp -r /usr/src/catalyst/System/Config/Pacman/* /etc`  
 
 ### Mirrorlists
+Pacman performance can be substantially improved by selecting mirrors that are nearest your machine. This step is not required but it depends upon `rankmirrors (8)` which is provided by the package `pacman-contrib`.
+
 > `rankmirrors -n 5 /etc/pacman.d/mirrorlist > mirrorlist-artix`
 Generate a mirrorlist with the five fastest Artix mirrors
 _Optionally remove the original mirrorlist with `rm /etc/pacman.d/mirrorlist`._

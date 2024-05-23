@@ -42,7 +42,7 @@ _Packages that are **already installed** from previous steps._
 - `git`
 - `zsh`
 
-## Packages
+## Package manager
 - `pacman` (installed as dependency of `base`)
 - `artix-keyring` (installed as a depenency of `base-devel`)
 - `archlinux-keyring`
@@ -98,9 +98,11 @@ _Miscellaneous utility/addon packages._
 
 ## System
 - `pacman-contrib`
-- `clock-tui`
-- `neofetch`
 - `catimg` (consider alternatives)
+- `neofetch`
+- `clock-tui`<sup>AUR</sup>
+- `cowsay`
+- `cmatrix`
 
 ## Hardware
 - `lm_sensors`

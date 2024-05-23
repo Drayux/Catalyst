@@ -7,7 +7,7 @@ mesa
 mesa-vdpau
 libva-mesa-driver
 vulkan-icd-loader
-vulkan-radeon`/`vulkan-intel
+vulkan-radeon
 gstreamer
 gstreamer-vaapi
 openxr
@@ -29,8 +29,10 @@ xdg-user-dirs
 xdg-desktop-portal-gtk
 xdg-utils
 pacman-contrib
-neofetch
 catimg
+neofetch
+cowsay
+cmatrix
 lm_sensors
 upower
 linux-firmware-qlogic

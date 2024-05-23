@@ -1,6 +1,7 @@
 #!/bin/sh
 # Download the Arch Linux mirrorlist and rank the results
-# NOTE: There's a lot of mirrors so ranking takes time!
+# NOTE: There's a lot of mirrors so ranking takes time! (~5-6 min)
+# NOTE: rankmirrors is provided by pacman-contrib
 
 # TODO: This would be nice to have a few parameters like Artix/Arch mirrors and the output destination
 
