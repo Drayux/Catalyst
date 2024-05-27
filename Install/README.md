@@ -11,8 +11,8 @@ Furthermore, this guide applies to all of my computers, where some steps apply t
 **Init System:** Open RC  
 **Desktop:** (Minimal) Gnome / Hyprland  
   
-**CPU:** AMD Ryzen 9 5900X  
-**GPU:** AMD RX 7900 XTX  
+**CPU:** AMD Ryzen-9 5900X  
+**GPU:** AMD RX7900 XTX  
 
 # Resources
 [Artix Wiki - Installation Guide](https://wiki.artixlinux.org/Main/Installation)  

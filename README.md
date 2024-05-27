@@ -1,16 +1,18 @@
 # About
-This repository is still a **work in progress** as I still have many steps remaining to "perfect" my setup. The vast majority of configuration files will likely only be added after I have "completed" that portion of the setup to the full extent of my intention.
+This repository is my attempt at a creating a comprehensive collection of everything major I've learned about linux since I dove down the rabbit hole a year ago as well as all of my configuration files, scripts, and the like.
+
+This is still a **work in progress** (and probably always _will_ be to some extent) as I still have many steps remaining to "perfect" my setup. The vast majority of configuration files will likely only be added after I have "completed" that portion of the setup to the full extent of my intention.
 
 # Discussions
-Please feel encouraged to use the github discussions feature for any configuration changes you wish to suggest, typos on my readmes, questions left unanswered, or even if you're facing a similar issue to me and I might be a helpful resource to you.
+I highly encourage you to use the github discussions feature for any configuration changes you wish to suggest, typos on my readmes, questions left unanswered, or even if you're facing a similar issue to me! I love hearing feedback, and perhaps I may be a helpful resource to you.
 
 # To-do
 - Write a script that runs through `Config/Filesystem/` and checks for differences between the files located here and those on the system (ensure script ignores any files with the name of README.md)
 - Some of the packages on the install guide can (and probably should) be moved to later phase as many are not immediately necessary
-- Finish the To-do list  
+- Finish this To-do list  
 
 # Directory Structure
-### THIS IS OUT OF DATE NOW--I'M STILL FIGURING OUT THE NEW HIERARCHY
+### OUT OF DATE--still figuring the new hierarcy
 ## Build
 Manually compiled applications (not handled by package manager)  
 Includes references to specific Git repo / branch, notes on dependencies and build troubleshooting  

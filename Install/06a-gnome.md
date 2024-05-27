@@ -5,6 +5,13 @@
 
 > **WORK IN PROGRESS**
 
+## Environment
+Gnome provides an excess of session files, so we can just use our own
+
+> `cp .../System/Config/Desktop/gnome.desktop /usr/share/sessions/`  
+
+_**NOTE:** Whether or not `gnome-session` uses wayland depends upon the `XDG_SESSION_TYPE` environment variable._
+
 ## Package list (entire `gnome` group)
 _I am using a very neutered gnome. I love what the shell brings to the table, but I don't generally want the "fully-weight" desktop environment. That said, I may have neutered it so much that this is the source of some bugs in the system...it is hard to say for sure._
 
@@ -70,14 +77,15 @@ _I am using a very neutered gnome. I love what the shell brings to the table, bu
 ~~`yelp` -> GNOME help~~  
 
 ## Settings
-Fix file manager shortcut: `gio mime inode/directory org.gnome.Nautilus.desktop`
-Center new windows: `gsettings set org.gnome.mutter center-new-windows true`
-Super-M2 resize: `gsettings set org.gnome.desktop.wm.preferences resize-with-right-button true`
+Fix file manager shortcut: `gio mime inode/directory org.gnome.Nautilus.desktop`  
+Center new windows: `gsettings set org.gnome.mutter center-new-windows true`  
+Super-M2 resize: `gsettings set org.gnome.desktop.wm.preferences resize-with-right-button true`  
+Increase window timeout: `gsettings set org.gnome.mutter check-alive-timeout 20000`  
 
-(needs further customization)
-Customize xcursor theme (GTK): `gsettings set org.gnome.desktop.interface cursor-theme 'THEME_NAME'`
+**Needs further customization**  
+Customize xcursor theme (GTK): `gsettings set org.gnome.desktop.interface cursor-theme 'THEME_NAME'`  
 
-(dark mode, disable hot corners, workspaces on primary only, disable screen blank, sleep after an hour)
+(dark mode, disable hot corners, workspaces on primary only, disable screen blank, sleep after an hour)  
 
 ## UX todo
 - **System tray!**
@@ -92,15 +100,73 @@ Customize xcursor theme (GTK): `gsettings set org.gnome.desktop.interface cursor
 - (would love an easier way to customize application filetype associations but alas)
 
 ## Notes
-### GIO
-Gio (from `glib2`) appears to be the component necessary for associating a default application with a mimetype, said mimetype is provided by XDG.
+### Mimetype associations
+`GIO` (from `glib2`) appears to be the component necessary for associating a default application with a mimetype, said mimetype is provided by XDG.
 
 Application type associations are stored at: `/usr/share/applications/mimeinfo.cache`
 
-To solve the `.desktop` entries with `Terminal=true` not launching, use the xdg-terminal-exec script: https://github.com/Vladimir-csp/xdg-terminal-exec/tree/master (uses config file `~/.config/xdg-terminals.list`.) This is a result of GIO using a hard-coded list of possible terminal executables, instead of recursively looking up the default terminal application.
+To solve the `.desktop` entries with `Terminal=true` not launching, use the xdg-terminal-exec script: https://github.com/Vladimir-csp/xdg-terminal-exec/tree/master (uses config file `~/.config/xdg-terminals.list`.) This is a result of GIO using a hard-coded list of possible terminal executables, instead of recursively looking up the default terminal application.  
+> [Fedora Forum - Set Default Terminal in Gnome](https://discussion.fedoraproject.org/t/set-default-terminal-in-gnome/77341/9)
 
-### dconf editor
+_**TODO:** There additionally exists a command to update the mimeinfo file, but I need to find it again._
+
+### `dconf editor`
 This may prove a beneficial supplimental tool to gnome-control-panel, although all settings can be modified through the `gsettings` CLI
+
+### Desktop features
+The following is my attempt to describe a thought I am struggling to compose into words: I really like the idea of a barebones desktop environment, but with all of the "framework" in place to support all of the niceties of a fully-involved environment. Fortunately, Gnome does a great job of satisfying that. The following features (rather classes of features perhaps) come to mind as elements that I'd like to have accounted for by the same "major subsystem" (aka the DE.)
+
+- **Settings**
+    - Wallpapers / Theming
+    - Display configuration
+    - Devices (Keyboard/Mouse/Touchpad) - Controller support is also nice, but only KDE has this currently
+    - Networking (GUI interface)
+    - Sound (GUI interface)
+    - Battery (GUI interface)
+- **Window Management** (duh, the following are specific features I like to have)
+    - Workspaces (with keybinds to move between them)
+    - Window hiding (minimization, with a way to see what is hidden / restore them)
+    - Super+\<click\> move/resize
+    - Non-focus-stealing windows (Gnome does really well at this!)
+    - Intelligent screen usage (aka tiling or tiling-tangent features)
+- **Application Launching**
+    - Application menu (ideally with customizable entries, KDE does well at this!)
+    - Default application specification
+    - Shortcut handling
+    - Mimetype parsing
+- **Notifications**
+    - Including control over what notifications are shown ideally
+    - Provides a service for applications that demand one (such as discord)
+- **Utility**
+    - Permissions elevation GUI
+    - Common "shell" features
+        - Desktop icons
+        - Desktop "panel"
+    - Common panel indicators
+        - Taskbar / System tray
+        - Clock
+        - Battery indicator
+        - Control panel (mini GUI for common settings/power)
+        - Workspace indicator
+        - Notification log
+        - Media controls
+        - Calendar* (Not a must for me, but gnome's is quite nice!)
+        - Application menu* (also not a must, but I loved the one on KDE....when it was functional)
+
+### Complaints
+_As a simliar section, this is my attempt at a list of all of the things currently "stressing" me about Gnome. The goal of this list is just to get the thoughts out to help me better process them._
+
+Gnome still has many abstracted components, notably these are the executables itself as they **follow somewhat of a major chain of events**. `gnome-shell` is the "primary executable" that _is_ Gnome itself. Yet, it should be ran via `gnome-session` which runs both `gnome-shell`, `dbus`, as well as `gnome-settings-daemon` to give the shell the full breadth of its functionality. Further, the window manager itself is called `mutter` which can also be ran by itself with limited functionality. However, after launching Gnome with `gnome-session`, no mutter process will be running.
+
+Running a command such as `gnome-shell && gnome-settings-daemon` will not function as expected, which I find unintuitive to the point of being stressful, even though I should only need to worry about running `gnome-session`. Alas, I think a major source of this stress is the difficulty of trying to provide specific parameters, such as selecting a specific GPU or designating that I want to run a wayland session instead of an x11 one.
+
+Gnome settings daemon launches any number of additional settings services, which it is very ambigious to me which is which, as well as what all is even listed. I would prefer to see this much more configurable in case I wish to remove something specifically, or add something custom, as this would make it much easier to construct a "minimal" form of Gnome, instead of "installing an arbitrary feature package and hoping it starts automatically."
+
+For some reason, I can't help but overthink the mutter portion of the shell in particular. There are many such applications where they depend on another to already be present in order to run properly. An example of this could be something like a graphical application depending upon a display server such as Wayland or XOrg, both of which implement a protocol that it expects in order to create a window and present graphics to it. Alternatively, Pipewire provides an API for audio that sound-producing applications require.
+
+Alas, something about the fact mutter can run by itself, and otherwise runs "completely interally" when gnome-shell is ran is causing me to drastically overthink how it works, even though it is the same concept. Gnome-shell must be looking for some sort of API provided by a nested instance of mutter in order to provide functionality. In retrospect, perhaps the extent of my stress is fully a result of having issues getting Gnome to start consistently (see Bugs.)
+
+_I'd like to see the entire process reduced to something as simple as a bash script, even if it were convoluted with lines where some session PID were saved to a variable or whatnot. The enumeration of every unique process that is launched, as well as parameters and order in some form of logical flow should fully resolve my overwhelming feelings._
 
 ### Keybind settings
 #### Launchers
@@ -162,13 +228,35 @@ The logging file says something along the lines of `(EE) could not connect to wa
 
 Gnome session appears to _always_ launch successfully after the first attempt.
 
-Mutter has no issue launching at all, yet upon error, no window manager appears to be present at all. I fear what is happening is some sort of race condition, though mutter would also be closed on the second time attempt that everything is launched, and still has no issue.
+Mutter has no issue launching at all, yet when gnome-shell errors, no window manager appears to be present at all.
 
-_I am tempted to either wait for gnome shell version 46 (currenlty on 45.4) or to build gnome-shell from source._
+~~_I am tempted to either wait for gnome shell version 46 (currenlty on 45.4) or to build gnome-shell from source._~~
 
-### Alacritty doesn't prompt until another wayland application is open
-This is a reported bug with gnome-shell. Kinda annoying, but not major. **TODO** Link the issue report!
+My new theory as to the cause of this is some side-effect of not having systemd. Pending posting the full error report, a few messages on stdout after timeout kills an unsuccessful launch make mentions of looking for some sort of _display_ target, which it cannot find. This leaves me to wonder if said target exists to resolve a race condition that where some display-related process must be running before gnome-shell attempts to initialize. Attempting to launch gnome will start this process, but the required order is only occasionally met.
+
+### ~~Alacritty doesn't prompt until another wayland application is open~~
+~~This is a reported bug with gnome-shell. Kinda annoying, but not major. **TODO** Link the issue report!~~  
+
+_**Resolved!**_
+
+### Networking does not properly resume after wake from suspend
+_This may not be a gnome issue! **TODO:** I need to test this from a TTY!_
+
+Suspend appears to work perfectly, with the sole exception of the networking after wake. When on just WiFi, waking completely kills internet connection, and even the gnome shell panel shows a little question mark on the icon indiciating no connection. (I have yet to test if I can still ping the router in this state or not.)  
+
+When connected to both ethernet and wireless, resuming from suspend kills the ethernet link, but wireless still appears to function after a considerable delay. That said, it appears to be substantially throttled in this case as well.
+
+Either way, every wake from suspend seems to require that I run:
+
+> `sudo rc-service NetworkManager restart`
+
+Additionally, I noticed some weird networking behavior on Chitin as well, however I have not done much testing with this, beyond seeing that restarting NetworkManager also frequently solves the issues at hand.
+
+In conclusion, this may not be a gnome issue, rather a NetworkManager issue, or possibly even an issue with OpenRC and sleep states, or simply the service scripts provided by the Artix compatibility package.
 
 ### Gnome control panel
 - Crashes with the search indexer locations option
 - Setting a keybind breaks the UI so you need to back out and select a different major option before going back to keyboard to try again
+
+### Permissions elevation
+Small "hole" for issues rather than a jarring one in of itself: Gnome doesn't have any way of handling an excess of permission elevation requests. What this means is that if an application were to bug out and continuously try to elevate permissions, you will get stuck in a loop where the only escape is killing the troublesome process in a TTY.

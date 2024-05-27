@@ -10,6 +10,9 @@ vulkan-icd-loader
 vulkan-radeon
 gstreamer
 gstreamer-vaapi
+gst-plugins-good
+gst-plugins-bad
+gst-plugin-gtk
 openxr
 ttf-noto-nerd
 ttf-ubuntu-nerd
@@ -22,6 +25,7 @@ pipewire
 pipewire-audio
 pipewire-jack
 pipewire-pulse
+pipewire-v4l2
 wireplumber
 libinput
 flatpak
@@ -35,6 +39,7 @@ cowsay
 cmatrix
 lm_sensors
 upower
+v4l-utils
 linux-firmware-qlogic
 starship
 sushi

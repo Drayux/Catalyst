@@ -7,19 +7,19 @@
 
 # Additional software (unsorted...needs desktop environment)
 ## Utility programs (therefore not flatpaks)
-- `carla`
-- `alsa-scarlett-gui`
-- `helvum`
 - `alacritty`
+- `alsa-scarlett-gui`
+- `carla`
+- `helvum`
 - `kitty`
-- `pince`
 - `nautilus`
+- `pince`
 
 # Flatpaks
 - Blender
 - Firefox
 - Flatseal
-- Font Manager
+- Font Manager (_**TODO:**_ Discontinued, needs replacement)
 - GIMP
 - Inkscape
 - Spotify
@@ -47,14 +47,21 @@ _Archived content (still needs updating.)_
 
 ### Wayland
 Use environment variable: `MOZ_ENABLE_WAYLAND=1`  
-Note that this does break the application menu provided by KDE (no entries present, as seen with other wayland applications.)  
+_This is handled by the default configuration provided by the Flatpak_  
+
+Note that this does break the application menu provided by KDE (no entries present, consistent with other wayland applications.)  
 
 ### Custom Theme
 _**TODO:**_ My dream Firefox config would feature tree-style-tabs instead of the default tabs, but have a seamless integration (i.e. remove the default tabs at the start, have the tab sidebar be persistent or mouseover to show, etc.) Many of these customizations are possible via modifying the Firefox theme(?) directly, however I have yet to dive down this rabbit hole.  
 
-This GitHub repo ([FlyingFox](https://github.com/akshat46/FlyingFox)) showcases a custom Firefox theme that nearly perfectly matches the format and theming elements that I'd hope to obtain with my custom configuration. That said, it is built for a _very_ outdated version of Firefox (78.15 - Version as of writing this: 112.0.)  
+This GitHub repo ([FlyingFox](https://github.com/akshat46/FlyingFox)) showcases a custom Firefox theme that nearly perfectly matches the format and theming elements that I'd hope to obtain with my custom configuration. That said, it is built for a _very_ outdated version of Firefox (78.15 ; 112.0 is the current version as of writing this.)  
 > [Mozilla Support Page - Advanced Customization](https://support.mozilla.org/en-US/kb/contributors-guide-firefox-advanced-customization)  
 > [Stack Overflow - Hide Tab Bar](https://superuser.com/questions/1268732/how-to-hide-tab-bar-tabstrip-in-firefox-57-quantum)  
+
+Alternatively, the following is a similar type of Firefox configuration that also looks promising.
+
+> [PenguinFox - Github](https://github.com/p3nguin-kun/penguinFox)  
+> [userChrome.css - Pastebin](https://pastebin.com/PDL0h2KR)  
 
 ### Change Location of Profile Folder
 Launch the profile manager by running `firefox --ProfileManager`  

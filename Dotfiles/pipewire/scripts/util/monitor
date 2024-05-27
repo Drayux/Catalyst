@@ -76,6 +76,7 @@ end
 
 function connect (om, monitor_node, target_node)
 	-- IMPORTANT TODO: If a node is already linked, we don't want create additional links
+	-- That said, I'm still unsure how best to handle if links exist but they are "crossed"
 	print ("[TODO] Linking to " .. target_node.properties["node.description"] .. " (" .. target_node.properties["node.name"] .. ")")
 end
 

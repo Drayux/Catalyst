@@ -81,7 +81,7 @@ _The terminals specified in the config will be installed from the package list i
 Starship is my ZSH "theme" of course, supporting nearly endless configuration options.  
 [Startship: Cross-shell prompt](https://starship.rs/)  
 
-> `curl -sS https://starship.rs/install.sh | sh`
+> `curl -sS https://starship.rs/install.sh | sh`  
 Install starship shell prompt binaries via curl  
 _The prompt initalization script is already present in the [.zshrc](/Dotfiles/zsh/.zshrc) file._  
 
@@ -105,7 +105,7 @@ _The default SSH config doesn't respect my home folder, so we need to tweak the 
 SSH will be unable to save the known hosts if the directory does not exist  
 
 > `su drayux`  
-> `ssh-keygen`
+> `ssh-keygen`  
 Generate a new ed25519 key pair
 
 	> Generating public/private ed25519 key pair.
@@ -177,7 +177,21 @@ Enable the LY display manager service
 _We select TTY7 in the config as OpenRC defaults to spawning gettys on 1-6 and we won't use Xorg._  
 
 ## Bootloader
-_**TODO:** Extra fancy grub config with the awesome monika background...Currently pending me finalizing my grub config alltogether._  
+A _fancy_ GrUB configuration that features waifu material and a jest at Windows.
+
+Note that this configuration removes the removes the boot selection menu entirely, making the process as autonomous as possible. Supposedly it is possible to hold _shift_ or the like while booting to force the menu, however I have yet to see success with this method. In the worst case scenario, the bootable recovery medium can be used to modify the timeout in the configuration.
+
+> `cp .../System/Config/Misc/grub /etc/default/grub`  
+> `cp .../System/Graphics/Grub/monika_<W>-<H>.png /home/Media/Backgrounds/Monika.png`  
+Copy the configuration file and background to their respective locations  
+_The monika background is provided in both 16:9 and 21:9 aspect ratios._  
+
+> `update-grub`  
+Update the GrUB configuration  
+_This is an alias for `grub-mkconfig -o /boot/grub/grub.cfg`; provided by the GrUB package._  
+_GrUB uses drop-in configuration, so the final form is processed and then stored in the ESP partition._  
+
+_**TODO:** My grub configuration is likely not yet complete, though to what extent I do not yet know._
 
 ## Fonts
 _This is an overview of the selected font packages, they are included in the package list to be installed in [05-packages.md](./05-packages.md)._
@@ -204,6 +218,7 @@ _**TODO:** Some starndard(?) symbols are still missing...I need to figure out wh
 
 ### Console
 ~~`powerline-console-fonts` ➤➤ [Terminus](https://terminus-font.sourceforge.net/) console font patched with powerline symbols~~  
+_The tweaked block symbols look awful with LY's bigclock display._
 
 ### Additional notes
 Fontconfig is a powerful tool that lets multiple fonts be effectly combined together. It generally comes as a dependency with any GUI-related software, and will fallback to other fonts if the current glyph is absent in the selected font. Subsequently, this makes it harder to customize which icons to use, so my ambition is to minimize the number of duplicates found in these "extra" font packages.  

@@ -67,6 +67,9 @@ _Packages relating to the system's **graphical output**._
 - `vulkan-radeon`/`vulkan-intel`
 - `gstreamer`
 - `gstreamer-vaapi`
+- `gst-plugins-good`
+- `gst-plugins-bad` (many deps, most of which are multimedia libs)
+- `gst-plugin-gtk`
 - `openxr`
 
 ## Fonts
@@ -84,6 +87,7 @@ _Packages relating to the system's **graphical output**._
 - `pipewire-audio`
 - `pipewire-jack`
 - `pipewire-pulse`
+- `pipewire-v4l2` (it should be determined if this does anything of value)
 - `wireplumber`
 
 ## Software
@@ -99,7 +103,7 @@ _Miscellaneous utility/addon packages._
 ## System
 - `pacman-contrib`
 - `catimg` (consider alternatives)
-- `neofetch`
+- `neofetch` (since discontinued, consider alternatives)
 - `clock-tui`<sup>AUR</sup>
 - `cowsay`
 - `cmatrix`
@@ -107,6 +111,7 @@ _Miscellaneous utility/addon packages._
 ## Hardware
 - `lm_sensors`
 - `upower`
+- `v4l-utils`
 
 ## Firmware
 - `linux-firmware-qlogic`
