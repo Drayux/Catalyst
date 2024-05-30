@@ -81,7 +81,8 @@ _**NOTE:** For the sake of simplicity, the assumed flow for the following explan
 
 Pipewire will attempt to set the output node (aka the device node) to the graph rate, or otherwise get as close as possible to it. If this was successful, then no output-side resampling will be necessary. That said, device sample rate can also be convoluted. In the case of my Focusrite Scarlett 18i20 audio interface, it provides three "modes" (_altsets_.) Altset 01 allows the device to run with a 44.1khz or 48khz sample rate. Altset 02 allows for 88.2khz and 96k. Finally altset 03 allows for 176.4khz and 196khz. 
 
-It is important to note that the device behaves differently depending on which altset it is using. Here notably, internal mixing is disabled above 96khz, meaning that only one-to-one routing is supported. As a result, setting the "mode" depends on how the device is initalized, which is a responsibility of the session manager.
+It is important to note that the device behaves differently depending on which altset it is using. Here notably, internal mixing is disabled above 96khz, meaning that only one-to-one routing is supported. As a result, setting the "mode" depends on how the device is initalized, which is a responsibility of the session manager.  
+_See further: [Use all inputs on the 18i20 - Focusrite Support](https://support.focusrite.com/hc/en-gb/articles/206850129-How-do-I-use-all-18-inputs-on-the-Scarlett-18i20)_
 
 As a result, if the graph rate is say, 96khz, and my audio interface is in altset 03, Pipewire will set the device to 176.4khz sample rate as soon as a stream is connected to the device node, as this is the closest possible sample rate.
 
@@ -108,6 +109,8 @@ From [Freedesktop - Wireplumber's Design](https://pipewire.pages.freedesktop.org
 _**TODO:** I have yet to fully understand the role (or the difference) of session items, however it is apparent that these are the protocol by which Wireplumber handles the graph objects._  
 To the best of my understanding, session items are effectively a superset of a pipewire object. The contain a reference to the underlying Pipewire object (this is the structure that is available on the graph itself) as well as additional metadata used by the session manager with respect to its operation.
 
+_Pipewire objects are exposed to the Lua scripting API as GObjects; this may be a result of these objections being session items._
+
 With respect to the `si-standard-link` type:
 > As my roughest guess of what a session item is while digging into the system further: It appears that from the perspective of wireplumber, a session item can be thought of as a "temporary rule" i.e. "these two nodes should be linked" / "this client should have a node with this many ports." (Of course, the former is a more relevant example for the standard-link.)  
 >  
@@ -121,6 +124,20 @@ With respect to the `si-standard-link` type:
 > Finally, this module demands that the target input/output nodes are both SiLinkable session items, further complicating things.  
 >  
 > For an example of this discrepancy, consider what happens when starting up the audio subsystem. Wireplumber may exist, but it has not yet initalized all of the nodes. If we were to have `wpexec <some-script>` with the goal of creating some links between nodes immediately after launching the daemon, using a standard link would fail as the ports would not exist. A session item, however, would benefit from wireplumber's internal state machine processing, and the connections would be generated after the ports become available.  
+
+Wireplumber's alternative "audio ducking policy" from which my new configuration took great inspiration features virtual nodes spawned from Wireplumber:  
+> Creating one of these nodes appears on the pipewire graph as a standard `support.null-audio-sink`. This seems consistent with the other session items, who all have a "si:proxy" component representing an object on the graph, but alas the actual element appears to be a simple null sink as we've generated before. The other conundrum becomes the configurability of the item. Many features, such as whether the object lingers or autoconnects appears to be handled by the respective session item factory, which substantially complicates things such as adding custom properties.
+
+To create a node, I was partially successful in doing so by appending the following code to `scripts/node/create-virtual-item.lua`
+```lua
+local testprops = {
+    ["name"] = "test",
+    ["media.class"] = "Audio/Sink",
+}
+createVirtualItem ("si-audio-virtual", testprops)
+```
+
+See also: [Wireplumber - Session Item](https://pipewire.pages.freedesktop.org/wireplumber/scripting/lua_api/lua_session_item_api.html)
 
 ### Configuration
 #### // Device Sample Rate
@@ -327,6 +344,35 @@ routing.devices = {
 	navi-audio = {}
 }
 ```
+
+## Design
+We add two additional lua scripts as features to Wireplumber. The new configuration schema is awesome as I am no longer overriding the existing scripts, and toggling them on or off is as simple as editing a single value in the profile configuration.
+
+### Link device routes (`routing/link-device-routes.lua`)
+This script is responsible for linking ALSA device nodes to routing nodes. This is what provides the custom `routing.devices` configuration section. Simply described: It hooks the "node-added" event provided by libwireplumber. For each ALSA device found through this event, it will seek a respective configuration entry. If found, it will iterate through the ports of the virtual device, and link to the listed port names on the routing device. As this is handled on an event basis, it means that the links will be restored if the device is disconnected and subsequently reconnected.
+
+### Find routing target (`routing/find-routing-target.lua`)
+This script is what handles the application-specific routing. As part of the "stock" scripting, Wireplumber provides a hierarchy of hooks that seek to determine the most appropriate target for a given node.
+
+    linking/find-virtual-target     # This is only present when running the alternative audio ducking policy
+    linking/find-defined-target     # Checks for the `node.target`/`target.object` property
+    > routing/find-routing-target   # This is where we perform our custom routing
+    linking/find-filter-target      # Handles smart filters
+    linking/find-default-target     # Link to the default node otherwise
+    linking/find-best-target        # Find the most appropriate node if no default is set
+    
+    # The above will specify a target, the following handle the next steps
+    linking/get-filter-from-target  # More smart filter handling
+    linking/prepare-link            # Clears any pre-existing links in preparation of creating the new ones
+    linking/link-target             # Actually creates the new link session items
+
+_The selected target is specified via `event:set_data ("target", target)` where the subsequent events will immediately resolve if this is already set._  
+Refer to: [Linking Scripts - Wireplumber Documentation](https://pipewire.pages.freedesktop.org/wireplumber/scripting/existing_scripts/linking.html)  
+
+## Workarounds
+I've recently observed an issue with Wizard101 (though this may apply to other proton applications?) where if my audio interface is selected as the default device, a node fails to generate. This happens even if I fully revert back to "stock" configuration. Further, I used my old configuration with one of the routing sinks as a default device for so long, I have no clue when this issue may have first arisen.
+
+Alas, even with the routing policy in place, a node fails to generate. My simplest solution for this is simply to set the GPU (NAVI hdmi something or rather) as the default device, and additionally specify this device as a routing device. Even though nothing links to this device in the current state, it appeases Wizard101 which appeases me.
 
 # Utility
 > _**TODO:** This section is incomplete; likely to be ammended as I relearn the respective tools._

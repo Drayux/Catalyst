@@ -37,11 +37,24 @@ Optional additional package with configuration regarding regional bandwidth regu
 ## Monitor Firmware (EDID)
 **TODO:** Not sure what I'm doing yet! I've attempted to create a custom EDID for my MacBook display to remove the 2800x1800 entry, and even booting with the new 2560x1600 firmware confirmed to have been loaded, the TTY uses the oversized resolution anyway.  
 
-The current EDID (provided by the GPU) can be found in `/sys/class/drm/*/edid` **if available**. _Some monitors will not provide one at all._  
+The current EDID (provided by the GPU) can be found in `/sys/class/drm/*/edid` **if available**.  
+_Some monitors will not provide one at all._  
 
-Specify an EDID firmware override with the kernel parameter `drm.edid_firmware=...`. The binary path is relative to `/usr/lib/firmware` and the optional video parameter (`[video:]<path>`) can be determined by running: `for p in /sys/class/drm/*/status; do con=${p%/status}; echo -n "${con#*/card?-}: "; cat $p; done`.  
+Specify an EDID firmware override with the kernel parameter `drm.edid_firmware=[<display>:]<path>` followed by `video=<display>:e` for each display that should be run with a kernel-provided EDID. The binary path is relative to `/usr/lib/firmware`.  
+
+> The optional display parameter (eg `DP-3`) can be determined by running the following command.  
+> `for p in /sys/class/drm/*/status; do con=${p%/status}; echo -n "${con#*/card?-}: "; cat $p; done`  
 
 [Arch Wiki - Kernel Mode Setting](https://wiki.archlinux.org/title/Kernel_mode_setting#Forcing_modes_and_EDID)  
+According to the above:
+> If you are doing early KMS, you must [include the custom EDID file in the initramfs](https://wiki.archlinux.org/title/Mkinitcpio#BINARIES_and_FILES), otherwise you will run into problems.
+
+This refers to the `FILES=( ... )` portion of the configuration.
+> `micro /etc/mkinitcpio.conf` _(example)_  
+
+    > +/- | FILES=(/usr/lib/firmware/VG27AQ.bin)
+
+[AMDGPU unable to set EDID on one monitor - Reddit](https://www.reddit.com/r/archlinux/comments/oujnxs/new_amdgpu_unable_to_set_edid_on_one_monitor/)  
 
 ### Utility programs
 [EDID Binary Decoding Utility (`edid-decode`)](https://github.com/a1ive/edid-decode)  

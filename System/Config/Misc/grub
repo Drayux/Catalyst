@@ -1,9 +1,13 @@
 # GRUB boot loader configuration
 
-GRUB_DEFAULT=0
+
+# Set to non-zero for the menu to show
 GRUB_TIMEOUT=0
+
+
+GRUB_DEFAULT=0
 GRUB_DISTRIBUTOR="Artix"
-GRUB_CMDLINE_LINUX_DEFAULT="loglevel=3"
+GRUB_CMDLINE_LINUX_DEFAULT="loglevel=3 drm.edid_firmware=DP-3:/edid/VG27AQ.bin video=DP-3:e"
 GRUB_CMDLINE_LINUX="quiet"
 
 # Show grub by holding 'shift'
