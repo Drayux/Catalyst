@@ -115,7 +115,7 @@ _Changes are only made upon a write command, so `CTRL-C` and starting over is a 
 
     > c
     Partition number (1-3): 2
-    Enter name: Artix
+    Enter name: System
 
     > c
     Partition number (1-3): 3

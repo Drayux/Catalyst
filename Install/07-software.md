@@ -6,21 +6,25 @@
 > **WORK IN PROGRESS**
 
 # Additional software (unsorted...needs desktop environment)
+_**TODO:** My definition of "utility" has proven itself to be inconsistent. Lutris would count as a utility, but being a component of the games it launches, it only makes sense to use the Flatpak. Further, pavucontrol might also count as a utility, but as something where I use it rarely and for a single feature, I like the idea of it being "easily removable" from the system._
+
+_As a result, I'm instead tempted to tweak the defintiton to "apps that are not essential to my system workflow (or otherwise are not available as flatpaks)" which would essentially leave just terminal emulators and file managers as non-flatpaks._
+
 ## Utility programs (therefore not flatpaks)
 - `alacritty`
-- `alsa-scarlett-gui`
+- `alsa-scarlett-gui` (a flatpak is not readily available for this yet)
 - `carla`
-- `helvum`
 - `kitty`
 - `nautilus`
-- `pince`
 
 # Flatpaks
 - Blender
+- Calculator (Gnome Project)
 - Firefox
 - Flatseal
 - Font Manager (_**TODO:**_ Discontinued, needs replacement)
 - GIMP
+- Helvum
 - Inkscape
 - Spotify
 - Discord (Vesktop)
@@ -28,6 +32,8 @@
 - VSCodium
 - ...
 - (bitwarden)
+- (pavucontrol - Technically a utility, but not a component of my standard workflow)
+- (pince - Currently not available as a flatpak, may be best as a native package since it depends on memory scanning)
 
 ## Dedicated documentation
 - Steam (games.md)
@@ -35,6 +41,7 @@
 - Prism Launcher (games.md)
 - OBS Studio (content.md)
 - Davinci Resolve (content.md)
+- VSCodium (editors.md)
 
 ## Miscellaneous Add-ons
 - `steam-devices-git`<sup>AUR</sup>
@@ -43,7 +50,7 @@
 
 # Application info and configuration
 ## Browser
-_Archived content (still needs updating.)_
+> **Archived content (out of date)**
 
 ### Wayland
 Use environment variable: `MOZ_ENABLE_WAYLAND=1`  

@@ -10,7 +10,8 @@
 shopt -s expand_aliases
 alias timestamp="/bin/date '+[ %Y-%m-%d / %H:%M:%S ]'"
 
-LOG_DIR="${HOME}/.var/log/audio"
+LOG_DIR="${HOME}/.cache/audio"
+
 PIPEWIRE_LOG="${LOG_DIR}/pipewire.log"
 PULSE_LOG="${LOG_DIR}/pipewire-pulse.log"
 WIREPLUMBER_LOG="${LOG_DIR}/wireplumber.log"

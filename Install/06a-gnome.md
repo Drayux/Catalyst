@@ -33,12 +33,16 @@ _**NOTE:** Whether or not `gnome-session` uses wayland depends upon the `XDG_SES
 - ~~Show desktop icons~~
 - ~~Libadwaita theme for GTK3 applications~~
 - ~~Clipboard history~~
-- ~~Preset window tiling spaces (like KDE)~~
-- Icon theme (right now I would really like something halfway between Adwaita and Colloid ; Adwaita++ synthwave folders would be sick nasty if I could find them, too)
-- Figure out how to change the names of _.desktop_ entries in the app launcher (Upon further searching, it appears that directory precedence for the same-named entry has the behavior of overriding one another)
+- ~~Preset window tiling spaces (like KDE)~~ ([Documentation](https://github.com/Leleat/Tiling-Assistant/wiki/Layouts))
+- ~~Icon theme (right now I would really like something halfway between Adwaita and Colloid ; Adwaita++ synthwave folders would be sick nasty if I could find them, too)~~
+- ~~Figure out how to change the names of _.desktop_ entries in the app launcher~~ ([Upon further searching](https://help.gnome.org/admin//system-admin-guide/2.32/menustructure-desktopentry.html.en), it appears that directory precedence for the same-named entry has the behavior of overriding one another)
+- Starship prompt configuration (technically not gnome-specific but it's part of the rice)
+- Neovim setup / crash course / whatever else (also part of the rice, less-so gnome) ... `gsettings get org.gnome.nautilus.preferences thumbnail-limit` looks really promising but appears to have no effect
+- Hide file thumbnails in large directories to preserve resources (in nautilus)
 - AGS shell config (technically more of a TODO for hyprland)
 - Cursor customization (wait for hyprland setup since cursors are more involved for that one)
 - (would love an easier way to customize application filetype associations but alas)
+- Customize the selected directory for screenshots without changing the value of `xdg-pictures`
 
 ## Extensions
 #### // Desktop Icons
@@ -120,6 +124,48 @@ Set the icon theme
 _Theme name is specified in `index.theme`_.
 
 Note that the system will look for icon themes in `/usr/share/icons/ICON_DIR` or `~/.local/share/icons/ICON_DIR`  
+_An [archive](/System/Graphics/Icons/catalyst-icons.tar.xz) of my modified icon set is available._  
+
+**index.theme configuration**  
+_This is a very rough overview of the extent to which I tweaked for my custom theme._  
+
+```conf
+[Icon Theme]
+Name=ICON_THEME_NAME
+Comment=Fun little theme description.
+Example=folder
+Inherits=Adwaita,hicolor        # Can be any other theme names, usually well-known names work best
+FollowsColorScheme=false        # Not 100% sure on this one, but I think it means that the DE will look for <icon>-dark variants
+
+# Specify every icon-containing subdirectory in the icon theme directory here
+Directories=scalable/apps,...,
+
+[scalable/apps]                 # Directory name
+Context=Applications            # The "type" of icons (see below)
+Size=64
+MinSize=16
+MaxSize=512
+Type=Scalable
+
+# ...
+
+# NOTE: Symbolic icons seem to follow the same naming pattern as their scalable variants
+#       That said, they specify a different Size/MinSize so I anticipate the DE knows to swap depending on the "target" size for a given application
+
+# NOTE: Many icon packs store app icons via a "friendly" name and then provide symlinks (in the same directory) for the official "icon name" which the application seeks
+#       It would be possible to store application icons in a completely unique directory and just store the appropriately-targeted links in the directory specified by this configuration
+
+# Possible icon "types" (that I have seen thus far):
+#   - Applications
+#   - MimeTypes
+#   - Places
+#   - (the above is extent to which I've customized)
+#   - Actions
+#   - Categories
+#   - Devices
+#   - Emblems
+#   - Status
+```
 
 ## Notes
 ### Mimetype associations
@@ -157,6 +203,7 @@ The following is my attempt to describe a thought I am struggling to compose int
     - Including control over what notifications are shown ideally
     - Provides a service for applications that demand one (such as discord)
 - **Utility**
+    - Removable storage handling (automounting/syncing/etc.)
     - Permissions elevation GUI
     - Common "shell" features
         - Desktop icons
@@ -260,6 +307,9 @@ My new theory as to the cause of this is some side-effect of not having systemd.
 
 **I've just realized: As I do not use GDM, I've become almost certain that this issue is a result of some form of race condition. Gnome devs wouldn't notice it as launching from GDM will already have a wayland display server active.**
 
+> **Possible Resolution**  
+In my experimentation with GDM thus far, I have yet to have an unsuccessful launch (despite the fact GDM uses XOrg, amusingly.) I'd still prefer to use `ly` if could, so this solution is not optimal, but certainly much less disruptive.  
+
 ### ~~Alacritty doesn't prompt until another wayland application is open~~
 ~~This is a reported bug with gnome-shell. Kinda annoying, but not major. **TODO** Link the issue report!~~  
 
@@ -279,6 +329,9 @@ Either way, every wake from suspend seems to require that I run:
 Additionally, I noticed some weird networking behavior on Chitin as well, however I have not done much testing with this, beyond seeing that restarting NetworkManager also frequently solves the issues at hand.
 
 In conclusion, this may not be a gnome issue, rather a NetworkManager issue, or possibly even an issue with OpenRC and sleep states, or simply the service scripts provided by the Artix compatibility package.
+
+> **Possible Resolution**  
+Disabling wifi when on a wired connection appears to allow the ethernet to function as intended.  
 
 ### Gnome control panel
 - Crashes with the search indexer locations option

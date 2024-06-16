@@ -1,0 +1,4 @@
+# Resolve speed editor is an HID device, not a storage (xhci) device
+# Place this file at /etc/udev/rules.d/60-speed-editor.rules
+
+KERNEL=="hidraw*", ATTRS{idVendor}=="1edb", ATTRS{idProduct}=="da0e", MODE="0660", TAG+="uaccess"

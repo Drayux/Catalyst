@@ -14,13 +14,15 @@ multiplier = 5
 
 [font]
 # FontManager: Font -> Properties -> Family
-normal.family = "JetBrainsMonoNL Nerd Font Mono"
+# > Apparently the `Mono` suffix has smaller fancy symbols
+# > These icons are all one space apart:  󰂠  
+normal.family = "JetBrainsMonoNL Nerd Font"
 normal.style = "Medium"
-bold.family = "JetBrainsMonoNL Nerd Font Mono"
+bold.family = "JetBrainsMonoNL Nerd Font"
 bold.style = "ExtraBold"
-italic.family = "JetBrainsMonoNL Nerd Font Mono"
+italic.family = "JetBrainsMonoNL Nerd Font"
 italic.style = "Medium Italic"
-bold_italic.family = "JetBrainsMonoNL Nerd Font Mono"
+bold_italic.family = "JetBrainsMonoNL Nerd Font"
 bold_italic.style = "ExtraBold Italic"
 size = 11.75
 

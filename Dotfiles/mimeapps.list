@@ -3,9 +3,13 @@ inode/directory=org.gnome.Nautilus.desktop
 application/xml=micro.desktop
 text/plain=micro.desktop
 application/x-shellscript=micro.desktop
+application/pdf=org.gnome.Evince.desktop
+image/svg+xml=org.inkscape.Inkscape.desktop
 
 [Added Associations]
 inode/directory=org.gnome.Nautilus.desktop;
 application/xml=micro.desktop;
 text/plain=micro.desktop;
 application/x-shellscript=micro.desktop;
+application/pdf=org.gnome.Evince.desktop;
+image/svg+xml=org.inkscape.Inkscape.desktop;
