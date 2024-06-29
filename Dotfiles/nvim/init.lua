@@ -1,64 +1,27 @@
-vim.g.base46_cache = vim.fn.stdpath("data") .. "/nvchad/base46"
-vim.g.mapleader = " "
-
--- `LAZY` PLUGIN LOADER - https://github.com/folke/lazy.nvim --
+-- Setup 'lazy' plugin loader
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not (vim.uv or vim.loop).fs_stat(lazypath) then
 	local repo = "https://github.com/folke/lazy.nvim.git"
 	vim.fn.system({ "git", "clone", "--filter=blob:none", repo, "--branch=stable", lazypath })
 end
+
+-- Look for config files in ~/.config/nvim (instead of ~/.config/nvim/lua)
+-- TODO: We may wish to put this *after* the working directory
+package.path = vim.fn.stdpath('config') .. "/?.lua;" .. vim.fn.stdpath('config') .. "/?/init.lua;" .. package.path
 vim.opt.rtp:prepend(lazypath)
 
-local plugins = {
-	
-}
-local config = {
-	defaults = { lazy = true },
-	install = {
-		colorscheme = { "nvchad" }
-	},
+-- Global configuration options
+require("keymaps")						-- Key bindings: .../nvim/keymaps.lua
+local lazyopts = require("config")	-- Nvim configuration: .../nvim/config.lua
 
-	ui = {
-		icons = {
-			ft = "",
-			lazy = "󰂠 ",
-			loaded = "",
-			not_loaded = "",
-		},
-	},
+vim.g.mapleader = "/"
+vim.g.base46_cache = vim.fn.stdpath("data") .. "/nvchad/base46/"
 
-	performance = {
-		rtp = {
-			disabled_plugins = {
-				"2html_plugin",
-				"tohtml",
-				"getscript",
-				"getscriptPlugin",
-				"gzip",
-				"logipat",
-				"netrw",
-				"netrwPlugin",
-				"netrwSettings",
-				"netrwFileHandlers",
-				"matchit",
-				"tar",
-				"tarPlugin",
-				"rrhelper",
-				"spellfile_plugin",
-				"vimball",
-				"vimballPlugin",
-				"zip",
-				"zipPlugin",
-				"tutor",
-				"rplugin",
-				"syntax",
-				"synmenu",
-				"optwin",
-				"compiler",
-				"bugreport",
-				"ftplugin",
-			},
-		},
-	}
-}
-require("lazy").setup({})
+-- Load all plugins specified in .../nvim/plugins/
+local pluginpath = vim.fn.stdpath("config") .. "/plugins"
+local plugins = {}
+for _, file in ipairs(vim.fn.readdir(pluginpath, [[v:val =~ '\.lua$']])) do
+	local module = "plugins." .. file:gsub("%.lua$", "")
+	table.insert(plugins, require(module))
+end
+require("lazy").setup(plugins, lazyopts)
