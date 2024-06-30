@@ -2,11 +2,14 @@
 -- SOURCE: https://github.com/nvim-treesitter/nvim-treesitter
 
 -- Advanced syntax highlighting
-return {
+
+local plugin = {
 	"nvim-treesitter/nvim-treesitter",
-	event = { "BufReadPost", "BufNewFile" },
 	cmd = { "TSInstall", "TSBufEnable", "TSBufDisable", "TSModuleInfo" },
+	event = { "BufReadPost", "BufNewFile" },
 	build = ":TSUpdate",
-	-- opts = function() return require "nvchad.configs.treesitter" end,
-	-- config = function(_, opts) require("nvim-treesitter.configs").setup(opts) end
+	opts = {},
+	config = function(_, opts) require("nvim-treesitter.configs").setup(opts) end
 }
+
+return plugin

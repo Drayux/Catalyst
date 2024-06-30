@@ -11,17 +11,30 @@ package.path = vim.fn.stdpath('config') .. "/?.lua;" .. vim.fn.stdpath('config')
 vim.opt.rtp:prepend(lazypath)
 
 -- Global configuration options
-require("keymaps")						-- Key bindings: .../nvim/keymaps.lua
-local lazyopts = require("config")	-- Nvim configuration: .../nvim/config.lua
-
 vim.g.mapleader = "/"
 vim.g.base46_cache = vim.fn.stdpath("data") .. "/nvchad/base46/"
 
--- Load all plugins specified in .../nvim/plugins/
+local pluginopts = require("options")
 local pluginpath = vim.fn.stdpath("config") .. "/plugins"
 local plugins = {}
+
+-- Exclude loading certain plugins
+local exclude = {
+	filetree = false,
+	ui = false, 
+	base46 = false,
+}
+
+-- Load all plugins specified in .../nvim/plugins/
 for _, file in ipairs(vim.fn.readdir(pluginpath, [[v:val =~ '\.lua$']])) do
-	local module = "plugins." .. file:gsub("%.lua$", "")
-	table.insert(plugins, require(module))
+	local module = file:gsub("%.lua$", "")
+	if exclude[module] == true then goto continue end
+	
+	table.insert(plugins, require("plugins." .. module))
+	::continue::
 end
-require("lazy").setup(plugins, lazyopts)
+require("lazy").setup(plugins, pluginopts)
+
+-- Event hooks and functionality
+require("keymaps")	-- Key bindings: .../nvim/keymaps.lua
+require("events")	-- Event hooks: .../nvim/events.lua

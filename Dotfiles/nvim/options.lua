@@ -16,6 +16,8 @@ vim.opt.relativenumber = true       -- add numbers to each line on the left side
 vim.opt.cursorline = true           -- highlight cursor line underneath the cursor horizontally
 vim.opt.splitbelow = true           -- open new vertical split bottom
 vim.opt.splitright = true           -- open new horizontal splits right
+vim.opt.showmode = false			-- hide the -- INSERT -- tag in insert mode (nothing to do with statusline)
+vim.opt.confirm = true				-- Confirm changes to unsaved buffer on quit (instead of erroring out)
 
 -- Searching
 vim.opt.incsearch = true            -- search as characters are entered
@@ -23,8 +25,12 @@ vim.opt.hlsearch = false            -- do not highlight matches
 vim.opt.ignorecase = true           -- ignore case in searches by default
 vim.opt.smartcase = true            -- but make it case sensitive if an uppercase is entered
 
--- Plugins (lazy loader) config
+-- Sessions
+vim.opt.sessionoptions:append("localoptions")       -- Save localoptions to session file
+
+-- Lazy loader
 local config = {
+	lockfile = vim.fn.stdpath("cache") .. "/lazy-lock.json",
 	defaults = { lazy = true },
 	install = {
 		colorscheme = { "nvchad" }
