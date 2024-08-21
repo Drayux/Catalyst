@@ -1,5 +1,8 @@
 -- Starter from https://martinlwx.github.io/en/config-neovim-from-scratch/
 -- Hint: use `:h <option>` to figure out the meaning if needed
+
+-- Global
+vim.g.mapleader = "/"
 vim.opt.clipboard = 'unnamedplus'   -- use system clipboard 
 vim.opt.completeopt = {'menu', 'menuone', 'noselect'}
 vim.opt.mouse = 'a'                 -- allow the mouse to be used in Nvim
@@ -29,12 +32,9 @@ vim.opt.smartcase = true            -- but make it case sensitive if an uppercas
 vim.opt.sessionoptions:append("localoptions")       -- Save localoptions to session file
 
 -- Lazy loader
-local config = {
+local opts = {
 	lockfile = vim.fn.stdpath("cache") .. "/lazy-lock.json",
 	defaults = { lazy = true },
-	install = {
-		colorscheme = { "nvchad" }
-	},
 	ui = {
 		icons = {
 			ft = "",
@@ -78,4 +78,4 @@ local config = {
 	},
 }
 
-return config
+return opts
