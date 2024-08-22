@@ -25,7 +25,7 @@ package.path = vim.fn.stdpath('config') .. "/?.lua;"
 -- Load config groups (before plugins)
 local opts = require("config")		-- Global configuration: .../nvim/config.lua (returns lazy loader config)
 require("keymap")			-- Key bindings: .../nvim/keymap.lua
--- require("events")			-- Event hooks: .../nvim/events.lua
+require("events")			-- Event hooks: .../nvim/events.lua
 
 
 -- Plugins

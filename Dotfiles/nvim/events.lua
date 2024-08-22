@@ -1,3 +1,66 @@
+-- Function to access the hostname of a Linux box
+-- Allows for home/work "dual-boot" config
+-- TODO: Consider making a new file "commands.lua" and moving this there (likely loaded at the end of init.lua)
+local hostname = function()
+	if vim.g.hostname then
+		-- Cache hostname to reduce I/O traffic
+		return vim.g.hostname
+	end
+
+	local hnfile = io.popen("/bin/hostname")
+	local output = hnfile:read("*a") or ""
+	hnfile:close()
+
+	local name = output:match("(.+)\n$") or output
+	vim.g.hostname = name
+	return name
+end
+
+-- Add hostname command as a neovim user command
+vim.api.nvim_create_user_command("Hostname", function()
+	print(hostname()) end, {
+
+	nargs = 0,
+	desc = "Return the system hostname",
+})
+
+-- Prefer tabs over spaces unless coding for work
+-- TODO: Test different hooks so that as little overhead is added as possible
+-- ^^(BufAdd should work, but that needs verification alongside Projections)
+-- https://neovim.io/doc/user/autocmd.html#autocmd-events
+vim.api.nvim_create_autocmd("BufEnter", {
+    pattern = { "*.c", "*.h" },
+	callback = function()
+		if hostname():match("^LX-.*") then
+			vim.cmd.setlocal("expandtab")
+			print("expanding tabs")
+		end
+	end
+})
+
+
+-- TODO: CLEAN UP EVENTS BELOW THIS --
+
+
+-- IDEA:
+-- On the event multiple files are specified, create a local directory (.nvim_tmp or so)
+--   and symlink the listed files/directories into this temporary directory.
+-- CD to the temporary directory, and open the tree, so that all of the requested files are
+--   accessable at the same directory level.
+-- Upon exit, delete .nvim_tmp
+-- Alternatively, create .nvim_tmp inside $HOME/.local/share/nvim and always ask about the
+--   session if it exists. If the user wants two sessions, then we can create another directory
+--   and set the index as a variable. Session restoring should always check for any directory
+--   .nvim_tmp_X (not just .nvim_tmp)
+-- For that solution, three options should be presented: Yes (restore), No (delete), No (but save it)
+-- QUESTIONS: 
+--   What to do if opened and .nvim_tmp already exists?
+--     (Possibly: destroy/recreate it OR ask the user if they wish to restore their 'session')
+--   What should happen if the user creates a file within the temporary directory?
+--     (Possibly: when destorying the temporary directory, delete all symlinks and move all 
+--     non-symlinks to the parent directory, which would be...the directory of the first file?
+
+
 -- Open nvim-tree at startup (when directory or no path given, if plugin exists)
 -- TODO: This is not behaving quite as expected yet
 -- 	   - File should not show the tree

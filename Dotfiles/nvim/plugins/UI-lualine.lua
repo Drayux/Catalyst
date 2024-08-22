@@ -3,6 +3,8 @@
 
 -- Customizable status line
 
+--------------
+-- For reference
 local colors = {
 	black  = "#080808",
 	grey   = "#303030",
@@ -16,7 +18,6 @@ local colors = {
 	violet = "#d183e8",
 }
 
--- This is the "fallback" theme for lualine
 local theme = {
 	normal = {
 		a = { fg = colors.black, bg = colors.blue },
@@ -35,6 +36,8 @@ local theme = {
 		c = { fg = colors.white },
 	},
 }
+--------------
+
 
 local plugin = {
 	"nvim-lualine/lualine.nvim",
@@ -42,10 +45,9 @@ local plugin = {
 	dependencies = { "nvim-tree/nvim-web-devicons" },
 	opts = {
 		options = {
-			theme = theme,
 			component_separators = "",
 			section_separators = { left = "", right = "" },
-			disabled_filetypes = { "neo-tree" },
+			disabled_filetypes = { "neo-tree", "neo-tree-popup", "notify" },
 		},
 		sections = {
 			lualine_a = {
@@ -69,7 +71,15 @@ local plugin = {
 			lualine_y = {},
 			lualine_z = { "location" },
 		},
-		tabline = {},
+		tabline = {
+			-- lualine_a = { "buffers" },
+			-- lualine_b = {},
+			-- lualine_c = {},
+			-- lualine_x = {},
+			-- lualine_y = {},
+			-- lualine_z = {},
+		},
+		winbar = {},
 		extensions = {},
 	},
 	config = function(_, opts)
