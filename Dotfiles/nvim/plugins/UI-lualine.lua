@@ -57,7 +57,6 @@ local plugin = {
 			lualine_c = {
 				"%=", -- add center components here
 			},
-			lualine_x = {},
 			lualine_y = { "filetype", "progress" },
 			lualine_z = {
 				{ "location", separator = { right = " " }, left_padding = 2 },
@@ -65,24 +64,77 @@ local plugin = {
 		},
 		inactive_sections = {
 			lualine_a = { "filename" },
-			lualine_b = {},
-			lualine_c = {},
-			lualine_x = {},
-			lualine_y = {},
 			lualine_z = { "location" },
 		},
+		-- winbar = {
+		-- 	lualine_c = { "buffers" },
+		-- },
+		-- inactive_winbar = {
+		-- 	lualine_c = { "filename" },
+		-- },
 		tabline = {
-			-- lualine_a = { "buffers" },
-			-- lualine_b = {},
-			-- lualine_c = {},
-			-- lualine_x = {},
-			-- lualine_y = {},
-			-- lualine_z = {},
+			-- lualine_a = { treebutton() },
+			lualine_z = {
+				-- {
+				-- 	"tabs",
+				-- },
+				{	"buffers",
+					show_filename_only = true,
+					hide_filename_extension = false,
+					show_modified_status = true,
+
+					mode = 4,
+					-- max_length = vim.o.columns * 2 / 3,
+
+					filetype_names = {
+						["neo-tree"] = "  Neotree",
+					},
+						
+					use_mode_colors = true,
+					-- buffers_color = {
+					-- 	active = 'lualine_{section}_normal',
+					-- 	inactive = 'lualine_{section}_inactive',
+					-- },
+
+					symbols = {
+						modified = ' ●',      -- Text to show when the buffer is modified
+						alternate_file = '', -- Text to show to identify the alternate file
+						directory =  '',     -- Text to show when the buffer is a directory
+					}},
+			},
 		},
-		winbar = {},
 		extensions = {},
 	},
 	config = function(_, opts)
+		local treebutton = function()
+			local status, api = pcall(require, "neo-tree")
+			if not status then return nil end
+
+			return {
+				-- Display a (   /  ) icon for the button
+				function()
+					-- https://github.com/nvim-neo-tree/neo-tree.nvim/discussions/826#discussioncomment-5431757
+					local manager = require("neo-tree.sources.manager")
+					local renderer = require("neo-tree.ui.renderer")
+
+					local state = manager.get_state("filesystem")
+					local window_exists = renderer.window_exists(state)
+
+					if window_exists then
+						return ""
+					end
+
+					return ""
+				end,
+
+				-- Handler for clicking said button
+				on_click = function()
+					vim.cmd("Neotree toggle left")
+				end
+			}
+		end
+
+		opts.tabline.lualine_a = { treebutton() }
 		require("lualine").setup(opts)
 	end
 }

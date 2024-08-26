@@ -10,6 +10,9 @@ local plugin = {
 	opts = {
 		transparent = true,
 	},
+	build = function()
+		-- TODO: Create symlink to extensions/theme
+	end,
 	config = function(_, opts)
 		-- Apply theme-related settings
 		require("themer").setup(opts)

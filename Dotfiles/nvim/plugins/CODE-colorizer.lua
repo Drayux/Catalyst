@@ -5,7 +5,7 @@
 
 local plugin = {
 	"NvChad/nvim-colorizer.lua",
-	event = { "User FilePost" },
+	event = { "BufEnter" },
 	opts = {
 		user_default_options = { names = false }
 	},
@@ -18,3 +18,4 @@ local plugin = {
 }
 
 return plugin
+

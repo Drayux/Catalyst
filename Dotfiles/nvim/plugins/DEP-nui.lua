@@ -4,3 +4,4 @@
 -- UI component library
 
 return { "MunifTanjim/nui.nvim" }
+

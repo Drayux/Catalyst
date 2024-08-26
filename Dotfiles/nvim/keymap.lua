@@ -9,6 +9,14 @@ local opts = {
 -- Normal mode --
 -----------------
 
+-- Close a buffer while retaining its window
+-- (Also better compatibilty with NeoTree)
+vim.cmd("cnorea bq bd")
+vim.cmd("cnorea bquit bd")
+vim.cmd("cnorea bd bp<bar>sp<bar>bn<bar>bd")
+vim.cmd("cnorea bdel bp<bar>sp<bar>bn<bar>bd")
+vim.cmd("cnorea bdelete bp<bar>sp<bar>bn<bar>bd")
+
 -- Hint: see `:h vim.map.set()`
 -- Better window navigation
 vim.keymap.set('n', '<C-h>', '<C-w>h', opts)

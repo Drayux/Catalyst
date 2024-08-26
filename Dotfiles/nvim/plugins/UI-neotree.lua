@@ -22,8 +22,12 @@ local plugin = {
 		popup_border_style = "rounded",
 
 		window = {
-			position = "left",
+			-- position = "left",
+			position = "float",
 			width = 32,
+			mappings = {
+				["<space>"] = { "toggle_preview", } -- config = { use_float = false }},
+			}
 		},
 
 		source_selector = {
@@ -40,6 +44,7 @@ local plugin = {
 			follow_current_file = {
 				enabled = true,
 			},
+			hijack_netrw_behavior = "open_current",
 		},
 
 		default_component_configs = {
