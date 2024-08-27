@@ -114,11 +114,8 @@ local plugin = {
 				-- Display a (   /  ) icon for the button
 				function()
 					-- https://github.com/nvim-neo-tree/neo-tree.nvim/discussions/826#discussioncomment-5431757
-					local manager = require("neo-tree.sources.manager")
-					local renderer = require("neo-tree.ui.renderer")
-
-					local state = manager.get_state("filesystem")
-					local window_exists = renderer.window_exists(state)
+					local state = require("neo-tree.sources.manager").get_state("filesystem")
+					local window_exists = require("neo-tree.ui.renderer").window_exists(state)
 
 					if window_exists then
 						return ""

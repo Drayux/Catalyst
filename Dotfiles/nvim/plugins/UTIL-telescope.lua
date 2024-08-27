@@ -9,14 +9,17 @@ local plugin = {
 	dependencies = { 'nvim-lua/plenary.nvim' },
 	cmd = { "Telescope" },
 	opts = {
-		-- Theme is the custom themer integration
-		extensions = { "projections", "highlight" }
+		extensions = { "projections" }
 		-- extensions = { "directory", "projections", "file_browser", "themes" }
 	},
 	config = function(_, opts)
 		local telescope = require("telescope")
 		telescope.setup(opts)
 
+		-- Load the custom themer extension from the dotfiles
+		require("themes._themes").ext()
+
+		-- This is optional but adds extensions to the autocomplete suggestions before load
 		for _, ext in ipairs(opts.extensions) do
 			telescope.load_extension(ext)
 		end

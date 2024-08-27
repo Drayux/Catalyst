@@ -14,6 +14,8 @@ local plugin = {
 		"s1n7ax/nvim-window-picker",
 	},
 	cmd = { "Neotree" }, -- (use if lazy-loading)
+	-- module = false,
+	lazy = false,
 	
 	opts = {
 		close_if_last_window = true,
@@ -56,10 +58,10 @@ local plugin = {
 			git_status = {
 				symbols = {
 				  -- Change type
-				  added     = "", -- "✚"
-				  modified  = "", -- ""
-				  deleted   = "✖",
-				  renamed   = "󰁕",
+				  added     = "✚", -- "✚"
+				  modified  = "", -- ""
+				  deleted   = "✖", -- "✖"
+				  renamed   = "󰁕", -- "󰁕"
 
 				  -- Status type
 				  untracked = "", -- ""

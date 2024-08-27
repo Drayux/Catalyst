@@ -59,6 +59,7 @@ vim.api.nvim_create_autocmd("BufEnter", {
 --     (Possibly: when destorying the temporary directory, delete all symlinks and move all 
 --     non-symlinks to the parent directory, which would be...the directory of the first file?
 
+-- TODO: Neotree has issues if it can't find a buffer to open things to
 
 -- Open nvim-tree at startup (when directory or no path given, if plugin exists)
 -- TODO: This is not behaving quite as expected yet
