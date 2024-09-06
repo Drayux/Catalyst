@@ -44,7 +44,9 @@ local plugin = {
 
 		filesystem = {
 			follow_current_file = {
-				enabled = true,
+				-- Prefer to open floating tree at location of current file
+				-- but leave sidebar tree alone as a "utility"
+				enabled = false,
 			},
 			hijack_netrw_behavior = "open_current",
 		},

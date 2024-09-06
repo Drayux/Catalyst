@@ -83,7 +83,7 @@ local plugin = {
 					hide_filename_extension = false,
 					show_modified_status = true,
 
-					mode = 4,
+					mode = 2, -- 4,
 					-- max_length = vim.o.columns * 2 / 3,
 
 					filetype_names = {
@@ -133,6 +133,11 @@ local plugin = {
 
 		opts.tabline.lualine_a = { treebutton() }
 		require("lualine").setup(opts)
+
+		-- Alias to jump buffers via the lualine index
+		-- vim.cmd("cnorea b LualineBuffersJump")
+		vim.cmd("ca bi LualineBuffersJump")
+		vim.cmd("ca bindex LualineBuffersJump")
 	end
 }
 

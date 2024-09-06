@@ -21,17 +21,23 @@ end
 -- Function to change color scheme for themer and subsequent UI plugins
 -- (This is how the theme should be changed)
 -- TODO: Lualine will get a couple white artifacts left over after 1st run?
+local current_theme = nil
+-- local current_transparency = nil
 local select = function(theme)
-	-- Must pass a string for a theme name
-	if type(theme) == "table" then theme = theme.args end
-	if type(theme) ~= "string" then return end
+	-- Normalize theme entry to string
+	if not theme then theme = current_theme end -- For swapping transparency settings
+	if type(theme) == "table" then theme = theme.args end -- Called from autocommand
+	if type(theme) ~= "string" then return current_theme end -- Called from another plugin
+
+	-- Check if theme is already active
+	if theme == current_theme then return current_theme end
 
 	-- Load the specified theme into a table
 	local status, colors = pcall(require, "themes." .. theme)
 	if not status then
 		-- TODO: Make this print red text
 		print("Unable to load `" .. theme .. "` theme")
-		return
+		return current_theme
 	end
 
 	-- Build the lualine theme
@@ -76,61 +82,89 @@ local select = function(theme)
 	-- Apply color schemes
 	require("themer").setup({ colorscheme = colors })
 	if ll_theme then lualine_api.setup({ options = { theme = ll_theme }}) end
+
+	current_theme = theme
+	return theme -- Return the name of the active theme
 end
 
 -- Return a picker for use with telescope
 local extension = function()
 	local themes = list()
 	local opts = require("telescope.themes").get_ivy({
-		prompt_title = "Themer ColorScheme",
-		results_title = "Change colorscheme",
 		finder = require("telescope.finders").new_table({
 			results = themes,
 		}),
-		previewer = false,
-		attach_mappings = function(prompt_bufnr, map)
-			for type, value in pairs(require("themer.config")("get").telescope_mappings) do
-				for bind, method in pairs(value) do
-					map(type, bind, function()
-						if method == "enter" then
-							local selection = require("telescope.actions.state").get_selected_entry()
-							select(selection[1])
-							require("telescope.actions").close(prompt_bufnr)
-
-						-- elseif method == "next_color" then next_color(prompt_bufnr)
-
-						-- elseif method == "prev_color" then prev_color(prompt_bufnr)
-
-						-- elseif method == "preview" then
-						-- 	print("previewing!")
-						-- 	local selection = require("telescope.actions.state").get_selected_entry()
-						-- 	select(selection[1])
-						-- 	require("telescope.actions").close(prompt_bufnr)
-						end
-					end)
-				end
-			end
-			return true end,
 		sorter = require("telescope.config").values.generic_sorter({}),
+		sorting_strategy = "ascending",
+		previewer = false,
+
+		prompt_title = "Themes",
+		results_title = false,
+		
+		layout_strategy = "center",
 		layout_config = {
-			width = 0.99,
-			height = 0.5,
-			preview_cutoff = 0,
-			prompt_position = "top",
-			horizontal = {
-				preview_width = 0.65,
-			},
-			vertical = {
-				preview_width = 0.65,
-				width = 0.9,
-				height = 0.95,
-				preview_height = 0.5,
-			},
-			flex = {
-				preview_width = 0.65,
-				horizontal = {},
-			},
+			preview_cutoff = 1,
+			width = function(_, max_columns, _)
+				return math.min(max_columns, 48) end,
+			height = function(_, _, max_lines)
+				return math.min(max_lines, 12) end,
 		},
+
+		border = true,
+		borderchars = {
+			prompt = { "─", "│", " ", "│", "╭", "╮", "│", "│" },
+			results = { "─", "│", "─", "│", "├", "┤", "╯", "╰" },
+			preview = { "─", "│", "─", "│", "╭", "╮", "╯", "╰" },
+		},
+
+		attach_mappings = function(prompt_bufnr, map)
+			local active = select() -- Get the name of the current theme
+
+			local actions = require("telescope.actions")
+			local set = require("telescope.actions.set")
+			local state = require("telescope.actions.state")
+
+			-- NOTE: Currently not changing theme on load
+			-- This is doable, but I want the arrow keys to feel like
+			-- an explicit "preview this theme" action
+
+			-- Trigger theme on move up/down actions
+			actions.move_selection_previous:replace(function()
+				set.shift_selection(prompt_bufnr, -1)
+				select(state.get_selected_entry()[1])
+			end)
+
+			actions.move_selection_next:replace(function()
+				set.shift_selection(prompt_bufnr, 1)
+				select(state.get_selected_entry()[1])
+			end)
+
+			-- Trigger theme on text entry (as this may select a new theme)
+			vim.schedule(function()
+				vim.api.nvim_create_autocmd("TextChangedI", {
+					buffer = prompt_bufnr,
+					callback = function()
+						local selection = state.get_selected_entry()[1]
+						if selection then select(selection) end
+						end,
+				})
+			end)
+
+			-- Revert to original theme if cancelled
+			actions.close:replace(function()
+				if active then select(active) end
+				actions.close:original(prompt_bufnr)
+			end)
+
+			-- Don't open a new buffer on selection
+			actions.select_default:replace(function()
+				-- > Do something here, if desired
+				local selection = state.get_selected_entry()[1]
+				if selection then select(selection) end
+				-- close(prompt_bufnr)
+			end)
+
+			return true end,
 	})
 
 	-- Call for the telescope prompt
