@@ -19,72 +19,106 @@ local list = function()
 end
 
 -- Function to change color scheme for themer and subsequent UI plugins
+-- Returns active theme and transparency setting
 -- (This is how the theme should be changed)
 -- TODO: Lualine will get a couple white artifacts left over after 1st run?
 local current_theme = nil
--- local current_transparency = nil
-local select = function(theme)
-	-- Normalize theme entry to string
-	if not theme then theme = current_theme end -- For swapping transparency settings
-	if type(theme) == "table" then theme = theme.args end -- Called from autocommand
-	if type(theme) ~= "string" then return current_theme end -- Called from another plugin
+local current_transparency = nil
+local select = function(theme, transparency)
+	-- Normalize theme parameter (when called from user command)
+	if type(theme) == "table" then theme = theme.args end
+	if theme and (type(theme) ~= "string") then
+		print("Unrecognized parameter format for theme, expected string")
 
-	-- Check if theme is already active
-	if theme == current_theme then return current_theme end
-
-	-- Load the specified theme into a table
-	local status, colors = pcall(require, "themes." .. theme)
-	if not status then
-		-- TODO: Make this print red text
-		print("Unable to load `" .. theme .. "` theme")
-		return current_theme
+		theme = nil
+		transparency = nil -- Ignore transparency on bad params
 	end
 
-	-- Build the lualine theme
-	local ll_theme = nil
-	local status, lualine_api = pcall(require, "lualine")
-	if status then
-		ll_theme = {
-			normal = {
-				a = { bg = colors.accent, fg = colors.bg.alt },
-				b = { bg = colors.bg.alt, fg = colors.accent },
-				c = { bg = colors.bg.alt, fg = colors.dimmed.subtle },
-			},
+	-- When both are nil, we just want to get the current state
+	if not theme and transparency ~= nil then
+		return current_theme, current_transparency
+	end
+	
+	--------
+	
+	-- Themer.nvim options table
+	local opts = {}
 
-			insert = {
-				a = { bg = colors.diff.add, fg = colors.bg.alt },
-				b = { bg = colors.bg.alt, fg = colors.diff.add },
-			},
+	-- Process colorscheme
+	if theme and (theme ~= current_theme) then
+		-- Load the specified theme into a table
+		local status, colors = pcall(require, "themes." .. theme)
+		if not status then
+			-- TODO: Make this print red text
+			print("Unable to load `" .. theme .. "` theme")
 
-			command = {
-				a = { bg = colors.diagnostic.warn, fg = colors.bg.alt },
-				b = { bg = colors.dimmed.subtle, fg = colors.diagnostic.warn },
-			},
+			-- Don't set transparency if invalid theme name
+			return current_theme, current_transparency
+		end
 
-			visual = {
-				a = { bg = colors.accent, fg = colors.bg.selected },
-				b = { bg = colors.dimmed.subtle, fg = colors.accent },
-			},
+		opts.colorscheme = colors
 
-			replace = {
-				a = { bg = colors.diff.delete, fg = colors.bg.alt },
-				b = { bg = colors.dimmed.subtle, fg = colors.diff.delete },
-			},
+		-- Build the lualine theme (if lualine is installed)
+		local lualine_theme = nil
+		local status, lualine_api = pcall(require, "lualine")
+		if status then
+			lualine_theme = {
+				normal = {
+					a = { bg = colors.accent, fg = colors.bg.alt },
+					b = { bg = colors.bg.alt, fg = colors.accent },
+					c = { bg = colors.bg.alt, fg = colors.dimmed.subtle },
+				},
 
-			inactive = {
-				a = { bg = colors.bg.alt, fg = colors.accent },
-				b = { bg = colors.bg.alt, fg = colors.dimmed.subtle, gui = "bold" },
-				c = { bg = colors.bg.alt, fg = colors.dimmed.subtle },
-			},
-		}
+				insert = {
+					a = { bg = colors.diff.add, fg = colors.bg.alt },
+					b = { bg = colors.bg.alt, fg = colors.diff.add },
+				},
+
+				command = {
+					a = { bg = colors.diagnostic.warn, fg = colors.bg.alt },
+					b = { bg = colors.dimmed.subtle, fg = colors.diagnostic.warn },
+				},
+
+				visual = {
+					a = { bg = colors.accent, fg = colors.bg.selected },
+					b = { bg = colors.dimmed.subtle, fg = colors.accent },
+				},
+
+				replace = {
+					a = { bg = colors.diff.delete, fg = colors.bg.alt },
+					b = { bg = colors.dimmed.subtle, fg = colors.diff.delete },
+				},
+
+				inactive = {
+					a = { bg = colors.bg.alt, fg = colors.accent },
+					b = { bg = colors.bg.alt, fg = colors.dimmed.subtle, gui = "bold" },
+					c = { bg = colors.bg.alt, fg = colors.dimmed.subtle },
+				},
+			}
+
+			-- Apply the lualine theme
+			lualine_api.setup({ options = { theme = lualine_theme }})
+		end
 	end
 
-	-- Apply color schemes
-	require("themer").setup({ colorscheme = colors })
-	if ll_theme then lualine_api.setup({ options = { theme = ll_theme }}) end
+	-- Set transparency
+	-- NOTE: When transparency is nil, keep current
+	if (transparency ~= nil) and (transparency ~= current_transparency) then
+		-- Funny syntax normalizes the "transparency" param to a boolean
+		opts.transparent = (transparency and true) or false
+	end
 
-	current_theme = theme
-	return theme -- Return the name of the active theme
+	-- Commit the new highlights (with Themer.nvim)
+	if opts.transparent ~= nil or opts.colorscheme then
+		require("themer").setup(opts)
+		current_theme = theme or current_theme
+
+		if transparency ~= nil then
+			current_transparency = transparency
+		end
+	end
+
+	return current_theme, current_transparency -- Return the name of the active theme
 end
 
 -- Return a picker for use with telescope
@@ -105,9 +139,9 @@ local extension = function()
 		layout_config = {
 			preview_cutoff = 1,
 			width = function(_, max_columns, _)
-				return math.min(max_columns, 48) end,
+				return math.min(max_columns, 40) end,
 			height = function(_, _, max_lines)
-				return math.min(max_lines, 12) end,
+				return math.min(max_lines, 16) end,
 		},
 
 		border = true,
@@ -117,52 +151,75 @@ local extension = function()
 			preview = { "─", "│", "─", "│", "╭", "╮", "╯", "╰" },
 		},
 
-		attach_mappings = function(prompt_bufnr, map)
+		-- TODO: Keybind to preview theme maybe?
+		attach_mappings = function(prompt_bufnr)
 			local active = select() -- Get the name of the current theme
 
 			local actions = require("telescope.actions")
 			local set = require("telescope.actions.set")
 			local state = require("telescope.actions.state")
 
-			-- NOTE: Currently not changing theme on load
-			-- This is doable, but I want the arrow keys to feel like
-			-- an explicit "preview this theme" action
+			-- Original close function (TODO: Is there a better way to do this?)
+			-- https://github.com/nvim-telescope/telescope.nvim/blob/master/lua/telescope/actions/init.lua#L379
+			local close = function(pbnr)
+				local picker = state.get_current_picker(pbnr)
+				local win_id = picker.original_win_id
+				local cursor_valid, cursor = pcall(vim.api.nvim_win_get_cursor, win_id)
 
-			-- Trigger theme on move up/down actions
+				actions.close_pum(pbnr)
+				require("telescope.pickers").on_close_prompt(pbnr)
+
+				pcall(vim.api.nvim_set_current_win, win_id)
+				if cursor_valid and (vim.api.nvim_get_mode().mode == "i") and (picker._original_mode ~= "i") then
+					pcall(vim.api.nvim_win_set_cursor, win_id, {
+						cursor[1],
+						cursor[2] + 1,
+					})
+				end
+			end
+
+			-- ENTER - Don't open a new buffer, just set the theme
+			actions.select_default:replace(function()
+				-- > Do something here, if desired
+				local selection = state.get_selected_entry()[1]
+				if selection then select(selection) end
+				close(prompt_bufnr)
+			end)
+
+			-- CANCEL - Revert to original theme
+			actions.close:replace(function()
+				if active then select(active) end
+				close(prompt_bufnr)
+			end)
+
+			-- ARROW-UP - Trigger theme preview (and move selection up)
 			actions.move_selection_previous:replace(function()
 				set.shift_selection(prompt_bufnr, -1)
 				select(state.get_selected_entry()[1])
 			end)
 
+			-- ARROW-DOWN - Trigger theme preview (and move selection down)
 			actions.move_selection_next:replace(function()
 				set.shift_selection(prompt_bufnr, 1)
 				select(state.get_selected_entry()[1])
 			end)
 
+			-- NOTE: Currently not changing theme on load
+			-- This is doable, but I want the arrow keys to feel like
+			-- an explicit "preview this theme" action
+
 			-- Trigger theme on text entry (as this may select a new theme)
-			vim.schedule(function()
-				vim.api.nvim_create_autocmd("TextChangedI", {
-					buffer = prompt_bufnr,
-					callback = function()
-						local selection = state.get_selected_entry()[1]
-						if selection then select(selection) end
-						end,
-				})
-			end)
-
-			-- Revert to original theme if cancelled
-			actions.close:replace(function()
-				if active then select(active) end
-				actions.close:original(prompt_bufnr)
-			end)
-
-			-- Don't open a new buffer on selection
-			actions.select_default:replace(function()
-				-- > Do something here, if desired
-				local selection = state.get_selected_entry()[1]
-				if selection then select(selection) end
-				-- close(prompt_bufnr)
-			end)
+			-- Enable this only when also previewing by default^^
+			-- TODO: Does this "leak"?
+			-- vim.schedule(function()
+			-- 	vim.api.nvim_create_autocmd("TextChangedI", {
+			-- 		buffer = prompt_bufnr,
+			-- 		callback = function()
+			-- 			local selection = state.get_selected_entry()[1]
+			-- 			if selection then select(selection) end
+			-- 			end,
+			-- 	})
+			-- end)
 
 			return true end,
 	})
