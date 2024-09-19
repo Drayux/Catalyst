@@ -88,6 +88,7 @@ local plugin = {
 
 					filetype_names = {
 						["neo-tree"] = "  Neotree",
+						["TelescopePrompt"] = "  Telescope",
 					},
 						
 					use_mode_colors = true,
@@ -138,6 +139,8 @@ local plugin = {
 		-- vim.cmd("cnorea b LualineBuffersJump")
 		vim.cmd("ca bi LualineBuffersJump")
 		vim.cmd("ca bindex LualineBuffersJump")
+
+		-- TODO: bid -> Jump to buffer index and call :bd, then move to original buffer
 	end
 }
 

@@ -11,9 +11,11 @@ local plugin = {
 	opts = { -- https://github.com/nvim-treesitter/nvim-treesitter-context?tab=readme-ov-file#configuration
 		enable = true,
 		mode = "cursor", -- "topline",
-		min_window_height = 20,
-		max_lines = 4,
-		trim_scope = "inner",
+		-- separator = "",
+		min_window_height = 24,
+		max_lines = 8,
+		multiline_threshold = 1,
+		trim_scope = "outer", -- "inner"
 	},
 	config = function(_, opts)
 		require("treesitter-context").setup(opts)

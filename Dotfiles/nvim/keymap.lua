@@ -49,13 +49,17 @@ vim.keymap.set('n', '<C-S-Up>', '<cmd>:cpf<cr>')
 -- Plugins     --
 -----------------
 
+-- NEOTREE
+vim.keymap.set('n', "<leader>fb", "<cmd>NeotreeActivate<cr>", {})
+vim.keymap.set("n", "<leader>tt", "<cmd>Neotree toggle left<cr>", {})
+
 -- TELESCOPE
 -- TODO: /fd doesn't let me select a parent directory
 -- TODO: /fb doesn't change the working directory when in a workspace(?)
 vim.keymap.set('n', '<leader>ff', "<cmd>Telescope find_files<cr>", {})
 vim.keymap.set("n", "<leader>fd", "<cmd>Telescope directory feature=open_dir<cr>", {})
 vim.keymap.set('n', '<leader>fp', "<cmd>Telescope projections<cr>", {})
-vim.keymap.set("n", "<leader>fb", "<cmd>Telescope file_browser path=%:p:h select_buffer=true<cr>", {})
+-- vim.keymap.set("n", "<leader>fb", "<cmd>Telescope file_browser path=%:p:h select_buffer=true<cr>", {})
 vim.keymap.set('n', '<leader>fe', "<cmd>Telescope buffers<cr>", {})
 vim.keymap.set('n', '<leader>fg', "<cmd>Telescope live_grep<cr>", {})
 vim.keymap.set('n', '<leader>ft', "<cmd>Telescope themes<cr>", {})
