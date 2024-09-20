@@ -50,8 +50,12 @@ vim.keymap.set('n', '<C-S-Up>', '<cmd>:cpf<cr>')
 -----------------
 
 -- NEOTREE
-vim.keymap.set('n', "<leader>fb", "<cmd>NeotreeActivate<cr>", {})
-vim.keymap.set("n", "<leader>tt", "<cmd>Neotree toggle left<cr>", {})
+vim.keymap.set('n', "<leader>fb", "<cmd>Neofiles<cr>", {})
+vim.keymap.set("n", "<leader>tt", "<cmd>Neotoggle<cr>", {})
+vim.keymap.set("n", "<leader>tb", "<cmd>Neotree focus filesystem left<cr>", {})
+vim.keymap.set("n", "<leader>ts", "<cmd>Neotree focus document_symbols left<cr>", {})
+vim.keymap.set("n", "<leader>te", "<cmd>Neotree focus buffers left<cr>", {})
+vim.keymap.set("n", "<leader>tg", "<cmd>Neotree focus git_status left<cr>", {})
 
 -- TELESCOPE
 -- TODO: /fd doesn't let me select a parent directory

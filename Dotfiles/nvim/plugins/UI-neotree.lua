@@ -28,7 +28,7 @@ local plugin = {
 			-- position = "float",
 			width = 35,
 			mappings = {
-				["<space>"] = { "toggle_preview" } -- config = { use_float = false }},
+				["<space>"] = { "toggle_preview", config = { use_float = true }},
 			}
 		},
 
@@ -87,9 +87,42 @@ local plugin = {
 	config = function(_, opts)
 		require("neo-tree").setup(opts)
 
+		-- Shortcut for toggling the tree (source aware)
+		-- Will show the most recent source or default to filesystem
+		-- (Unless :Neotree was invoked directly, then the state may not be updated)
+		-- https://github.com/nvim-neo-tree/neo-tree.nvim/discussions/826#discussioncomment-5431757
+		local toggleState = nil
+		local getState ; getState = function(source, ...)
+			-- Recursive base case
+			if not source then return nil end
+
+			local state = require("neo-tree.sources.manager").get_state(source)
+			local exists = require("neo-tree.ui.renderer").window_exists(state)
+
+			-- Recursion will stop if the window exists
+			return (exists and source) or getState(...)
+		end
+		vim.api.nvim_create_user_command("Neotoggle", function(args)
+			local currentState = getState("filesystem", "document_symbols", "buffers", "git_status")
+			if currentState then
+				-- Window present, save state and close
+				toggleState = currentState
+				vim.cmd("Neotree close")
+
+			else
+				-- No window, open last known source
+				local source = toggleState or ""
+				vim.cmd("Neotree left focus " .. source)
+
+			end
+		end, {
+			nargs = 0,
+			desc = "Toggle Neotree sidebar",
+		})
+
 		-- Shortcut for opening a file browser
 		-- Will show a floating (temporary) window unless the filesystem tree is already open
-		vim.api.nvim_create_user_command("NeotreeActivate", function(args)
+		vim.api.nvim_create_user_command("Neofiles", function(args)
 			-- Check if neotree is currently visible
 			-- NOTE: Currently the same as in the lualine config...
 			--   update with an API call if one is ever added
@@ -98,15 +131,15 @@ local plugin = {
 
 			-- :Neotree will focus the tree
 			if window_exists then
-				vim.cmd("Neotree left")
+				vim.cmd("Neotree filesystem left")
 				return
 			end
 			
 			-- Sidebar "hotkey" is simply :Neotree toggle left
-			vim.cmd("Neotree float filesystem")
+			vim.cmd("Neotree filesystem float")
 		end, {
 			nargs = 0,
-			desc = "Activate Neotree window (swap or open)",
+			desc = "Activate Neotree filesystem (swap or open)",
 		})
 	end
 }

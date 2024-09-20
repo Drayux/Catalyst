@@ -111,23 +111,31 @@ local plugin = {
 			local status, api = pcall(require, "neo-tree")
 			if not status then return nil end
 
+			-- TODO: This function is duplicated from plugins/UI-neotree.lua
+			local manager = require("neo-tree.sources.manager")
+			local renderer = require("neo-tree.ui.renderer")
+			local getState ; getState = function(source, ...)
+				-- Recursive base case
+				if not source then return false end
+
+				local state = manager.get_state(source)
+				return renderer.window_exists(state)
+					or getState(...) -- Recursion will stop if the window is found
+			end
+			---
+
 			return {
 				-- Display a (   /  ) icon for the button
 				function()
-					-- https://github.com/nvim-neo-tree/neo-tree.nvim/discussions/826#discussioncomment-5431757
-					local state = require("neo-tree.sources.manager").get_state("filesystem")
-					local window_exists = require("neo-tree.ui.renderer").window_exists(state)
-
-					if window_exists then
+					if getState("filesystem", "document_symbols", "buffers", "git_status") then
 						return ""
 					end
 
 					return ""
 				end,
 
-				-- Handler for clicking said button
 				on_click = function()
-					vim.cmd("Neotree toggle left")
+					vim.cmd("Neotoggle")
 				end
 			}
 		end
