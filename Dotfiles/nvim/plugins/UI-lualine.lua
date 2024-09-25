@@ -143,10 +143,44 @@ local plugin = {
 		opts.tabline.lualine_a = { treebutton() }
 		require("lualine").setup(opts)
 
+		-- Akin to LualineBuffersJump, delete an arbitrary buffer via index
+		-- TODO: For some reason, using the BANG causes the window to close in the same conditions
+		-- that not using the bang would not
+		local LualineBuffersDelete = function(argtable)
+			local idx = argtable.args
+			if #idx == 0 then idx = 0
+			else
+				_, idx = pcall(tonumber, argtable.args)
+				if not idx then 
+					print("Could not close `" .. tostring(idx) .. "`")
+					return
+				end
+			end
+
+			-- sp  : Split screen
+			-- LualineBuffersJump : Jump to the previous buffer
+			-- bd!(?) : Delete current buffer (including the split, so the new one takes its place)
+			--	^^Original split has the active buffer before deleting
+
+			if idx > 0 then
+				vim.cmd("bp")
+			end
+
+			vim.cmd("sp")
+			vim.cmd("LualineBuffersJump " .. tostring(idx))
+			vim.cmd("bd" .. (argtable.bang and "!" or ""))
+		end
+		vim.api.nvim_create_user_command("LualineBuffersDelete", LualineBuffersDelete, {
+			nargs = "?",
+			desc = "Delete a buffer, indexed by the Lualine buffers index",
+			bang = true,
+		})
+
 		-- Alias to jump buffers via the lualine index
 		-- vim.cmd("cnorea b LualineBuffersJump")
 		vim.cmd("ca bi LualineBuffersJump")
 		vim.cmd("ca bindex LualineBuffersJump")
+		vim.cmd("ca bid LualineBuffersDelete")
 
 		-- TODO: bid -> Jump to buffer index and call :bd, then move to original buffer
 	end
