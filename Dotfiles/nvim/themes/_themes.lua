@@ -1,7 +1,8 @@
 -- Custom themer integration for telescope
 
 -- Get a list of the available themes
-local list = function()
+-- lightmode -> Returns a list of light themes if true, else dark (default)
+local list = function(lightmode)
 	-- TODO: Consider making the themes directory an option (or even supporting multiple at once)
 	local entries = vim.fn.readdir(vim.fn.stdpath("config") .. "/themes",
 		function(name)
@@ -13,7 +14,12 @@ local list = function()
 	local suggestions = {}
 	for _, name in ipairs(entries) do
 		local theme = name:gsub("%.lua$", "")
-		table.insert(suggestions, theme)
+		local light = theme:match("(.+)_light$")
+		if (light and lightmode) -- Light themes
+			or (not light and not lightmode) -- Dark themes
+		then
+			table.insert(suggestions, light or theme)
+		end
 	end
 	return suggestions
 end
@@ -122,8 +128,9 @@ local select = function(theme, transparency)
 end
 
 -- Return a picker for use with telescope
-local extension = function()
-	local themes = list()
+local extension = function(args)
+	local lightmode = args.light and true
+	local themes = list(lightmode)
 	local opts = require("telescope.themes").get_ivy({
 		finder = require("telescope.finders").new_table({
 			results = themes,
@@ -154,6 +161,7 @@ local extension = function()
 		-- TODO: Keybind to preview theme maybe?
 		attach_mappings = function(prompt_bufnr)
 			local active = select() -- Get the name of the current theme
+			local ext = lightmode and "_light" or ""
 
 			local actions = require("telescope.actions")
 			local set = require("telescope.actions.set")
@@ -182,7 +190,7 @@ local extension = function()
 			actions.select_default:replace(function()
 				-- > Do something here, if desired
 				local selection = state.get_selected_entry()[1]
-				if selection then select(selection) end
+				if selection then select(selection .. ext) end
 				close(prompt_bufnr)
 			end)
 
@@ -195,13 +203,15 @@ local extension = function()
 			-- ARROW-UP - Trigger theme preview (and move selection up)
 			actions.move_selection_previous:replace(function()
 				set.shift_selection(prompt_bufnr, -1)
-				select(state.get_selected_entry()[1])
+				local selection = state.get_selected_entry()[1]
+				if selection then select(selection .. ext) end
 			end)
 
 			-- ARROW-DOWN - Trigger theme preview (and move selection down)
 			actions.move_selection_next:replace(function()
 				set.shift_selection(prompt_bufnr, 1)
-				select(state.get_selected_entry()[1])
+				local selection = state.get_selected_entry()[1]
+				if selection then select(selection .. ext) end
 			end)
 
 			-- NOTE: Currently not changing theme on load

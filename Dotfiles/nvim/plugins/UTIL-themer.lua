@@ -56,7 +56,7 @@ local plugin = {
 				-- TODO: Themer appears to bug out with the transparency option
 				-- ^^For some reason, initially loading only a specific few themes first works (so this is a hacky workaround)
 				-- TODO: "Base" fallback theme
-				setHighlights("ayu", opts.transparent or false)
+				setHighlights("ayu_light", opts.transparent or false)
 
 				-- TODO: If option is present, then run setHighlights a second time (once fallback "_base" is created)
 				local default = vim.g.default_theme or "draycula"
