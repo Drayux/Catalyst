@@ -10,7 +10,7 @@ vim.opt.splitright = true           -- open new horizontal splits right
 vim.opt.confirm = true				-- Confirm changes to unsaved buffer on quit (instead of erroring out)
 
 --- Keymapping
-vim.g.mapleader = "/"
+vim.g.mapleader = ";"
 vim.opt.timeout = false
 
 --- Sessions
@@ -28,7 +28,7 @@ vim.opt.cursorline = true           -- highlight cursor line underneath the curs
 -- Editor
 --- Tabs
 vim.opt.tabstop = 4                 -- number of visual spaces per TAB
-vim.opt.softtabstop = 4             -- number of spacesin tab when editing
+vim.opt.softtabstop = 4             -- number of spaces in a tab when editing
 vim.opt.expandtab = false           -- use tabs instead of spaces because we are sane
 vim.opt.shiftwidth = 4              -- in (crackhead) spaces mode, use four spaces in place of a TAB
 
@@ -37,11 +37,12 @@ vim.opt.incsearch = true            -- search as characters are entered
 vim.opt.hlsearch = true             -- do not highlight matches
 vim.opt.ignorecase = true           -- ignore case in searches by default
 vim.opt.smartcase = true            -- but make it case sensitive if an uppercase is entered
+vim.opt.iskeyword:remove("_")
 
 --- Folding
 --- TODO: Consider if I want auto closing (especially if a fold were opened via movement with insert mode or search)
 vim.opt.foldenable = false			-- Don't fold code by default
-vim.opt.foldlevelstart = 1			-- Default global fold level (used by zm, zr, etc.)
+vim.opt.foldlevelstart = 0			-- Default global fold level (used by zm, zr, etc.)
 vim.opt.foldminlines = 2 -- 9		-- Minimum block size +1 to be considered a fold point; includes start/end of block (Min screen for context.nvim is 24) ; 2 so one-liners are skipped
 -- TODO: Open fold when some modifier is pressed and navigating (for example, moving into a block with J instead of j)
 vim.opt.foldopen = "block,hor,insert,jump,mark,percent,quickfix,search,tag,undo" -- "all"
