@@ -1,7 +1,16 @@
 -- Starter from https://martinlwx.github.io/en/config-neovim-from-scratch/
 -- Hint: use `:h <option>` to figure out the meaning if needed
 
--- Interface
+-- >> APPEARANCE <<
+vim.g.default_theme = "draycula"
+vim.opt.number = true               -- show absolute number
+vim.opt.relativenumber = true       -- add numbers to each line on the left side
+vim.opt.showmode = false			-- hide the -- INSERT -- tag in insert mode (nothing to do with statusline)
+vim.opt.cursorline = true           -- highlight cursor line underneath the cursor horizontally
+
+
+-- >> INTERFACE <<
+--- General
 vim.opt.clipboard = 'unnamedplus'   -- use system clipboard 
 vim.opt.completeopt = {'menu', 'menuone', 'noselect'}
 vim.opt.mouse = 'a'                 -- allow the mouse to be used in Nvim
@@ -17,15 +26,7 @@ vim.opt.timeout = false
 vim.opt.sessionoptions:append("localoptions")       -- Save localoptions to session file
 
 
--- Appearance
-vim.g.default_theme = "draycula"
-vim.opt.number = true               -- show absolute number
-vim.opt.relativenumber = true       -- add numbers to each line on the left side
-vim.opt.showmode = false			-- hide the -- INSERT -- tag in insert mode (nothing to do with statusline)
-vim.opt.cursorline = true           -- highlight cursor line underneath the cursor horizontally
-
-
--- Editor
+-- >> EDITOR <<
 --- Tabs
 vim.opt.tabstop = 4                 -- number of visual spaces per TAB
 vim.opt.softtabstop = 4             -- number of spaces in a tab when editing
@@ -40,7 +41,7 @@ vim.opt.smartcase = true            -- but make it case sensitive if an uppercas
 vim.opt.iskeyword:remove("_")
 
 --- Folding
---- TODO: Consider if I want auto closing (especially if a fold were opened via movement with insert mode or search)
+-- TODO: Consider if I want auto closing (especially if a fold were opened via movement with insert mode or search)
 vim.opt.foldenable = false			-- Don't fold code by default
 vim.opt.foldlevelstart = 0			-- Default global fold level (used by zm, zr, etc.)
 vim.opt.foldminlines = 2 -- 9		-- Minimum block size +1 to be considered a fold point; includes start/end of block (Min screen for context.nvim is 24) ; 2 so one-liners are skipped
@@ -53,7 +54,17 @@ vim.opt.foldexpr = "nvim_treesitter#foldexpr()"
 vim.opt.foldtext = "" -- "v:lua.vim.treesitter.foldtext()"
 
 
--- Plugins
+-- >> COMMANDS <<
+--- Close a buffer while retaining its window
+-- (Also provides better compatibilty with NeoTree)
+vim.cmd("cnorea bq bd")
+vim.cmd("cnorea bquit bd")
+vim.cmd("cnorea bd bp<bar>sp<bar>bn<bar>bd")
+vim.cmd("cnorea bdel bp<bar>sp<bar>bn<bar>bd")
+vim.cmd("cnorea bdelete bp<bar>sp<bar>bn<bar>bd")
+
+
+-- >> PLUGINS <<
 --- Lazy loader
 local opts = {
 	lockfile = vim.fn.stdpath("cache") .. "/lazy-lock.json",
