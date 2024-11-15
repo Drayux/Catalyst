@@ -1,46 +1,34 @@
 -- Function to access the hostname of a Linux box
 -- Allows for home/work "dual-boot" config
--- TODO: Consider making a new file "commands.lua" and moving this there (likely loaded at the end of init.lua)
-local hostname = function()
-	if vim.g.hostname then
-		-- Cache hostname to reduce I/O traffic
-		return vim.g.hostname
+-- TODO: Consider making this a vim function instead of a command (vim.fn.hostname probably?)
+local hostnameCmd = function()
+	if not vim.g.hostname then
+		local hnfile = io.popen("/bin/hostname")
+		local output = hnfile:read("*a") or ""
+		hnfile:close()
+
+		local _hn = output:match("(.+)\n$") or output
+		vim.g.hostname = _hn -- Cache hostname to reduce resource consumption
 	end
 
-	local hnfile = io.popen("/bin/hostname")
-	local output = hnfile:read("*a") or ""
-	hnfile:close()
-
-	local name = output:match("(.+)\n$") or output
-	vim.g.hostname = name
-	return name
+	return vim.g.hostname
 end
 
 -- Add hostname command as a neovim user command
 vim.api.nvim_create_user_command("Hostname", function()
-	print(hostname()) end, {
-
+	print(hostnameCmd()) end, {
 	nargs = 0,
-	desc = "Return the system hostname",
+	desc = "Get the system hostname",
 })
-
--- Prefer tabs over spaces unless coding for work
--- TODO: Test different hooks so that as little overhead is added as possible
--- ^^(BufAdd should work, but that needs verification alongside Projections)
--- https://neovim.io/doc/user/autocmd.html#autocmd-events
-vim.api.nvim_create_autocmd("BufEnter", {
-    pattern = { "*.c", "*.h" },
-	callback = function()
-		if hostname():match("^LX-.*") then
-			vim.cmd.setlocal("expandtab")
-		end
-	end
+vim.api.nvim_create_user_command("HostnameCmd", function()
+	hostnameCmd() end, {
+	nargs = 0,
 })
 
 
--- TODO: CLEAN UP EVENTS BELOW THIS --
 
 
+-- TODO: CLEAN UP/MOVE EVENTS BELOW THIS --
 -- IDEA:
 -- On the event multiple files are specified, create a local directory (.nvim_tmp or so)
 --   and symlink the listed files/directories into this temporary directory.
@@ -69,6 +57,7 @@ vim.api.nvim_create_autocmd("BufEnter", {
 vim.api.nvim_create_autocmd("VimEnter", {
 	-- Only open the tree after the editor is ready
 	callback = function(data)
+		repeat return until false
 		local directory = (vim.fn.isdirectory(data.file) == 1)
 
 		-- NOTE: This does not appear to work on child directories of a project

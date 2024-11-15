@@ -11,6 +11,9 @@ local NORMAL = "n"
 local INSERT = "i"
 local VISUAL = "v"
 
+-- Assign leader in an obvious place
+vim.g.mapleader = ";"
+
 -----------------
 -- Normal mode --
 -----------------
@@ -25,16 +28,16 @@ vim.keymap.set(NORMAL, "`", "@", default_opts)
 vim.keymap.set(NORMAL, "~", "q", default_opts)
 
 -- ! - Jump 1/2 page down
-vim.keymap.set(GLOBAL, "!", "<C-d>", default_opts)
+vim.keymap.set(GLOBAL, "!", "<C-u>", default_opts)
 
 -- @ - Jump 1/2 page up
-vim.keymap.set(GLOBAL, "@", "<C-u>", default_opts)
+vim.keymap.set(GLOBAL, "@", "<C-d>", default_opts)
 
 -- # - Jump to matching bracket
 vim.keymap.set(GLOBAL, "#", "%", default_opts)
 
--- $ - Find backwards
-vim.keymap.set(GLOBAL, "$", "F", default_opts)
+-- $ - Repeat last find
+vim.keymap.set(GLOBAL, "$", ",", default_opts)
 
 -- % - Repeat last replace
 vim.keymap.set(GLOBAL, "%", "&", default_opts)
@@ -43,10 +46,10 @@ vim.keymap.set(GLOBAL, "%", "&", default_opts)
 vim.keymap.set(GLOBAL, "^", "~", default_opts)
 
 -- & - Previous buffer
-vim.keymap.set(GLOBAL, "&", ":bp", default_opts)
+vim.keymap.set(GLOBAL, "&", "<cmd>bp<cr>", default_opts)
 
 -- * - Next buffer
-vim.keymap.set(GLOBAL, "*", ":bn", default_opts)
+vim.keymap.set(GLOBAL, "*", "<cmd>bn<cr>", default_opts)
 
 -- ( - Jump sequence beginning
 -- > Default
@@ -55,6 +58,9 @@ vim.keymap.set(GLOBAL, "*", ":bn", default_opts)
 -- > Default
 
 --- QWERTY ROW
+-- TAB - Use register _
+vim.keymap.set(GLOBAL, "<Tab>", "\"", default_opts)
+
 -- Q - Jump word backwards (motion)
 vim.keymap.set(GLOBAL, "q", "b", default_opts)
 vim.keymap.set(GLOBAL, "Q", "B", default_opts)
@@ -66,7 +72,7 @@ vim.keymap.set(GLOBAL, "Q", "B", default_opts)
 -- > Default
 
 -- R - Find char forwards (prompt/motion)
--- > Shift+R - Repeat last find
+-- > Shift+R - Repeat find backwards
 vim.keymap.set(GLOBAL, "r", "f", default_opts)
 vim.keymap.set(GLOBAL, "R", ";", default_opts)
 
@@ -90,40 +96,43 @@ vim.keymap.set(NORMAL, "I", "a", default_opts)
 -- > Default
 
 -- P - Paste before cursor
--- > Shift+P - Paste after cursor
-vim.keymap.set(GLOBAL, "p", "P", default_opts)
-vim.keymap.set(GLOBAL, "P", "p", default_opts)
+-- > Shift+P - Default ~~Paste after cursor~~
+-- vim.keymap.set(GLOBAL, "p", "P", default_opts)
+-- vim.keymap.set(GLOBAL, "P", "p", default_opts)
 
 
 --- HOME ROW
 -- A - Jump to last printing character
--- > Shift+A - Jump to end of line
-vim.keymap.set(GLOBAL, "a", "g_", default_opts)
-vim.keymap.set(GLOBAL, "A", "$", default_opts)
-vim.keymap.set(OBJECT, "a", "g_", default_opts) -- Motion/Object symmetry
-vim.keymap.set(OBJECT, "A", "$", default_opts)  -- ^^
+-- > Shift+S - Jump to end of line
+vim.keymap.set(GLOBAL, "a", "_", default_opts)
+vim.keymap.set(GLOBAL, "A", "0", default_opts)
+vim.keymap.set(OBJECT, "a", "_", default_opts) -- Motion/Object symmetry
+vim.keymap.set(OBJECT, "A", "0", default_opts)  -- ^^
 
 -- S - Jump to first printing character
--- > Shift+S - Jump to beginning of line
-vim.keymap.set(GLOBAL, "s", "_", default_opts)
-vim.keymap.set(GLOBAL, "S", "0", default_opts)
-vim.keymap.set(OBJECT, "s", "_", default_opts) -- Motion/Object symmetry
-vim.keymap.set(OBJECT, "S", "0", default_opts)  -- ^^
+-- > Shift+A - Jump to start of line
+vim.keymap.set(GLOBAL, "s", "g_", default_opts)
+vim.keymap.set(GLOBAL, "S", "$", default_opts)
+vim.keymap.set(OBJECT, "s", "g_", default_opts) -- Motion/Object symmetry
+vim.keymap.set(OBJECT, "S", "$", default_opts)  -- ^^
 
--- D - Line visual mode
--- > Shift+D - Block visual mode
-vim.keymap.set(GLOBAL, "d", "V", default_opts)
+-- D - Replace mode
+-- > Shift+D - Visual mode (block)
+vim.keymap.set(GLOBAL, "d", "R", default_opts)
 vim.keymap.set(GLOBAL, "D", "<C-v>", default_opts)
 
 -- F - Visual mode
--- > Shift+F - Replace mode
+-- > Shift+F - Visual mode (lines)
 vim.keymap.set(GLOBAL, "f", "v", default_opts)
-vim.keymap.set(NORMAL, "F", "R", default_opts)
+vim.keymap.set(NORMAL, "F", "V", default_opts)
 
 -- G - Change (object)
 -- > Shift+G - Change to EOL
 vim.keymap.set(GLOBAL, "g", "c", default_opts)
 vim.keymap.set(GLOBAL, "G", "C", default_opts)
+vim.keymap.set(GLOBAL, "gc", "<nop>", default_opts) -- gg -> cc
+vim.keymap.set(GLOBAL, "gcc", "<nop>", default_opts) -- Toggle comment is not a standard command?
+vim.keymap.set(GLOBAL, "gg", "cc", default_opts)
 
 -- H - Default
 -- > Shift+H - Move buffer view down
@@ -162,7 +171,7 @@ vim.keymap.set(NORMAL, "xh", "<<", default_opts)
 
 -- C - Context-based naviation oops (TODO)
 -- > Shift+C - (TODO)
-vim.keymap.set(GLOBAL, "c", "<nop>", default_opts)
+vim.keymap.set(GLOBAL, "c", "[", default_opts)
 vim.keymap.set(GLOBAL, "C", "<nop>", default_opts)
 
 -- V - Replace (cursor)
@@ -174,11 +183,13 @@ vim.keymap.set(GLOBAL, "V", "x", default_opts)
 -- > Shift+B - Goto end of file
 vim.keymap.set(GLOBAL, "b", "g", default_opts)
 vim.keymap.set(GLOBAL, "B", "G", default_opts)
-vim.keymap.set(GLOBAL, "bg", "<nop>", default_opts) -- gg -> bb
+vim.keymap.set(GLOBAL, "bg", "<nop>", default_opts) -- bb -> gg
 vim.keymap.set(GLOBAL, "bb", "gg", default_opts)
 
 -- N - Search next match
--- > Default
+-- > Default but with QOL
+vim.keymap.set(GLOBAL, "n", "nzz", default_opts)
+vim.keymap.set(GLOBAL, "N", "Nzz", default_opts)
 
 -- M - Jump to mark
 -- > Shift+M - Set mark
@@ -218,6 +229,14 @@ vim.keymap.set('n', '<C-l>', '<C-w>l', default_opts)
 -- vim.keymap.set('n', '<S-C-h>', ':vertical resize -2<CR>', default_opts)
 -- vim.keymap.set('n', '<S-C-l>', ':vertical resize +2<CR>', default_opts)
 
+vim.keymap.set(NORMAL, '<S-C-l>', function()
+	-- TODO: Use this to vert split right
+	-- (and of course add the equivalents for h, j, and k)
+	print('hi')
+end, default_opts)
+
+-- Quality of life
+vim.keymap.set({GLOBAL, INSERT}, "<C-/>", "<cmd>noh<cr>", default_opts)
 
 -- >> LEADER COMMANDS <<
 -- Plugin: NEOTREE

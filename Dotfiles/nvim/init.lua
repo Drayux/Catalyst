@@ -23,9 +23,9 @@ package.path = vim.fn.stdpath('config') .. "/?.lua;"
 	.. package.path
 
 -- Load config groups (before plugins)
-local opts = require("config")		-- Global configuration: .../nvim/config.lua (returns lazy loader config)
+require("commands")			-- User commands (load first): .../nvim/commands.lua
 require("keymap")			-- Key bindings: .../nvim/keymap.lua
-require("events")			-- Event hooks: .../nvim/events.lua
+local opts = require("config")		-- Global configuration: .../nvim/config.lua (returns lazy loader config)
 
 
 -- Plugins
@@ -33,17 +33,26 @@ vim.opt.rtp:prepend(lazypath)
 local pluginpath = vim.fn.stdpath("config") .. "/plugins"
 local plugins = {}
 
--- Optionally exclude certain plugins (via file name)
-local exclude = {
-	filetree = false,
-	ui = false, 
-	base46 = false,
+-- Optionally disable certain plugins (via filename)
+local disable = {
+	["CODE-colorizer"] = false,
+	["CODE-context"] = false, 
+	["CODE-treesitter"] = false,
+	["DEP-nui"] = false,
+	["DEP-plenary"] = false,
+	["DEP-webdevicons"] = false,
+	["UI-lualine"] = false,
+	["UI-neotree"] = false,
+	["UTIL-projections"] = true,
+	["UTIL-telescope"] = false,
+	["UTIL-themer"] = false,
+	["UTIL-windowpicker"] = false,
 }
 
 -- Load plugin files from .../nvim/plugins/
 for _, file in ipairs(vim.fn.readdir(pluginpath, [[v:val =~ '\.lua$']])) do
 	local module = file:gsub("%.lua$", "")
-	if exclude[module] == true then goto continue end
+	if disable[module] == true then goto continue end
 	
 	table.insert(plugins, require("plugins." .. module))
 	::continue::
