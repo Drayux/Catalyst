@@ -132,7 +132,8 @@ vim.keymap.set(GLOBAL, "g", "c", default_opts)
 vim.keymap.set(GLOBAL, "G", "C", default_opts)
 vim.keymap.set(GLOBAL, "gc", "<nop>", default_opts) -- gg -> cc
 vim.keymap.set(GLOBAL, "gcc", "<nop>", default_opts) -- Toggle comment is not a standard command?
-vim.keymap.set(GLOBAL, "gg", "cc", default_opts)
+-- vim.keymap.set(GLOBAL, "cc", "<nop>", default_opts) -- gg -> bb
+-- vim.keymap.set(GLOBAL, "gg", "cc", default_opts)
 
 -- H - Default
 -- > Shift+H - Move buffer view down
