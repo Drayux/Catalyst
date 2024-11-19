@@ -118,8 +118,8 @@ vim.keymap.set(OBJECT, "S", "$", default_opts)  -- ^^
 
 -- D - Replace mode
 -- > Shift+D - Visual mode (block)
-vim.keymap.set(GLOBAL, "d", "R", default_opts)
-vim.keymap.set(GLOBAL, "D", "<C-v>", default_opts)
+vim.keymap.set(GLOBAL, "d", "r", default_opts)
+vim.keymap.set(GLOBAL, "D", "x", default_opts)
 
 -- F - Visual mode
 -- > Shift+F - Visual mode (lines)
@@ -128,12 +128,9 @@ vim.keymap.set(NORMAL, "F", "V", default_opts)
 
 -- G - Change (object)
 -- > Shift+G - Change to EOL
+-- TODO: This is fighting with something that runs per-buffer(?)
 vim.keymap.set(GLOBAL, "g", "c", default_opts)
 vim.keymap.set(GLOBAL, "G", "C", default_opts)
-vim.keymap.set(GLOBAL, "gc", "<nop>", default_opts) -- gg -> cc
-vim.keymap.set(GLOBAL, "gcc", "<nop>", default_opts) -- Toggle comment is not a standard command?
--- vim.keymap.set(GLOBAL, "cc", "<nop>", default_opts) -- gg -> bb
--- vim.keymap.set(GLOBAL, "gg", "cc", default_opts)
 
 -- H - Default
 -- > Shift+H - Move buffer view down
@@ -167,8 +164,12 @@ vim.keymap.set(GLOBAL, ";", "<nop>", default_opts)
 -- > Shift+X - Fix indent (TODO)
 vim.keymap.set(GLOBAL, "x", "<nop>", default_opts)
 vim.keymap.set(GLOBAL, "X", "<nop>", default_opts)
-vim.keymap.set(NORMAL, "xl", ">>", default_opts)
-vim.keymap.set(NORMAL, "xh", "<<", default_opts)
+vim.keymap.set(NORMAL, "xo", "o<Esc>k", default_opts) -- Open a line but "stay" in normal mode
+vim.keymap.set(NORMAL, "xO", "ko<Esc>j<C-e>", default_opts) -- ^^same but open the line above
+-- Consider moving the following such that the x can be intuitively removed in visual mode
+vim.keymap.set(NORMAL, "xm", ">>", default_opts)
+vim.keymap.set(NORMAL, "xn", "<<", default_opts)
+vim.keymap.set(NORMAL, "xb", "=", default_opts)
 
 -- C - Context-based naviation oops (TODO)
 -- > Shift+C - (TODO)
@@ -177,8 +178,8 @@ vim.keymap.set(GLOBAL, "C", "<nop>", default_opts)
 
 -- V - Replace (cursor)
 -- > Shift+V - Delete (cursor)
-vim.keymap.set(GLOBAL, "v", "r", default_opts)
-vim.keymap.set(GLOBAL, "V", "x", default_opts)
+vim.keymap.set(GLOBAL, "v", "R", default_opts)
+vim.keymap.set(GLOBAL, "V", "<C-v>", default_opts)
 
 -- B - Goto operations (prompt)
 -- > Shift+B - Goto end of file
@@ -209,7 +210,7 @@ vim.keymap.set(NORMAL, ">", "<nop>", default_opts)
 
 -- / - Search (phrase)
 -- > ? - Search word at cursor
-vim.keymap.set(GLOBAL, "?", "#", default_opts)
+vim.keymap.set(GLOBAL, "?", "*", default_opts)
 
 
 -- >> OBJECTS <<
