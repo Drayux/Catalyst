@@ -157,19 +157,19 @@ vim.keymap.set(GLOBAL, ";", "<nop>", default_opts)
 
 
 --- BOTTOM ROW
--- Z - Fold ops
--- > Default
+-- Z - Fold ops (default)
+-- > Shift+Z - Toggle folds
+vim.keymap.set(GLOBAL, "Z", "zi", default_opts)
 
--- X - Extra ops (TODO)
--- > Shift+X - Fix indent (TODO)
+-- X - Extra ops
 vim.keymap.set(GLOBAL, "x", "<nop>", default_opts)
-vim.keymap.set(GLOBAL, "X", "<nop>", default_opts)
+vim.keymap.set(GLOBAL, "X", "=", default_opts)
 vim.keymap.set(NORMAL, "xo", "o<Esc>k", default_opts) -- Open a line but "stay" in normal mode
 vim.keymap.set(NORMAL, "xO", "ko<Esc>j<C-e>", default_opts) -- ^^same but open the line above
 -- Consider moving the following such that the x can be intuitively removed in visual mode
 vim.keymap.set(NORMAL, "xm", ">>", default_opts)
 vim.keymap.set(NORMAL, "xn", "<<", default_opts)
-vim.keymap.set(NORMAL, "xb", "=", default_opts)
+vim.keymap.set(NORMAL, "xb", "=", default_opts) -- TODO: Keep? Currently moved to X
 
 -- C - Context-based naviation oops (TODO)
 -- > Shift+C - (TODO)
@@ -238,7 +238,11 @@ vim.keymap.set(NORMAL, '<S-C-l>', function()
 end, default_opts)
 
 -- Quality of life
-vim.keymap.set({GLOBAL, INSERT}, "<C-/>", "<cmd>noh<cr>", default_opts)
+vim.keymap.set({GLOBAL, INSERT}, "<C-c>", "<Esc>", default_opts) -- For exiting V-BLOCK with Ctrl+C
+vim.keymap.set({GLOBAL, INSERT}, "<C-x>", "<C-o>", default_opts)
+vim.keymap.set({GLOBAL, INSERT}, "<C-;>", "<C-c>:", default_opts) -- If this fails, look into ibus (`ibus-setup`)
+vim.keymap.set({GLOBAL, INSERT}, "<C-n>", "<cmd>noh<cr>", default_opts)
+vim.keymap.set(GLOBAL, "<enter>", "<nop>", default_opts)
 
 -- >> LEADER COMMANDS <<
 -- Plugin: NEOTREE

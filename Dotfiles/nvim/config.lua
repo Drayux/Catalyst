@@ -73,15 +73,14 @@ vim.cmd("cnorea bdelete bp<bar>sp<bar>bn<bar>bd")
 --- Specify autocommands for the components that require them
 
 -- Prefer tabs over spaces unless coding for work
--- TODO: Test different hooks so that as little overhead is added as possible
--- ^^(BufAdd should work, but that needs verification alongside Projections)
--- https://neovim.io/doc/user/autocmd.html#autocmd-events
-vim.api.nvim_create_autocmd("BufAdd", {
+-- TODO: Test with projections (if I opt to use it again)
+-- > https://neovim.io/doc/user/autocmd.html#autocmd-events
+vim.api.nvim_create_autocmd("BufNew", {
     pattern = { "*.c", "*.h" },
 	callback = function()
 		-- Tabs/Spaces
 		pcall(vim.cmd.HostnameCmd()) -- Ensure hostname is set
-		if (vim.g.hostname):match("^LX-.*") then
+		if (vim.g.hostname):match("^LX%-.+") then
 			vim.cmd.setlocal("expandtab")
 		end
 	end

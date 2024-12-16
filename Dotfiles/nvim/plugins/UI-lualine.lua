@@ -84,7 +84,7 @@ local plugin = {
 					show_modified_status = true,
 
 					mode = 2, -- 4,
-					-- max_length = vim.o.columns * 2 / 3,
+					max_length = vim.o.columns - 2,
 
 					filetype_names = {
 						["neo-tree"] = "  Neotree",

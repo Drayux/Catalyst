@@ -3,6 +3,7 @@
 -- DEPENDENCIES:
 --  > A "Nerd" font (i.e. JetbrainsMonoNerdFont - Use monospace variant for non-merging symbols)
 
+-- >> CORE <<
 -- Setup 'lazy' plugin loader
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not (vim.uv or vim.loop).fs_stat(lazypath) then
@@ -10,8 +11,6 @@ if not (vim.uv or vim.loop).fs_stat(lazypath) then
 	vim.fn.system({ "git", "clone", "--filter=blob:none", repo, "--branch=stable", lazypath })
 end
 
-
--- Configuration
 -- Look for config files in ~/.config/nvim (instead of ~/.config/nvim/lua)
 local wdpath, luapath = package.path:match("(.-);(.*)$")
 if luapath and wdpath:match("^%./%?") then
@@ -22,6 +21,13 @@ package.path = vim.fn.stdpath('config') .. "/?.lua;"
 	.. vim.fn.stdpath('config') .. "/?/init.lua;"
 	.. package.path
 
+-- Override the runtime path (to trim unexpected default settings)
+-- TODO: Pluck runtime from path, overwrite to minimal version
+-- print(vim.o.runtimepath)
+vim.opt.rtp:prepend(lazypath)
+
+
+-- >> CONFIG <<
 -- Load config groups (before plugins)
 require("commands")			-- User commands (load first): .../nvim/commands.lua
 require("keymap")			-- Key bindings: .../nvim/keymap.lua
@@ -29,7 +35,6 @@ local opts = require("config")		-- Global configuration: .../nvim/config.lua (re
 
 
 -- Plugins
-vim.opt.rtp:prepend(lazypath)
 local pluginpath = vim.fn.stdpath("config") .. "/plugins"
 local plugins = {}
 
