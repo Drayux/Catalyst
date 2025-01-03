@@ -1,4 +1,5 @@
 #!/bin/sh
+# TODO: Don't run this if we're on gentoo
 shopt -s extglob
 STATUS=$(upower -i /org/freedesktop/UPower/devices/battery_BAT0 | grep -E "percentage|state")
 CHARGE="Unknown"

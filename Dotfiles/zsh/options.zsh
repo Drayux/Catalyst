@@ -1,6 +1,6 @@
-#!/bin/sh
+#!/bin/zsh
 
-HISTFILE="$HOME/.cache/zsh/zshhst"
+HISTFILE="${HIST_DIR}/zsh"
 HISTSIZE=5000
 SAVEHIST=5000
 setopt autocd extendedglob
@@ -13,3 +13,8 @@ bindkey 	"^[[1;5D"	backward-word
 bindkey 	"^[[H"		beginning-of-line
 bindkey 	"^[[F"		end-of-line
 bindkey 	"^[[3~"		delete-char
+
+# >> Plugins <<
+# zsh-syntax-highlighting should be loaded last
+source /usr/share/zsh/site-functions/zsh-syntax-highlighting.zsh
+
