@@ -1,66 +1,131 @@
--- >>> init.lua: Neovim configuration entry point
+-- >>> init.lua: Neovim top-level config
 
--- DEPENDENCIES:
---  > A "Nerd" font (i.e. JetbrainsMonoNerdFont - Use monospace variant for non-merging symbols)
+-- Configuration dependencies (all soft)
+-- > wl-clipboard (provider of choice, any will do though)
+-- > Git CLI (for neovim plugins)
+-- > A "nerd" font (for developer glyphs)
+-- > Ripgrep (for fuzzy search)
 
--- >> CORE <<
--- Setup 'lazy' plugin loader
-local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
-if not (vim.uv or vim.loop).fs_stat(lazypath) then
-	local repo = "https://github.com/folke/lazy.nvim.git"
-	vim.fn.system({ "git", "clone", "--filter=blob:none", repo, "--branch=stable", lazypath })
+
+-- >> ENVIRONMENT <<
+-- Override package path and runtime path
+-- Package path defines a file search order for the lua runtime
+-- Runtime path does...something??
+-- ... (todo, put keymap.lua and editor.lua in /etc/ and symlink)
+
+-- Load features depending on runtime env
+-- > (TODO) Pager mode : LESS
+--  - keymaps
+-- > Root (GUI or TTY) : ROOT
+--  - keymaps
+--  - global config
+-- > User account (TTY) : TTY
+--  - keymaps
+--  - global config
+--  - event hooks
+--  - user commands
+--  - plugins (limited)
+-- > User account + GUI : GUI
+--  - keymaps
+--  - global config
+--  - event hooks
+--  - user commands
+--  - plugins
+--  - theme
+local mode = "LESS"
+if (os.execute("exit $(id -u)") ~= 0) then
+	-- Non-superuser, determine if TTY or emulator
+	local term = vim.env.TERM
+		or "unknown"
+	if (term == "linux") then
+		-- TTY
+		mode = "TTY"
+	else
+		mode = "GUI"
+	end
+else
+	mode = "ROOT"
+end
+vim.g.envmode = (mode == "GUI" and 4)
+	or (mode == "TTY" and 3)
+	or (mode == "LESS" and 1)
+	or 0
+
+-- Insert preferred lua search paths to package.path
+-- > This path is used by lua when a module called with require()
+local packagePaths = {}
+local insertAfter = -1 -- Hold the location of `./?.lua`
+for path in package.path:gmatch("([^;]+)") do
+	if (insertAfter < 0) then
+		if (path == "./?.lua") then
+			insertAfter = 1 - insertAfter
+		else
+			insertAfter = insertAfter - 1
+		end
+	end
+	table.insert(packagePaths, path)
 end
 
--- Look for config files in ~/.config/nvim (instead of ~/.config/nvim/lua)
-local wdpath, luapath = package.path:match("(.-);(.*)$")
-if luapath and wdpath:match("^%./%?") then
-	-- Remove "./?.lua" from path if present
-	package.path = luapath
+-- NOTE: Inserting both paths into one line
+-- > We don't need to search for these so save the cycles
+if (mode == "ROOT") then
+	table.insert(packagePaths, insertAfter,
+		"/etc/nvim/config/lua/?.lua;/etc/nvim/config/lua/?/init.lua")
+else
+	local baseDir = vim.fn.stdpath("config")
+	table.insert(packagePaths, insertAfter,
+		baseDir .. "/?.lua;"
+		.. baseDir .. "/?/init.lua")
 end
-package.path = vim.fn.stdpath('config') .. "/?.lua;"
-	.. vim.fn.stdpath('config') .. "/?/init.lua;"
-	.. package.path
+package.path = table.concat(packagePaths, ";")
 
--- Override the runtime path (to trim unexpected default settings)
--- TODO: Pluck runtime from path, overwrite to minimal version
--- print(vim.o.runtimepath)
-vim.opt.rtp:prepend(lazypath)
+-- Editor settings differ across devices
+-- TODO: If a known hostname exists, no need to use the heuristic
+-- > Use a heuristic to make our best guess
+local desktopFavor = 0
+local hostname = vim.fn.system("export HOSTNAME=$(hostname)")
+if (hostname and #hostname > 0) then
+	vim.env.HOST = hostname
+	if (vim.env.HOST == "catalyst")
+		or (vim.env.HOST == "chitin")
+		or (vim.env.HOST == "aether")
+	then
+		desktopFavor = desktopFavor + 2
+	elseif vim.env.HOST:match("LX%-.+") then
+		desktopFavor = desktopFavor - 1
+	end
+
+-- For now, only one check should be necessary
+elseif vim.env.HOME then
+	subdir = vim.env.HOME:match("/home(.*)")
+	if subdir and subdir:match("/.+") then
+		desktopFavor = desktopFavor - 1
+	else
+		desktopFavor = desktopFavor + 1
+	end
+end
+
+-- A non-negative result indicates a personal device
+vim.g.host = (desktopFavor < 0) and "WORK"
+	or "HOME"
 
 
 -- >> CONFIG <<
--- Load config groups (before plugins)
-require("commands")			-- User commands (load first): .../nvim/commands.lua
-require("keymap")			-- Key bindings: .../nvim/keymap.lua
-local opts = require("config")		-- Global configuration: .../nvim/config.lua (returns lazy loader config)
+pcall(require, "editor") -- Editor behavior (global options)
+pcall(require, "layout") -- Custom (completely sane) key binds
 
-
--- Plugins
-local pluginpath = vim.fn.stdpath("config") .. "/plugins"
-local plugins = {}
-
--- Optionally disable certain plugins (via filename)
-local disable = {
-	["CODE-colorizer"] = false,
-	["CODE-context"] = false, 
-	["CODE-treesitter"] = false,
-	["DEP-nui"] = false,
-	["DEP-plenary"] = false,
-	["DEP-webdevicons"] = false,
-	["UI-lualine"] = false,
-	["UI-neotree"] = false,
-	["UTIL-projections"] = true,
-	["UTIL-telescope"] = false,
-	["UTIL-themer"] = false,
-	["UTIL-windowpicker"] = false,
-}
-
--- Load plugin files from .../nvim/plugins/
-for _, file in ipairs(vim.fn.readdir(pluginpath, [[v:val =~ '\.lua$']])) do
-	local module = file:gsub("%.lua$", "")
-	if disable[module] == true then goto continue end
-	
-	table.insert(plugins, require("plugins." .. module))
-	::continue::
+-- Super-user config stops here
+-- > TODO: Still not sure how I want to link the init.lua
+if (nvimMode == "ROOT") then
+	return
 end
-require("lazy").setup(plugins, opts)
 
+
+-- >> FUNCTIONALITY <<
+pcall(require, "plugin") -- Lazy plugin loader
+pcall(require, "events") -- Extra user commands/events
+
+-- if (nvimMode == "GUI") then
+	-- pcall(require, "gui") -- Load fancy UI plugins and features
+	-- pcall(require, "session") -- Custom session management plugin (WIP)
+-- end

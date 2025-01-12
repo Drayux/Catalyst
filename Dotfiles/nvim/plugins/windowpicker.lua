@@ -1,11 +1,16 @@
 -- PLUGIN: nvim-window-picker
 -- SOURCE: https://github.com/s1n7ax/nvim-window-picker
+-- LEVEL: USER
 
 -- Window selection utility
 
-local plugin = {
+-- TODO: Simple keymap for "select window" and subsequently
+-- > move the cursor to that window
+-- > require('window-picker').pick_window()
+
+local spec = {
 	"s1n7ax/nvim-window-picker",
-	version = "2.*",
+	cond = condUSER,
 	opts = {
 		hint = "floating-big-letter",
 		filter_rules = {
@@ -16,11 +21,7 @@ local plugin = {
 				buftype = { "terminal", "quickfix" },
 			}
 		}
-	},
-	config = function(_, opts)
-		require("window-picker").setup(opts)
-	end
+	}
 }
 
-return plugin
-
+return spec

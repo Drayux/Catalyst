@@ -1,22 +1,20 @@
 -- PLUGIN: neo-tree.lua
 -- SOURCE: https://github.com/nvim-neo-tree/neo-tree.nvim
+-- LEVEL: USER
 
 -- Filesystem tree pane
--- Additional behavior defined in .../nvim/events.lua
 
-local plugin = {
+local api = require("files")
+local spec = {
 	"nvim-neo-tree/neo-tree.nvim",
-	branch = "v3.x",
+	cond = condUSER,
 	dependencies = {
 		"MunifTanjim/nui.nvim",
 		"nvim-lua/plenary.nvim",
 		"nvim-tree/nvim-web-devicons",
 		"s1n7ax/nvim-window-picker",
 	},
-	cmd = { "Neotree" }, -- (use if lazy-loading)
-	-- module = false, -- don't load plugin with `require("neotree")`
-	lazy = false,
-	
+	cmd = { "Neotree" },
 	opts = {
 		close_if_last_window = true,
 		enable_git_status = true,
@@ -83,27 +81,16 @@ local plugin = {
 
 		commands = {}
 	},
-
-	config = function(_, opts)
-		require("neo-tree").setup(opts)
+	init = function()
+		vim.g.neotree_enabled = true
 
 		-- Shortcut for toggling the tree (source aware)
 		-- Will show the most recent source or default to filesystem
 		-- (Unless :Neotree was invoked directly, then the state may not be updated)
 		-- https://github.com/nvim-neo-tree/neo-tree.nvim/discussions/826#discussioncomment-5431757
 		local toggleState = nil
-		local getState ; getState = function(source, ...)
-			-- Recursive base case
-			if not source then return nil end
-
-			local state = require("neo-tree.sources.manager").get_state(source)
-			local exists = require("neo-tree.ui.renderer").window_exists(state)
-
-			-- Recursion will stop if the window exists
-			return (exists and source) or getState(...)
-		end
 		vim.api.nvim_create_user_command("Neotoggle", function(args)
-			local currentState = getState("filesystem", "document_symbols", "buffers", "git_status")
+			local currentState = api.state("filesystem", "document_symbols", "buffers", "git_status")
 			if currentState then
 				-- Window present, save state and close
 				toggleState = currentState
@@ -141,8 +128,16 @@ local plugin = {
 			nargs = 0,
 			desc = "Activate Neotree filesystem (swap or open)",
 		})
+
+		-- Key mappings
+		mapcmd("fb", "Neofiles")
+		mapcmd("tt", "Neotoggle")
+		mapcmd("tb", "Neotree focus filesystem left")
+		mapcmd("ts", "Neotree focus document_symbols left")
+		mapcmd("te", "Neotree focus buffers left")
+		mapcmd("tg", "Neotree focus git_status left")
 	end
 }
 
-return plugin
+return spec
 

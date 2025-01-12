@@ -1,0 +1,17 @@
+-- IDEA:
+-- On the event multiple files are specified, create a local directory (.nvim_tmp or so)
+--   and symlink the listed files/directories into this temporary directory.
+-- CD to the temporary directory, and open the tree, so that all of the requested files are
+--   accessable at the same directory level.
+-- Upon exit, delete .nvim_tmp
+-- Alternatively, create .nvim_tmp inside $HOME/.local/share/nvim andalways ask about the
+--   session if it exists. If the user wants two sessions, then we can create another directory
+--   and set the index as a variable. Session restoring should alwayscheck for any directory
+--   .nvim_tmp_X (not just .nvim_tmp)
+-- For that solution, three options should be presented: Yes (restore), No (delete), No (but save it)
+-- QUESTIONS:
+--   What to do if opened and .nvim_tmp already exists?
+--     (Possibly: destroy/recreate it OR ask the user if they wish torestore their 'session')
+--   What should happen if the user creates a file within the temporary directory?
+--     (Possibly: when destorying the temporary directory, delete allsymlinks and move all
+--     non-symlinks to the parent directory, which would be...the directory of the first file?

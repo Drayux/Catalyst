@@ -1,14 +1,16 @@
 -- PLUGIN: projections.nvim
 -- SOURCE: https://github.com/GnikDroy/projections.nvim
+-- LEVEL: USER
 
 -- Workspace/session management
 -- Includes a telescope extension ('projections')
 -- TODO: Consider setting up project.nvim to auto add projects for projections to use
+-- TODO: Consider enabling/disabling projections based upon work or home computer
 
 local plugin = {
 	'gnikdroy/projections.nvim',
+	cond = condUSER,
 	lazy = false,
-	branch = "pre_release",
 	opts = {
 		patterns = { ".git" },
 		workspaces = {

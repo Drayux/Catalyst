@@ -1,10 +1,12 @@
 -- PLUGIN: nvim-colorizer.lua
 -- SOURCE: https://github.com/norcalli/nvim-colorizer.lua
+-- LEVEL: GUI
 
 -- Highlights color codes (i.e. #551bdf) with the reflected color
 
-local plugin = {
+local spec = {
 	"NvChad/nvim-colorizer.lua",
+	cond = condGUI,
 	event = { "BufEnter" },
 	opts = {
 		user_default_options = { names = false }
@@ -17,5 +19,5 @@ local plugin = {
 	end
 }
 
-return plugin
+return spec
 
