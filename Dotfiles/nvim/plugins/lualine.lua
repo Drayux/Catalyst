@@ -38,12 +38,12 @@ local spec = {
 			lualine_y = { "filetype", "progress" },
 			lualine_z = {
 				{ "location", separator = { right = " " }, left_padding = 2 },
-			},
+			}
 		},
 		inactive_sections = {
 			lualine_a = { "filename" },
 			lualine_z = { "location" },
-		},
+		}
 	},
 	init = function()
 		vim.g.lualine_enabled = true
@@ -98,12 +98,15 @@ local spec = {
 						directory =  '',
 					}
 				}
+				return buffers
 			end
 
 			opts.tabline = {
 				lualine_a = { genTreeButton() },
 				lualine_z = { genBufLine() }
 			}
+
+			require("lualine").setup(opts)
 		end
 
 		-- TODO: Enable retheming function in lua/status.lua

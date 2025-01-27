@@ -47,17 +47,25 @@ local config = {
 			-- > for imports (aka this function) so we can return
 			-- > our own table of plugin specs for any source
 			for _, file in ipairs(vim.fn.readdir(dir, [[v:val =~ '\.lua$']])) do
-				local spec, err = loadfile(dir .. file)()
-				if (type(spec) == "table") then
-					table.insert(plugins, spec)
-				elseif (type(spec) == "string") then
-					table.insert(plugins, { spec })
-				else
+				local plugconfig, err = loadfile(dir .. file)
+				local spec = nil
+				if plugconfig then
+					spec, err = plugconfig()
+				end
+				if err then
 					-- Lua error while loading the plugin spec
 					print("Failed to load plugin: "
 						.. file
 						.. "\n > "
 						.. (err or "~ unexpected error ~"))
+				else
+					if (type(spec) == "table") then
+						table.insert(plugins, spec)
+					elseif (type(spec) == "string") then
+						table.insert(plugins, { spec })
+					else
+						print("Plugin `" .. file .. "` provided no spec, skipping")
+					end
 				end
 			end
 			return plugins

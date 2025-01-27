@@ -10,7 +10,7 @@ local spec = {
 	event = { "BufEnter" },
 	dependencies = {
 		{ "nvim-treesitter/nvim-treesitter-context",
-			cond = (vim.g.envmode > 2),
+			cond = condUSER,
 			opts = {
 				-- https://github.com/nvim-treesitter/nvim-treesitter-context?tab=readme-ov-file#configuration
 				enable = true,
@@ -23,7 +23,7 @@ local spec = {
 			}
 		},
 		{ "folke/twilight.nvim",
-			cond = (vim.g.envmode == 4), -- Only enable in terminal emulator
+			cond = condGUI, -- Only enable in terminal emulator
 			cmd = { "Twilight", "TwilightEnable", "TwilightDisable" },
 			opts = {
 				-- TODO: Only enable dimming in insert mode
@@ -37,6 +37,12 @@ local spec = {
 				context = 99, -- amount of lines we will try to show around the current line
 				treesitter = true, -- use treesitter when available for the filetype
 				-- exclude = {}, -- exclude these filetypes
+			}
+		},
+		{ "OXY2DEV/foldtext.nvim",
+			cond = false and condUSER, -- Just a "pretty" plugin so disable it for now
+			opts = {
+				default = {}
 			}
 		}
 	},
@@ -68,16 +74,23 @@ local spec = {
 		sync_install = true,
 
 		-- Modules
-		highlight = {
-			enable = true,
-			disable = {
-				-- See: https://github.com/nvim-treesitter/nvim-treesitter?tab=readme-ov-file#modules
-			},
-		}
-
-		-- TODO: Code folding
+		highlight = { enable = true },
+		indent = { enable = true }
 	},
-	build = ":TSUpdate"
+	build = ":TSUpdate",
+	init = function()
+		-- Enable treesitter code folding
+		-- > Buffer options which use the global value as default
+		-- > Note that foldtext cannot be set globally, so using foldtext.nvim is preferable
+		vim.o.foldmethod = "expr"
+		vim.o.foldexpr = "v:lua.vim.treesitter.foldexpr()"
+	end,
+	config = function()
+		-- Enable treesitter highlighting for C, Ruby, (and probably others)
+		-- > Likely an api version bug, some languages do not enable treesitter's
+		-- > highlights by default, but they will be if explicitly called
+		vim.cmd("TSEnable highlight")
+	end
 }
 
 return spec
