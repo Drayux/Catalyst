@@ -40,7 +40,7 @@ local spec = {
 			}
 		},
 		{ "OXY2DEV/foldtext.nvim",
-			cond = false and condUSER, -- Just a "pretty" plugin so disable it for now
+			cond = false and condGUI, -- Just a "pretty" plugin so disable it for now
 			opts = {
 				default = {}
 			}

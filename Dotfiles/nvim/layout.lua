@@ -215,7 +215,8 @@ local setDefaultKeymap = function()
 	map(NORMAL, "vvj", "<cmd>rightbelow sp<cr>")
 	map(NORMAL, "vvk", "<cmd>leftabove sp<cr>")
 	map(NORMAL, "vvl", "<cmd>rightbelow vs<cr>")
-	map(NORMAL, "vvq", "<cmd>only<cr>")
+	map(NORMAL, "vvo", "<cmd>only<cr>")
+	map(NORMAL, "vvq", "<cmd>q<cr>")
 	-- > B: Buffer Navigation
 	-- map(EDITOR, "b", "g")
 	-- map(EDITOR, "bg", NOP) -- (this subcommand does not move automagically)
@@ -245,18 +246,18 @@ local setDefaultKeymap = function()
 
 	-- CONTROL ROW
 	-- > Arrows: Selection/Navigation
-	map(EDITOR, "<S-left>", "<C-w>h")
-	map(EDITOR, "<S-down>", "<C-w>j")
-	map(EDITOR, "<S-up>", "<C-w>k")
-	map(EDITOR, "<S-right>", "<C-w>l")
-	map(NORMAL, "<C-left>", "vb") -- Recreation of `Ctrl-Arrow`
-	map(VISUAL, "<C-left>", "b")
-	map(NORMAL, "<C-down>", "vj")
-	map(VISUAL, "<C-down>", "j")
-	map(NORMAL, "<C-up>", "vk")
-	map(VISUAL, "<C-up>", "k")
-	map(NORMAL, "<C-right>", "vw")
-	map(VISUAL, "<C-right>", "w")
+	map(EDITOR, "<C-left>", "<C-w>h")
+	map(EDITOR, "<C-down>", "<C-w>j")
+	map(EDITOR, "<C-up>", "<C-w>k")
+	map(EDITOR, "<C-right>", "<C-w>l")
+	map(NORMAL, "<S-left>", "vb") -- Recreation of `Ctrl-Arrow`
+	map(VISUAL, "<S-left>", "b")
+	map(NORMAL, "<S-down>", "vj")
+	map(VISUAL, "<S-down>", "j")
+	map(NORMAL, "<S-up>", "vk")
+	map(VISUAL, "<S-up>", "k")
+	map(NORMAL, "<S-right>", "vw")
+	map(VISUAL, "<S-right>", "w")
 end
 
 vim.api.nvim_create_autocmd("VimEnter", {
