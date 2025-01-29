@@ -23,7 +23,6 @@ local spec = {
 
 		window = {
 			position = "left",
-			-- position = "float",
 			width = 35,
 			mappings = {
 				["<space>"] = { "toggle_preview", config = { use_float = true }},
@@ -90,10 +89,10 @@ local spec = {
 		-- https://github.com/nvim-neo-tree/neo-tree.nvim/discussions/826#discussioncomment-5431757
 		local toggleState = nil
 		vim.api.nvim_create_user_command("Neotoggle", function(args)
-			local currentState = api.state("filesystem", "document_symbols", "buffers", "git_status")
-			if currentState then
+			local windowOpen = api.open()
+			if windowOpen then
 				-- Window present, save state and close
-				toggleState = currentState
+				toggleState = windowOpen
 				vim.cmd("Neotree close")
 
 			else
@@ -111,13 +110,9 @@ local spec = {
 		-- Will show a floating (temporary) window unless the filesystem tree is already open
 		vim.api.nvim_create_user_command("Neofiles", function(args)
 			-- Check if neotree is currently visible
-			-- NOTE: Currently the same as in the lualine config...
-			--   update with an API call if one is ever added
-			local state = require("neo-tree.sources.manager").get_state("filesystem")
-			local window_exists = require("neo-tree.ui.renderer").window_exists(state)
-
-			-- :Neotree will focus the tree
-			if window_exists then
+			local filetreeOpen = api.state("filesystem")
+			if filetreeOpen then
+				-- :Neotree will focus the tree
 				vim.cmd("Neotree filesystem left")
 				return
 			end
@@ -133,11 +128,16 @@ local spec = {
 		mapcmd("fb", "Neofiles")
 		mapcmd("tt", "Neotoggle")
 		mapcmd("tb", "Neotree focus filesystem left")
-		mapcmd("ts", "Neotree focus document_symbols left")
 		mapcmd("te", "Neotree focus buffers left")
 		mapcmd("tg", "Neotree focus git_status left")
+		mapcmd("ts", "Neotree focus document_symbols left")
+		-- mapcmd("th", "Neotree focus undo_history left") -- (TODO - CUSTOM)
+		-- > https://github.com/mbbill/undotree
+	end,
+	config = function(_, opts)
+		require("neo-tree").setup(opts)
+		api.load() -- Trigger lazy load user commands
 	end
 }
 
 return spec
-

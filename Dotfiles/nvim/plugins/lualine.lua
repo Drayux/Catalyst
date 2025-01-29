@@ -22,10 +22,10 @@ local spec = {
 	dependencies = { "nvim-tree/nvim-web-devicons" },
 	opts = {
 		options = {
-			enable_tabline = true, -- Custom option for dynamic initialization
 			component_separators = "",
 			section_separators = { left = "", right = "" },
 			disabled_filetypes = { "neo-tree", "neo-tree-popup", "notify" },
+			enable_tabline = true -- Custom option for dynamic initialization
 		},
 		sections = {
 			lualine_a = {

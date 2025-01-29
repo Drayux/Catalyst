@@ -5,7 +5,7 @@
 -- Improved W/E/Q motions
 -- (TODO) Plugins for additional functionality
 -- > https://github.com/nvim-treesitter/nvim-treesitter-textobjects
--- > https://github.com/chrisgrieser/nvim-various-textobjs
+-- > (alternatively) https://github.com/chrisgrieser/nvim-various-textobjs
 
 local spec = {
 	"chrisgrieser/nvim-spider",

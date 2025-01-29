@@ -7,31 +7,15 @@
 local spec = {
 	"numToStr/Comment.nvim",
 	cond = condUSER,
-	event = { "BufEnter" }, -- VimEnterPost at the earliest (because of base key mapping event)
-	-- > Alternatively, lazy load and set the keybind with `require("Comment.api").toggle.linewise()`
-	opts = {
-		mappings = {
-			basic = true
-		},
-		-- TODO: Explore extra features
-		-- > https://github.com/numToStr/Comment.nvim/blob/master/lua/Comment/init.lua#L98
-		toggler = {
-			line = "xc",
-			block = "xC",
-		},
-		opleader = {
-			line = "xc",
-			block = "xC",
-		}
-	},
-	-- config = function(_, opts)
-	-- 	require("Comment").setup(opts)
-	--
-	-- 	local api = require("Comment.api")
-	-- 	if api then
-	-- 		-- Set additional comment keybinds
-	-- 	end
-	-- end
+	init = function(_, opts)
+		local toggleLine = function()
+			require("Comment.api").toggle.linewise()
+		end
+
+		-- Set keybinds (will invoke lazy load)
+		local EDITOR = { "n", "v" } -- Taken directly from layout (keymaps)
+		map(EDITOR, "xc", toggleLine)
+	end
 }
 
 return spec
