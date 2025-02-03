@@ -1,4 +1,4 @@
-[shell]
+[terminal.shell]
 program = "/bin/zsh"
 
 [window]
@@ -36,3 +36,5 @@ style.shape = "Beam"
 # blink_timeout = 0
 unfocused_hollow = false
 thickness = 0.25
+
+[terminal]

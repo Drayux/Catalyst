@@ -1,8 +1,8 @@
 #!/bin/zsh
 
 HISTFILE="${HIST_DIR}/zsh"
-HISTSIZE=5000
-SAVEHIST=5000
+HISTSIZE=8192
+SAVEHIST=65536
 setopt autocd extendedglob
 setopt hist_ignore_all_dups
 unsetopt beep nomatch notify
@@ -15,6 +15,13 @@ bindkey 	"^[[F"		end-of-line
 bindkey 	"^[[3~"		delete-char
 
 # >> Plugins <<
-# zsh-syntax-highlighting should be loaded last
-source /usr/share/zsh/site-functions/zsh-syntax-highlighting.zsh
+# Not a ZSH plugin, but this overloads libc so that output to stderr is red
+# > Package: `stderred-git` (pacman AUR) [gentoo may need to install from source]
+source /usr/share/stderred/stderred.sh 2> /dev/null || true
 
+# zsh-syntax-highlighting should be loaded last (must also be installed!)
+# > Package: `zsh-syntax-highlighting` (both pacman and portage)
+if ! source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh \
+	&& ! source /usr/share/zsh/site-functions/zsh-syntax-highlighting.zsh; then
+	echo "Failed to load ZSH syntax highlighting plugin - Is the package installed?" 1>&2
+fi

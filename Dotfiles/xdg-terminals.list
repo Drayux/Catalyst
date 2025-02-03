@@ -1,6 +1,0 @@
-# Terminals for `xdg-terminal-exec`
-# https://github.com/Vladimir-csp/xdg-terminal-exec
-# Install the script to /usr/bin/ to fix GIO mimes
-
-Alacritty.desktop
-kitty.desktop
