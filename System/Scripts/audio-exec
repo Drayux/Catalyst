@@ -1,5 +1,7 @@
 #!/bin/sh
 
+# The intended installation location for this script is: /usr/local/bin
+
 # WARNING: This script assumes being run inside XDG compliant session,
 # which means D-Bus session instance is expected to be correctly set up
 # prior to this script starting. If that is not true, things may break!
