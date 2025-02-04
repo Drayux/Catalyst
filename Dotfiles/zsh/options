@@ -1,5 +1,3 @@
-#!/bin/zsh
-
 HISTFILE="${HIST_DIR}/zsh"
 HISTSIZE=8192
 SAVEHIST=65536

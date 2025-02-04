@@ -175,7 +175,7 @@ _Anything installed while in this environment will be persistent, as this **is**
 **TODO:** Verify that pacman's out-of-the-box config has parallel downloads enabled.  
 ~~`sed -i 's/#Parallel/Parallel/' /etc/pacman.conf`~~  
 
-> `pacman -S openrc mkinitcpio linux linux-headers linux-firmware grub efibootmgr elogind-openrc networkmanager-openrc ntpd-openrc less mandb man-pages openssh git zsh`  
+> `pacman -S openrc mkinitcpio linux linux-headers linux-firmware grub efibootmgr elogind-openrc networkmanager-openrc ntp-openrc less mandb man-pages openssh git zsh`  
 Install the remaining essential packages  
 
 > `grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=grub`  
