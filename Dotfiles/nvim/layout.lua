@@ -58,6 +58,7 @@ local setDefaultKeymap = function()
 	-- > 3: Lookup Definition (TODO)
 	-- > 4: Repeat Find (last searched character)
 	map(MOTION, "$", ";")
+	map("n", "=", ";")
 	-- > 5: Repeat Last `:s` Replacement
 	map(EDITOR, "%", "&")
 	-- > 6: Invert Case
@@ -103,7 +104,10 @@ local setDefaultKeymap = function()
 	map(NORMAL, "<C-i>", "A")
 	-- (TODO - Consider visual mode -> i for yank and move to insert mode)
 	-- > O: Open Line
-	map(OBJECT, "o", "a")
+	-- map(OBJECT, "iw", "iw")
+	map(OBJECT, "ow", "aw")
+	map(OBJECT, "id", "ib")
+	map(OBJECT, "od", "ab")
 	-- > P: Paste
 	-- (default)
 	-- (TODO - O-pending comPlete aka...I forgot; something with I -> O -> P for "most outer")
@@ -120,18 +124,19 @@ local setDefaultKeymap = function()
 	map(MOTION, "S", "$")
 	-- > D: [Motion] Match Bracket
 	map(EDITOR, "d", "%")
-	map(OBJECT, "d", "b")
 	map(EDITOR, "D", "<C-v>") -- Visual mode (block)
+	map(OBJECT, "d", "b")
 	-- > F: Visual Mode
 	map(EDITOR, "f", "v")
 	map(EDITOR, "F", "V")
+	map(NORMAL, "<C-f>", "gv")
 	-- > G: Copy
 	vim.cmd.unmap("gc")
 	vim.cmd.unmap("gcc")
-	map(NORMAL, "g", "y") -- (fights with _defaults)
+	vim.cmd.unmap("gx")
+	map(EDITOR, "g", "y") -- (fights with _defaults)
 	map(NORMAL, "gg", "yy")
 	map(NORMAL, "G", "y$") -- (Delete/Change symmetry - |Y-default|)
-	map(VISUAL, "g", "y")
 	map(VISUAL, "G", "Y")
 	-- > H: Left
 	map(EDITOR, "H", "<C-e>") -- Buffer view down
@@ -146,7 +151,7 @@ local setDefaultKeymap = function()
 	map(EDITOR, "L", "<C-y>") -- Buffer view up
 	map(ACTIVE, "<C-l>", "<cmd>vertical resize +2<cr>")
 	-- > ;: Map leader (set to No-Op here)
-	vim.cmd.unmap(";")
+	map(ACTIVE, ";", NOP)
 	map(ACTIVE, "<C-;>", "<C-c>:") -- Open command from anywhere (this may conflict with the default configuration of `ibus`)
 	-- > ': Register access
 	map(EDITOR, "'", "\"")
