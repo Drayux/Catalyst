@@ -1,6 +1,7 @@
 -- >>> editor.lua: Neovim global options
 
 -- Reference: https://neovim.io/doc/user/options.html#_3.-options-summary
+-- Global defaults: https://neovim.io/doc/user/options.html#local-noglobal
 -- (*) - Option overridden in some modes
 
 -- >> BEHAVIOR <<
@@ -17,6 +18,7 @@ vim.o.showmode = true -- Show the '-- MODE --' hint (*)
 vim.o.cursorline = true -- Highlight active line
 vim.o.foldenable = false -- Set default fold mode (local)
 vim.o.foldlevelstart = 0 -- Initial nest depth before folding
+vim.o.linebreak = true
 
 -- >> EDITING <<
 vim.o.tabstop = 4 -- Visual length of a tab character

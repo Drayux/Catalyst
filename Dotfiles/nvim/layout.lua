@@ -222,6 +222,12 @@ local setDefaultKeymap = function()
 	map(NORMAL, "vvl", "<cmd>rightbelow vs<cr>")
 	map(NORMAL, "vvo", "<cmd>only<cr>")
 	map(NORMAL, "vvq", "<cmd>q<cr>")
+	vim.keymap.set(NORMAL, "vc", function()
+		-- TODO: Consider adding autocommand to toggle whenever in insert mode
+		local width = tonumber(vim.wo.colorcolumn) or 0
+		vim.wo.colorcolumn = (width > 0) and "0" or "80"
+		vim.cmd.redraw() -- Trigger neovim to redraw the window so the column shows immediately
+	end, exprOpts)
 	-- > B: Buffer Navigation
 	-- map(EDITOR, "b", "g")
 	-- map(EDITOR, "bg", NOP) -- (this subcommand does not move automagically)
