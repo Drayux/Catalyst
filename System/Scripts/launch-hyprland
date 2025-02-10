@@ -1,0 +1,7 @@
+#!/bin/sh
+
+# Set the card environment variable
+# PCI-E path is consistent, but the /dev/dri path changes
+export AQ_DRM_DEVICES="$(readlink -f /dev/dri/by-path/pci-0000:01:00.0-card)"
+
+exec dbus-run-session Hyprland
