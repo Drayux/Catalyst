@@ -147,11 +147,11 @@ local setDefaultKeymap = function()
 	-- > K: Up
 	map(EDITOR, "K", "<C-u>") -- Jump page up (1/2)
 	map(ACTIVE, "<C-k>", "<cmd>resize -2<cr>")
-	-- > L: Right
+	-- > L: Right (TODO - Fix me!)
 	map(EDITOR, "L", "<C-y>") -- Buffer view up
 	map(ACTIVE, "<C-l>", "<cmd>vertical resize +2<cr>")
 	-- > ;: Map leader (set to No-Op here)
-	map(ACTIVE, ";", NOP)
+	map(EDITOR, ";", NOP)
 	map(ACTIVE, "<C-;>", "<C-c>:") -- Open command from anywhere (this may conflict with the default configuration of `ibus`)
 	-- > ': Register access
 	map(EDITOR, "'", "\"")
