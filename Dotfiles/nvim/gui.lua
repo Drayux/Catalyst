@@ -1,1 +1,0 @@
--- >>> gui.lua: Enable neovim integrations for a graphical session

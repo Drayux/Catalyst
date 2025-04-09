@@ -4,8 +4,6 @@
 
 -- Window selection utility
 
--- TODO: Simple keymap for "select window" and subsequently
--- > move the cursor to that window
 -- > require('window-picker').pick_window()
 
 local spec = {
@@ -13,15 +11,30 @@ local spec = {
 	cond = condUSER,
 	opts = {
 		hint = "floating-big-letter",
+		show_prompt = false,
 		filter_rules = {
-			include_current_win = false,
-			autoselect_one = true,
+			-- include_current_win = false,
+			include_current_win = true,
+			autoselect_one = false,
 			bo = {
 				filetype = { "neo-tree", "neo-tree-popup", "notify" },
 				buftype = { "terminal", "quickfix" },
 			}
 		}
-	}
+	},
+	init = function()
+		vim.g.windowpicker_enabled = true
+
+		-- Simple keymap for "select window" and subsequently moving the cursor
+		-- > to that window
+		local NORMAL = "n"
+		local quickSelect = function()
+			local window = require("window-picker").pick_window()
+			-- vim.api.nvim_set_current_win(window)
+			print(window)
+		end
+		vim.keymap.set(NORMAL, "V", quickSelect, { expr = true })
+	end
 }
 
 return spec

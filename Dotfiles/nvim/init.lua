@@ -83,17 +83,18 @@ package.path = table.concat(packagePaths, ";")
 -- TODO: If a known hostname exists, no need to use the heuristic
 -- > Use a heuristic to make our best guess
 local desktopFavor = 0
-local hostname = vim.fn.system("export HOSTNAME=$(hostname)")
+local hostname = vim.fn.system("hostname")
 if (hostname and #hostname > 0) then
-	vim.env.HOST = hostname
-	if (vim.env.HOST == "catalyst")
-		or (vim.env.HOST == "chitin")
-		or (vim.env.HOST == "aether")
+	if (hostname == "catalyst")
+		or (hostname == "chitin")
+		or (hostname == "aether")
 	then
 		desktopFavor = desktopFavor + 2
-	elseif vim.env.HOST:match("LX%-.+") then
+	elseif hostname:match("LX%-.+") then
 		desktopFavor = desktopFavor - 1
 	end
+	-- Save the hostname to the environment for later reference
+	vim.env.HOST = hostname
 
 -- For now, only one check should be necessary
 elseif vim.env.HOME then
@@ -125,6 +126,7 @@ end
 pcall(require, "plugin") -- Lazy plugin loader
 pcall(require, "events") -- Extra user commands/events
 
+-- The following are not yet implemented at all, this idea may be replaced sometime
 -- if (nvimMode == "GUI") then
 	-- pcall(require, "gui") -- Load fancy UI plugins and features
 	-- pcall(require, "session") -- Custom session management plugin (WIP)

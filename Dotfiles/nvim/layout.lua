@@ -89,7 +89,7 @@ local setDefaultKeymap = function()
 	-- (default)
 	-- > R: [Motion] Find char (forward)
 	map(MOTION, "r", "f")
-	map(MOTION, "R", ",")
+	map(MOTION, "R", "F")
 	-- > T: [Motion] Find char (till)
 	-- (default)
 	-- > Y: Cut (don't shoot me for this lmao)
@@ -167,20 +167,20 @@ local setDefaultKeymap = function()
 	-- TODO: Increase/decrease numbers
 	-- TODO: Delete and paste but don't change register contents 
 	local indent = function(inc, mode)
-		local motion = "<<"
-		local ext = ""
-		if (mode == VISUAL) then
-			motion = inc and ">"
-				or "<"
-			ext = "gv" -- Return to visual mode with previous selection
-		elseif inc then
-			motion = ">>"
+			local motion = "<<"
+			local ext = ""
+			if (mode == VISUAL) then
+				motion = inc and ">"
+					or "<"
+				ext = "gv" -- Return to visual mode with previous selection
+			elseif inc then
+				motion = ">>"
+			end
+			return function()
+				local count = tostring(vim.v.count)
+				return count .. motion .. ext
+			end
 		end
-		return function()
-			local count = tostring(vim.v.count)
-			return count .. motion .. ext
-		end
-	end
 	map(EDITOR, "x", NOP) -- Remove default for subcommands instead
 	map(NORMAL, "X", "==") -- Fix whitespace
 	map(ACTIVE, "<C-x>", "<C-o>")
@@ -223,11 +223,11 @@ local setDefaultKeymap = function()
 	map(NORMAL, "vvo", "<cmd>only<cr>")
 	map(NORMAL, "vvq", "<cmd>q<cr>")
 	vim.keymap.set(NORMAL, "vc", function()
-		-- TODO: Consider adding autocommand to toggle whenever in insert mode
-		local width = tonumber(vim.wo.colorcolumn) or 0
-		vim.wo.colorcolumn = (width > 0) and "0" or "80"
-		vim.cmd.redraw() -- Trigger neovim to redraw the window so the column shows immediately
-	end, exprOpts)
+			-- TODO: Consider adding autocommand to toggle whenever in insert mode
+			local width = tonumber(vim.wo.colorcolumn) or 0
+			vim.wo.colorcolumn = (width > 0) and "0" or "80"
+			vim.cmd.redraw() -- Trigger neovim to redraw the window so the column shows immediately
+		end, exprOpts)
 	-- > B: Buffer Navigation
 	-- map(EDITOR, "b", "g")
 	-- map(EDITOR, "bg", NOP) -- (this subcommand does not move automagically)

@@ -20,7 +20,7 @@ local deleteBuffer = function(argtable)
 		end
 	end
 
-	-- sp  : Split screen
+	-- sp : Split screen
 	-- LualineBuffersJump : Jump to the previous buffer
 	-- bd!(?) : Delete current buffer (including the split, so the new one takes its place)
 	--	^^Original split has the active buffer before deleting
