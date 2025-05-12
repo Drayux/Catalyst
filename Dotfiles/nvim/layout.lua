@@ -35,14 +35,29 @@ function map(mode, key, bind)
 	vim.keymap.set(mode, key, bind, defaultOpts)
 end
 
-function mapcmd(map, cmd)
-	local bind = "<leader>" .. map
+function mapcmd(key, cmd)
+	local bind = "<leader>" .. key
 	local command = "<cmd>" .. cmd .. "<cr>"
 	local opts = {
 		noremap = true,
 		silent = true
 	}
 	vim.keymap.set("n", bind, command, opts)
+end
+
+-- Expression functions are defined in lua/buffers.lua
+-- > TODO: May be prudent to rename this to expressions, but I want to imply that these are for modifying buffer contents
+function mapexpr(mode, key, funcname)
+	local commands = require("buffer")
+	local funcstr = tostring(funcname)
+	if commands[funcstr] == nil then
+		error("Buffer command `" .. tostring(funcstr) .. "` does not exist in lua/buffer.lua")
+	end
+	local mapping = function()
+		vim.go.operatorfunc = "v:lua.require'buffer'." .. funcstr
+		return "g@l"
+	end
+	vim.keymap.set(mode, key, mapping, exprOpts)
 end
 -- >>>
 
@@ -188,24 +203,14 @@ local setDefaultKeymap = function()
 	map(NORMAL, "xb", "==")
 	map(VISUAL, "X", "=") -- (symmetry)
 	map(VISUAL, "xb", "=")
-	-- TODO: Visual mode equivalent/Count support
-	map(NORMAL, "xo", "o<esc>k") -- Add line below
-	map(NORMAL, "xO", "ko<esc>j<C-e>") -- Add line above
-	--------
-	vim.keymap.set(EDITOR, "xj", function()
-			local count = tostring(vim.v.count)
-			return "<cmd>m+" .. count .. "<cr>"
-		end, exprOpts)
-	vim.keymap.set(EDITOR, "xk", function()
-			local count = tostring(vim.v.count + 1)
-			return "<cmd>m-" .. count .. "<cr>"
-		end, exprOpts)
+	mapexpr(NORMAL, "xo", "insertLineBelow")
+	mapexpr(NORMAL, "xO", "insertLineAbove")
+	mapexpr(EDITOR, "xj", "moveLineDown")
+	mapexpr(EDITOR, "xk", "moveLineUp")
 	vim.keymap.set(NORMAL, "xm", indent(true, NORMAL), exprOpts)
 	vim.keymap.set(NORMAL, "xn", indent(false, NORMAL), exprOpts)
 	vim.keymap.set(VISUAL, "xm", indent(true, VISUAL), exprOpts)
 	vim.keymap.set(VISUAL, "xn", indent(false, VISUAL), exprOpts)
-	map(VISUAL, "n", "<gv") -- "Stay" in visual mode
-	map(VISUAL, "m", ">gv")
 	-- > C: Replace
 	map(EDITOR, "c", "r")
 	map(EDITOR, "C", "x")
@@ -258,7 +263,7 @@ local setDefaultKeymap = function()
 
 	-- CONTROL ROW
 	-- > Arrows: Selection/Navigation
-	map(EDITOR, "<left>", "gh")
+	map(EDITOR, "<left>", "gh") -- Logical lines navigation (instead of newline delimited)
 	map(EDITOR, "<down>", "gj")
 	map(EDITOR, "<up>", "gk")
 	map(EDITOR, "<right>", "gl")

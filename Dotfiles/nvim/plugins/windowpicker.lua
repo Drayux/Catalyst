@@ -35,7 +35,9 @@ local spec = {
 		-- NOTE: For whatever reason, calling quickSelect as an expression
 		-- > keymap would invoke error E565 without fail, so the following is a
 		-- > workaround by defining the expression as a user command
-		-- > Perhaps it has to do with an event hook mutex-type lock?
+		-- UPDATE: Apparently it would seem that expressions cannot call lua
+		-- > code that changes buffers in any capacity, and I've merely managed
+		-- > to dodge the effects of this on every config tweak before this one
 		vim.api.nvim_create_user_command("QuickSelectWindow", quickSelect, {
 			nargs = 0,
 			desc = "Focus a window indicated by letter prompts",

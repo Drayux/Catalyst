@@ -9,6 +9,9 @@ local spec = {
 	cond = condCORE,
 	event = { "BufEnter" },
 	dependencies = {
+		{ "nvim-treesitter/nvim-treesitter-textobjects",
+			cond = condUSER
+		},
 		{ "nvim-treesitter/nvim-treesitter-context",
 			cond = condUSER,
 			opts = {
@@ -48,34 +51,35 @@ local spec = {
 	},
 	opts = {
 		-- https://github.com/tree-sitter/tree-sitter/wiki/List-of-parsers
-		ensure_installed = {
-			"bash",
-			"c", "cpp",
-			-- "cmake",
-			"css", "scss",
-			"diff",
-			"gitattributes", "gitcommit", "gitignore",
-			-- "glsl",
-			"html",
-			"java", "json",
-			"javascript", "typescript",
-			"lua",
-			"make",
-			"markdown", "markdown_inline",
-			"python",
-			"regex",
-			"ruby",
-			"rust",
-			"xml",
-			"yaml",
-		},
+		-- ensure_installed = {
+		-- 	"bash",
+		-- 	"c", "cpp",
+		-- 	-- "cmake",
+		-- 	"css", "scss",
+		-- 	"diff",
+		-- 	"gitattributes", "gitcommit", "gitignore",
+		-- 	-- "glsl",
+		-- 	"html",
+		-- 	"java", "json",
+		-- 	"javascript", "typescript",
+		-- 	"lua",
+		-- 	"make",
+		-- 	"markdown", "markdown_inline",
+		-- 	"python",
+		-- 	"regex",
+		-- 	"ruby",
+		-- 	"rust",
+		-- 	"xml",
+		-- 	"yaml",
+		-- },
 		ignore_install = {},
 		auto_install = true,
 		sync_install = true,
 
 		-- Modules
 		highlight = { enable = true },
-		indent = { enable = true }
+		indent = { enable = true },
+		textobjects = { enable = true }
 	},
 	build = ":TSUpdate",
 	init = function()
@@ -85,11 +89,12 @@ local spec = {
 		vim.o.foldmethod = "expr"
 		vim.o.foldexpr = "v:lua.vim.treesitter.foldexpr()"
 	end,
-	config = function()
+	config = function(_, opts)
 		-- Enable treesitter highlighting for C, Ruby, (and probably others)
 		-- > Likely an api version bug, some languages do not enable treesitter's
 		-- > highlights by default, but they will be if explicitly called
 		vim.cmd("TSEnable highlight")
+		-- require("nvim-treesitter.configs").setup(opts)
 	end
 }
 
