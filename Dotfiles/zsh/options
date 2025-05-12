@@ -14,8 +14,9 @@ bindkey 	"^[[3~"		delete-char
 
 # >> Plugins <<
 # Not a ZSH plugin, but this overloads libc so that output to stderr is red
+# TODO: Consider adding in the support for multilib (detailed on the git repo page)
 # > Package: `stderred-git` (pacman AUR) [gentoo may need to install from source]
-source /usr/share/stderred/stderred.sh 2> /dev/null || true
+# source /usr/share/stderred/stderred.sh 2> /dev/null || true
 
 # zsh-syntax-highlighting should be loaded last (must also be installed!)
 # > Package: `zsh-syntax-highlighting` (both pacman and portage)
