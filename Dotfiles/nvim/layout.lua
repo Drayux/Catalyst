@@ -119,9 +119,11 @@ local setDefaultKeymap = function()
 	-- > A: [Motion] Start of Line
 	map(MOTION, "a", "_")
 	map(MOTION, "A", "0")
+	-- map(NORMAL, "<C-a>", "<C-a>")
 	-- > S: [Motion] End of Line
 	map(MOTION, "s", "g_")
 	map(MOTION, "S", "$")
+	map(NORMAL, "<C-s>", "<C-x>")
 	-- > D: [Motion] Match Bracket
 	map(EDITOR, "d", "%")
 	map(EDITOR, "D", "<C-v>") -- Visual mode (block)
@@ -164,7 +166,6 @@ local setDefaultKeymap = function()
 	-- > Z: Fold operations
 	map(EDITOR, "Z", "zi") -- Toggle folds
 	-- > X: Editor (eXtra) operations
-	-- TODO: Increase/decrease numbers
 	-- TODO: Delete and paste but don't change register contents 
 	local indent = function(inc, mode)
 			local motion = "<<"
@@ -257,6 +258,10 @@ local setDefaultKeymap = function()
 
 	-- CONTROL ROW
 	-- > Arrows: Selection/Navigation
+	map(EDITOR, "<left>", "gh")
+	map(EDITOR, "<down>", "gj")
+	map(EDITOR, "<up>", "gk")
+	map(EDITOR, "<right>", "gl")
 	map(EDITOR, "<C-left>", "<C-w>h")
 	map(EDITOR, "<C-down>", "<C-w>j")
 	map(EDITOR, "<C-up>", "<C-w>k")

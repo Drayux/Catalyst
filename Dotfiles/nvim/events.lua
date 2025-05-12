@@ -21,23 +21,13 @@ vim.api.nvim_create_autocmd("FileType", {
 	end
 })
 
--- Code folding options
--- > All fold options are local to windows
--- > vim.o invokation sets the following as defaults
--- TODO: These settings still need tweaking: some form of auto-open/auto-close functionality would be nice for quick file navigation
-vim.o.foldenable = false
-vim.o.foldminlines = 2 -- Include block start/end, +1 (2 = skip one-liners)
-vim.o.foldopen = "block,hor,insert,jump,mark,percent,quickfix,search,tag,undo"
-vim.o.foldclose = "all"
-vim.o.foldtext = "" -- (look into: v:lua.vim.treesitter.foldtext())
--- TODO: Set foldmethod and foldexpr inside of treesitter plugin config
--- vim.o.foldmethod = "expr"
--- vim.o.foldexpr = "nvim_treesitter#foldexpr()"
+-- TODO: Fancy fold behavior
+-- > Also make note of referencing the default fold options in editor.lua
 
 -- Work style guideline options
 if (vim.g.host == "WORK") then
 	vim.api.nvim_create_autocmd("BufReadPost", {
-		pattern = { "*.c", "*.h", "*.rb" },
+		pattern = { "*.c", "*.cpp", "*.h", "*.rb" },
 		callback = function()
 			vim.cmd.setlocal("expandtab")
 		end

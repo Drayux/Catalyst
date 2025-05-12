@@ -124,6 +124,16 @@ local spec = {
 		vim.cmd("ca bid LualineBuffersDelete")
 		-- TODO: bid -> Jump to buffer index and call :bd, then move to original buffer
 
+		-- Keymaps for quickly jumping across open buffers (Lualine index)
+		local mapBufferJump = function(index)
+			local index_str = tostring(index)
+			vim.keymap.set("n", "b" .. index_str,
+				"<cmd>LualineBuffersJump " .. index_str .. "<cr>")
+		end
+		for index = 1, 9 do
+			mapBufferJump(index)
+		end
+
 		require("lualine").setup(opts) -- Explicitly call setup for treebutton
 	end
 }

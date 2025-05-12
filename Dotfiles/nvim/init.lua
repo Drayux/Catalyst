@@ -11,7 +11,7 @@
 -- Override package path and runtime path
 -- Package path defines a file search order for the lua runtime
 -- Runtime path does...something??
--- ... (todo, put keymap.lua and editor.lua in /etc/ and symlink)
+-- ... (todo, put layout.lua and editor.lua in /etc/ and symlink)
 
 -- Load features depending on runtime env
 -- > (TODO) Pager mode : LESS
