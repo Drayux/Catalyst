@@ -7,6 +7,7 @@
 local spec = {
 	"nvim-treesitter/nvim-treesitter",
 	cond = condCORE,
+	main = "nvim-treesitter.configs",
 	event = { "BufEnter" },
 	dependencies = {
 		{ "nvim-treesitter/nvim-treesitter-textobjects",
@@ -51,50 +52,72 @@ local spec = {
 	},
 	opts = {
 		-- https://github.com/tree-sitter/tree-sitter/wiki/List-of-parsers
-		-- ensure_installed = {
-		-- 	"bash",
-		-- 	"c", "cpp",
-		-- 	-- "cmake",
-		-- 	"css", "scss",
-		-- 	"diff",
-		-- 	"gitattributes", "gitcommit", "gitignore",
-		-- 	-- "glsl",
-		-- 	"html",
-		-- 	"java", "json",
-		-- 	"javascript", "typescript",
-		-- 	"lua",
-		-- 	"make",
-		-- 	"markdown", "markdown_inline",
-		-- 	"python",
-		-- 	"regex",
-		-- 	"ruby",
-		-- 	"rust",
-		-- 	"xml",
-		-- 	"yaml",
-		-- },
+		ensure_installed = {
+			"bash",
+			"c", "cpp",
+			-- "cmake",
+			"css", "scss",
+			"diff",
+			"gitattributes", "gitcommit", "gitignore",
+			-- "glsl",
+			"html",
+			"java", "json",
+			"javascript", "typescript",
+			"lua",
+			"make",
+			"markdown", "markdown_inline",
+			"python",
+			"regex",
+			"ruby",
+			"rust",
+			"xml",
+			"yaml",
+		},
 		ignore_install = {},
 		auto_install = true,
 		sync_install = true,
 
 		-- Modules
 		highlight = { enable = true },
+		incremental_selection = { enable = true },
 		indent = { enable = true },
-		textobjects = { enable = true }
+		textobjects = {
+			move = {
+				enable = true, 
+				set_jumps = true,
+				goto_next_start = {
+					["<leader>as"] = { query = "@local.scope", query_group = "locals", desc = "Next scope" },
+				},
+			},
+			-- select = {
+			-- 	enable = true 
+			-- },
+			-- swap = {
+			-- 	enable = true 
+			-- }
+		}
 	},
 	build = ":TSUpdate",
-	init = function()
+	init = function(plugin)
 		-- Enable treesitter code folding
 		-- > Buffer options which use the global value as default
 		-- > Note that foldtext cannot be set globally, so using foldtext.nvim is preferable
 		vim.o.foldmethod = "expr"
 		vim.o.foldexpr = "v:lua.vim.treesitter.foldexpr()"
+
+		-- Taken from AstroNvim, this ensures that TreeSitter's queries are available for
+		-- > other plugins, as other plugins may assume that TreeSitter is already loaded
+		require("lazy.core.loader").add_to_rtp(plugin)
+		pcall(require, "nvim-treesitter.query_predicates")
 	end,
-	config = function(_, opts)
+	config = function(plugin, opts)
+		-- Treesitter is unusual and the "default main" must be overridden
+		require(plugin.main).setup(opts)
+
 		-- Enable treesitter highlighting for C, Ruby, (and probably others)
 		-- > Likely an api version bug, some languages do not enable treesitter's
 		-- > highlights by default, but they will be if explicitly called
 		vim.cmd("TSEnable highlight")
-		-- require("nvim-treesitter.configs").setup(opts)
 	end
 }
 
