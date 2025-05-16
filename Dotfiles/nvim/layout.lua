@@ -47,6 +47,9 @@ end
 
 -- Expression functions are defined in lua/buffers.lua
 -- > TODO: May be prudent to rename this to expressions, but I want to imply that these are for modifying buffer contents
+-- NOTE: The expression option is not necessary for a mapping to lua code!
+-- > It actually means that Neovim will run the binding returned by the function, or do nothing if it returns nil
+-- > TODO: Therefore, this function is likely unnecessary and can be refactored at some stage of "config cleanup"
 function mapexpr(mode, key, funcname)
 	local commands = require("buffer")
 	local funcstr = tostring(funcname)
@@ -119,10 +122,9 @@ local setDefaultKeymap = function()
 	map(NORMAL, "<C-i>", "A")
 	-- (TODO - Consider visual mode -> i for yank and move to insert mode)
 	-- > O: Open Line
+	map(VISUAL, "o", "a") -- Extend new selection names to visual mode
 	-- map(OBJECT, "iw", "iw")
 	map(OBJECT, "ow", "aw")
-	map(OBJECT, "id", "ib")
-	map(OBJECT, "od", "ab")
 	-- > P: Paste
 	-- (default)
 	-- (TODO - O-pending comPlete aka...I forgot; something with I -> O -> P for "most outer")
@@ -132,7 +134,9 @@ local setDefaultKeymap = function()
 	
 	-- HOME ROW
 	-- > A: [Motion] Start of Line
-	map(MOTION, "a", "_")
+	-- map(EDITOR, "a", "_") -- This is an optional workaround for the mapping below
+	-- map(OBJECT, "a", "0") -- For some reason, the original sequence 'd_' deletes the entire line
+	map(MOTION, "a", "_") -- (TODO: Tweak to perfection)
 	map(MOTION, "A", "0")
 	-- map(NORMAL, "<C-a>", "<C-a>")
 	-- > S: [Motion] End of Line
@@ -140,17 +144,25 @@ local setDefaultKeymap = function()
 	map(MOTION, "S", "$")
 	map(NORMAL, "<C-s>", "<C-x>")
 	-- > D: [Motion] Match Bracket
-	map(EDITOR, "d", "%")
-	map(EDITOR, "D", "<C-v>") -- Visual mode (block)
-	map(OBJECT, "d", "b")
+	if not vim.g.treesitter_enabled then
+		-- Fallback binds when absent treesitter-textobjects
+		-- NOTE: Treesitter's binds are set on plugin load, so these could be set normally
+		-- > and then overridden -- The conditional is left in place merely as a visual
+		-- > indicator that the current configuration rebinds these keys elsewhere
+		map(EDITOR, "d", "%") -- Match paren
+		map(EDITOR, "D", "%")
+		map(EDITOR, "<C-d>", "<esc>vip")
+	end
+	map(VISUAL, "d", "o")
 	-- > F: Visual Mode
 	map(EDITOR, "f", "v")
 	map(EDITOR, "F", "V")
-	map(NORMAL, "<C-f>", "gv")
+	map(EDITOR, "<C-f>", "<C-v>") -- Visual mode (block)
 	-- > G: Copy
 	vim.cmd.unmap("gc")
 	vim.cmd.unmap("gcc")
 	vim.cmd.unmap("gx")
+	vim.cmd.xunmap("gra")
 	map(EDITOR, "g", "y") -- (fights with _defaults)
 	map(NORMAL, "gg", "yy")
 	map(NORMAL, "G", "y$") -- (Delete/Change symmetry - |Y-default|)
@@ -203,6 +215,7 @@ local setDefaultKeymap = function()
 	map(NORMAL, "xb", "==")
 	map(VISUAL, "X", "=") -- (symmetry)
 	map(VISUAL, "xb", "=")
+	map(NORMAL, "xf", "gv")
 	mapexpr(NORMAL, "xo", "insertLineBelow")
 	mapexpr(NORMAL, "xO", "insertLineAbove")
 	mapexpr(EDITOR, "xj", "moveLineDown")
@@ -228,13 +241,14 @@ local setDefaultKeymap = function()
 	map(NORMAL, "vvl", "<cmd>rightbelow vs<cr>")
 	map(NORMAL, "vvo", "<cmd>only<cr>")
 	map(NORMAL, "vvq", "<cmd>q<cr>")
-	vim.keymap.set(NORMAL, "vc", function()
+	map(NORMAL, "vc", function()
 			-- TODO: Consider adding autocommand to toggle whenever in insert mode
 			local width = tonumber(vim.wo.colorcolumn) or 0
 			vim.wo.colorcolumn = (width > 0) and "0" or "80"
 			vim.cmd.redraw() -- Trigger neovim to redraw the window so the column shows immediately
-		end, exprOpts)
+		end)
 	-- > B: Buffer Navigation
+	-- TODO: b<any> for treesitter-textobjects jumping
 	-- map(EDITOR, "b", "g")
 	-- map(EDITOR, "bg", NOP) -- (this subcommand does not move automagically)
 	map(EDITOR, "b", NOP)
@@ -251,11 +265,13 @@ local setDefaultKeymap = function()
 	map(EDITOR, "m", "'")
 	map(EDITOR, "M", "m")
 	-- > ,: Undo
-	map(EDITOR, ",", "u")
+	map(NORMAL, ",", "u")
+	map(VISUAL, ",", "<esc>ugv")
 	map(EDITOR, "<", "U")
 	-- TODO: `Ctrl-,` for undo tree (plugin)
 	-- > .: Redo
-	map(EDITOR, ".", "<C-r>")
+	map(NORMAL, ".", "<C-r>")
+	map(VISUAL, ",", "<esc><C-r>gv")
 	-- TODO: `>` for redo line
 	-- > /: Search
 	map(EDITOR, "?", "*zz") -- Search word at cursor

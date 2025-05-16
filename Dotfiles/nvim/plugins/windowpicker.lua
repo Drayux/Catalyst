@@ -15,7 +15,7 @@ local spec = {
 		filter_rules = {
 			-- include_current_win = false,
 			include_current_win = true,
-			autoselect_one = false,
+			autoselect_one = true,
 			bo = {
 				filetype = { "neo-tree", "neo-tree-popup", "notify" },
 				buftype = { "terminal", "quickfix" },
@@ -42,7 +42,8 @@ local spec = {
 			nargs = 0,
 			desc = "Focus a window indicated by letter prompts",
 		})
-		vim.keymap.set(NORMAL, "V", "<cmd>QuickSelectWindow<cr>")
+		map(NORMAL, "V", "<cmd>QuickSelectWindow<cr>")
+		-- map(NORMAL, "V", require("window-picker").pick_window) -- also works
 	end
 }
 

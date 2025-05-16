@@ -11,7 +11,30 @@ local spec = {
 	event = { "BufEnter" },
 	dependencies = {
 		{ "nvim-treesitter/nvim-treesitter-textobjects",
-			cond = condUSER
+			cond = condCORE, -- Should be the same as base treesitter because binds depend on it
+		},
+		{ "drybalka/tree-climber.nvim",
+			cond = condCORE, -- Should be the same as base treesitter because binds depend on it
+			init = function()
+				-- Add tree-climber bindings
+				-- TODO: Tweak these until they make sense (angry)
+				-- > https://github.com/drybalka/tree-climber.nvim
+				local next = function()
+					-- require("tree-climber").goto_next({ skip_comments = true })
+					require("tree-climber").goto_child({ skip_comments = true })
+				end
+				local parent = function()
+					require("tree-climber").goto_parent({ skip_comments = true })
+				end
+				local select = function()
+					require("tree-climber").select_node({ skip_comments = true })
+				end
+
+				local EDITOR = { "n", "v" } -- "Editor" modes (normal, visual, select)
+				vim.keymap.set(EDITOR, "d", next)
+				vim.keymap.set(EDITOR, "D", parent)
+				vim.keymap.set(EDITOR, "<C-d>", select)
+			end
 		},
 		{ "nvim-treesitter/nvim-treesitter-context",
 			cond = condUSER,
@@ -32,15 +55,14 @@ local spec = {
 			opts = {
 				-- TODO: Only enable dimming in insert mode
 				dimming = {
-					alpha = 0.25, -- amount of dimming
-					-- we try to get the foreground from the highlight groups or fallback color
+					alpha = 0.25,
 					color = { "Normal", "#ffffff" },
-					term_bg = "#000000", -- if guibg=NONE, this will be used to calculate text color
-					inactive = false, -- when true, other windows will be fully dimmed (unless they contain the same buffer)
+					term_bg = "#2c2c34", -- Fallback terminal emulator color
+					inactive = true, -- Whether to dim the contents of other windows when active
 				},
-				context = 99, -- amount of lines we will try to show around the current line
-				treesitter = true, -- use treesitter when available for the filetype
-				-- exclude = {}, -- exclude these filetypes
+				context = 99, -- Amount of lines to show around the current line (99 for max)
+				treesitter = true, -- Use treesitter when available
+				-- exclude = {}, -- Exclude these filetypes
 			}
 		},
 		{ "OXY2DEV/foldtext.nvim",
@@ -76,29 +98,48 @@ local spec = {
 		ignore_install = {},
 		auto_install = true,
 		sync_install = true,
+		additional_vim_regex_highlighting = false,
 
 		-- Modules
 		highlight = { enable = true },
-		incremental_selection = { enable = true },
+		incremental_selection = { enable = false }, -- Conflicts with custom keymap
 		indent = { enable = true },
-		textobjects = {
-			move = {
-				enable = true, 
-				set_jumps = true,
-				goto_next_start = {
-					["<leader>as"] = { query = "@local.scope", query_group = "locals", desc = "Next scope" },
-				},
+		textobjects = { -- This module is not built-in and thus requires the nvim-treesitter-textobjects plugin
+			select = {
+				enable = true,
+				lookahead = true,
+				keymaps = {
+					-- TODO: None of these really work very well...
+					["ic"] = "@comment.inner",
+					["oc"] = "@comment.outer",
+					["is"] = "@statement.inner",
+					["os"] = "@block.inner",
+					["id"] = "@statement.outer",
+					["od"] = "@block.outer",
+					["if"] = "@function.inner",
+					["of"] = "@function.outer",
+
+					-- Removed these because yf would feel like "yank with the motion 'f'"
+					-- > but 'f' is not a motion
+					-- ["f"] = "@function.inner",
+					-- ["F"] = "@function.outer",
+				}
 			},
-			-- select = {
-			-- 	enable = true 
-			-- },
-			-- swap = {
-			-- 	enable = true 
-			-- }
+			-- >>> Modules also available, but currently not in use
+			swap = { enable = false },
+			move = {
+				enable = false, 
+				set_jumps = true,
+				-- See the GitHub repo for keymap configuration
+				-- > https://github.com/nvim-treesitter/nvim-treesitter-textobjects
+			},
+			-- <<<
 		}
 	},
 	build = ":TSUpdate",
 	init = function(plugin)
+		vim.g.treesitter_enabled = true
+
 		-- Enable treesitter code folding
 		-- > Buffer options which use the global value as default
 		-- > Note that foldtext cannot be set globally, so using foldtext.nvim is preferable
