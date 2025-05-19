@@ -17,10 +17,11 @@ local spec = {
 			cond = condCORE, -- Should be the same as base treesitter because binds depend on it
 			init = function()
 				-- Add tree-climber bindings
-				-- TODO: Tweak these until they make sense (angry)
-				-- > https://github.com/drybalka/tree-climber.nvim
+				-- > TODO: Tweak these until they make sense (angry)
+				local EDITOR = { "n", "v" } -- "Editor" modes (normal, visual, select)
+
 				local next = function()
-					-- require("tree-climber").goto_next({ skip_comments = true })
+					require("tree-climber").goto_next({ skip_comments = true })
 					require("tree-climber").goto_child({ skip_comments = true })
 				end
 				local parent = function()
@@ -30,7 +31,6 @@ local spec = {
 					require("tree-climber").select_node({ skip_comments = true })
 				end
 
-				local EDITOR = { "n", "v" } -- "Editor" modes (normal, visual, select)
 				vim.keymap.set(EDITOR, "d", next)
 				vim.keymap.set(EDITOR, "D", parent)
 				vim.keymap.set(EDITOR, "<C-d>", select)

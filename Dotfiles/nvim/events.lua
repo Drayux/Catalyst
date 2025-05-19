@@ -4,9 +4,11 @@
 -- TODO: Smart windows
 vim.cmd("cnorea bq bd")
 vim.cmd("cnorea bquit bd")
+-- >>> TODO: Move these to buffers.closeBuffer when finished
 vim.cmd("cnorea bd bp<bar>sp<bar>bn<bar>bd")
 vim.cmd("cnorea bdel bp<bar>sp<bar>bn<bar>bd")
 vim.cmd("cnorea bdelete bp<bar>sp<bar>bn<bar>bd")
+-- <<<
 
 -- >> COMMANDS <<
 -- (none....yet)

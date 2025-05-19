@@ -73,12 +73,11 @@ local setDefaultKeymap = function()
 	-- > 1/2: Prev/Next Buffer
 	map(NORMAL, "!", "<cmd>bp<cr>") -- (only supported in normal mode)
 	map(NORMAL, "@", "<cmd>bn<cr>")
-	-- > 3: Lookup Definition (TODO)
-	-- > 4: Repeat Find (last searched character)
+	-- > 3/4: Repeat Find (last searched character)
+	map(NORMAL, "=", ";")
 	map(MOTION, "$", ";")
-	map("n", "=", ";")
-	-- > 5: Repeat Last `:s` Replacement
-	map(EDITOR, "%", "&")
+	-- > 5: Match parentheses
+	-- (default)
 	-- > 6: Invert Case
 	map(EDITOR, "^", "~")
 	-- > 7: Join Lines
@@ -89,9 +88,14 @@ local setDefaultKeymap = function()
 	map(VISUAL, "*", "\"8C") -- (symmetry)
 	-- > 9: Replace Mode
 	map(EDITOR, "(", "R")
-	-- > 0: Repeat command
+	-- > 0: Repeat Last `:s` Replacement
+	map(EDITOR, ")", "&")
+	-- > (*actual) 0: Repeat command
 	map(EDITOR, "0", ".")
-	-- TODO: `)` for ????
+	-- > MINUS: No idea ??? (TODO)
+	-- ...
+	-- > EQUALS: Lookup Definition (TODO)
+	-- ...
 
 	-- QWERTY ROW
 	-- > TAB: Completion

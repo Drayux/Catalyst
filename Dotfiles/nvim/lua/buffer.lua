@@ -51,11 +51,44 @@ local moveLine = function(direction)
 	vim.cmd.move(final)
 end
 
+local closeBuffer = function(buffer, bang)
+	vim.notify("TODO: buffers.closeBuffers (target was " .. tostring(buffer) .. ")", vim.log.levels.WARN)
+
+	-- Neovim will close the window if we close the buffer that it
+	-- > currently has open; step one is to check what state we're in
+	local current = vim.api.nvim_get_current_buf()
+	-- print(current)
+
+	-- TODO: Something to do with iterating all the open windows to check
+	-- > if the target buffer is open in any. If so, create a new (:enew)
+	-- > buffer and swap each open window to it (or maybe just do :bp??)
+	-- > ALTERNATIVELY, we can just check if this is the case and warn
+	-- > (this might do away with the current value, as it would be relevant
+	-- > to each window anyway....although I wager we keep the above code)
+
+	-- > TODO: For some reason, using the BANG causes the window to close in
+	-- > the same conditions that not using the bang would not
+	-- (old todo, not sure if still relevant)
+
+	-- The following was the previous solution:
+	-- sp : Split screen
+	-- LualineBuffersJump : Jump to the previous buffer
+	-- bd!(?) : Delete current buffer (including the split, so the new one takes its place)
+	--	^^Original split has the active buffer before deleting
+	-- if not target then return
+	-- elseif target > 0 then vim.cmd("bp")
+	-- end
+	-- vim.cmd("sp")
+	-- vim.cmd("LualineBuffersJump " .. tostring(idx))
+	-- vim.cmd("bd" .. (argtable.bang and "!" or ""))
+end
+
 local commands = {
 	insertLineAbove = function() insertLine(ABOVE) end,
 	insertLineBelow = function() insertLine(BELOW) end,
 	moveLineUp = function() moveLine(UP) end,
 	moveLineDown = function() moveLine(DOWN) end,
+	closeBuffer = closeBuffer,
 }
 
 return commands

@@ -8,32 +8,6 @@
 -- >	is already loaded (themer should not load lualine)
 -- > *This is a functionality extension of lualine*
 
--- Similar to LualineBuffersJump, delete a buffer at a target index
-local deleteBuffer = function(argtable)
-	local idx = argtable.args
-	if #idx == 0 then idx = 0
-	else
-		_, idx = pcall(tonumber, argtable.args)
-		if not idx then 
-			print("Could not close `" .. tostring(idx) .. "`")
-			return
-		end
-	end
-
-	-- sp : Split screen
-	-- LualineBuffersJump : Jump to the previous buffer
-	-- bd!(?) : Delete current buffer (including the split, so the new one takes its place)
-	--	^^Original split has the active buffer before deleting
-
-	if idx > 0 then
-		vim.cmd("bp")
-	end
-
-	vim.cmd("sp")
-	vim.cmd("LualineBuffersJump " .. tostring(idx))
-	vim.cmd("bd" .. (argtable.bang and "!" or ""))
-end
-
 -- >>> Reference colorscheme
 local colors = {
 	black  = "#080808",
@@ -114,7 +88,6 @@ local updateTheme = function(colors)
 end
 
 local api = {
-	delete = deleteBuffer,
 	--retheme = updateTheme,
 	retheme = function() end,
 }

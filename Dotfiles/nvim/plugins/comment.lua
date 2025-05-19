@@ -96,8 +96,8 @@ local spec = {
 
 		-- Set keybinds (will invoke lazy load)
 		local EDITOR = { "n", "v" } -- Taken directly from layout (keymaps)
-		map(EDITOR, "xc", toggleLine, { expr = true })
-		map(EDITOR, "xC", uncommentLine, { expr = true })
+		map(EDITOR, "xc", toggleLine)
+		map(EDITOR, "xC", uncommentLine)
 
 		-- block commenting
 		-- normal mode xd -> Take o-pending and always comment that much
@@ -107,7 +107,7 @@ local spec = {
 		-- > at cursor??
 
 		-- TODO: What to do if toggling linewise inside of a block?
-		-- map(EDITOR, "xd", toggleBlock, { expr = true })
+		-- map(EDITOR, "xd", toggleBlock)
 	end
 }
 

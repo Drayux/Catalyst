@@ -10,7 +10,7 @@ function condCORE() return level > 0 end
 function condUSER() return level > 2 end
 function condBASE() return level < 4 end
 function condGUI() return level == 4 end
--- >>>
+-- <<<
 
 -- Add lazy to the vim runtime path
 -- > https://neovim.io/doc/user/starting.html#load-plugins
