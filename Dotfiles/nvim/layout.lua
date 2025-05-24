@@ -46,11 +46,10 @@ function mapcmd(key, cmd)
 end
 
 -- Expression functions are defined in lua/buffers.lua
--- > TODO: May be prudent to rename this to expressions, but I want to imply that these are for modifying buffer contents
 -- NOTE: The expression option is not necessary for a mapping to lua code!
 -- > It actually means that Neovim will run the binding returned by the function, or do nothing if it returns nil
--- > TODO: Therefore, this function is likely unnecessary and can be refactored at some stage of "config cleanup"
-function mapexpr(mode, key, funcname)
+-- > The advantage of this is to allow lua functions to be "dot-repeatable" (remapped to 0)
+function mapexpr(mode, key, funcname, expr)
 	local commands = require("buffer")
 	local funcstr = tostring(funcname)
 	if commands[funcstr] == nil then
@@ -58,7 +57,7 @@ function mapexpr(mode, key, funcname)
 	end
 	local mapping = function()
 		vim.go.operatorfunc = "v:lua.require'buffer'." .. funcstr
-		return "g@l"
+		return expr or "g@l"
 	end
 	vim.keymap.set(mode, key, mapping, exprOpts)
 end
@@ -153,10 +152,10 @@ local setDefaultKeymap = function()
 		-- NOTE: Treesitter's binds are set on plugin load, so these could be set normally
 		-- > and then overridden -- The conditional is left in place merely as a visual
 		-- > indicator that the current configuration rebinds these keys elsewhere
-		map(EDITOR, "d", "%") -- Match paren
-		map(EDITOR, "D", "%")
+		map(EDITOR, "D", "0k%")
 		map(EDITOR, "<C-d>", "<esc>vip")
 	end
+	map(NORMAL, "d", "%") -- Match paren
 	map(VISUAL, "d", "o")
 	-- > F: Visual Mode
 	map(EDITOR, "f", "v")
@@ -198,6 +197,17 @@ local setDefaultKeymap = function()
 	map(EDITOR, "Z", "zi") -- Toggle folds
 	-- > X: Editor (eXtra) operations
 	-- TODO: Delete and paste but don't change register contents 
+	map(EDITOR, "x", NOP) -- Remove default for subcommands instead
+	map(NORMAL, "X", "==") -- Fix whitespace
+	map(ACTIVE, "<C-x>", "<C-o>")
+	map(NORMAL, "xb", "==")
+	map(VISUAL, "X", "=") -- (symmetry)
+	map(VISUAL, "xb", "=")
+	map(NORMAL, "xf", "gv")
+	mapexpr(NORMAL, "xo", "insertLineBelow")
+	mapexpr(NORMAL, "xO", "insertLineAbove")
+	mapexpr(EDITOR, "xj", "moveLineDown")
+	mapexpr(EDITOR, "xk", "moveLineUp")
 	local indent = function(inc, mode)
 			local motion = "<<"
 			local ext = ""
@@ -213,21 +223,22 @@ local setDefaultKeymap = function()
 				return count .. motion .. ext
 			end
 		end
-	map(EDITOR, "x", NOP) -- Remove default for subcommands instead
-	map(NORMAL, "X", "==") -- Fix whitespace
-	map(ACTIVE, "<C-x>", "<C-o>")
-	map(NORMAL, "xb", "==")
-	map(VISUAL, "X", "=") -- (symmetry)
-	map(VISUAL, "xb", "=")
-	map(NORMAL, "xf", "gv")
-	mapexpr(NORMAL, "xo", "insertLineBelow")
-	mapexpr(NORMAL, "xO", "insertLineAbove")
-	mapexpr(EDITOR, "xj", "moveLineDown")
-	mapexpr(EDITOR, "xk", "moveLineUp")
 	vim.keymap.set(NORMAL, "xm", indent(true, NORMAL), exprOpts)
 	vim.keymap.set(NORMAL, "xn", indent(false, NORMAL), exprOpts)
 	vim.keymap.set(VISUAL, "xm", indent(true, VISUAL), exprOpts)
 	vim.keymap.set(VISUAL, "xn", indent(false, VISUAL), exprOpts)
+
+	mapexpr(EDITOR, "xc", "commentLine")
+
+		-- mapexpr(EDITOR, "xc", "commentLine")
+		-- mapexpr(EDITOR, "xC", "uncommentLine")
+		-- mapexpr(EDITOR, "xd", "commentBlock") (TODO)
+		-- map(EDITOR, "xc", function()
+			-- require("buffer").commentLine()
+		-- end)
+		-- vim.keymap.set(EDITOR, "xc", function()
+			-- return require("vim._comment").operator()
+		-- end, { expr = true, silent = true, noremap = true })
 	-- > C: Replace
 	map(EDITOR, "c", "r")
 	map(EDITOR, "C", "x")

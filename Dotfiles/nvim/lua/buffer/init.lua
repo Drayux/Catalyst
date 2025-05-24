@@ -26,6 +26,8 @@ local ABOVE = true
 local BELOW = false
 local UP = -1
 local DOWN = 1
+local TOGGLE = true
+local UNCOMMENT = false
 
 -- Expression for adding empty lines above or below the cursor 
 -- > Stolen directly from nvim runtime: `/usr/share/nvim/runtime/lua/vim/_buf.lua`
@@ -49,6 +51,31 @@ local moveLine = function(direction)
 		final = tostring(distance - 1)
 	end
 	vim.cmd.move(final)
+end
+
+local commentLine = function(toggle)
+	require("vim._comment").operator(0) -- Param doesn't matter, just non-nil
+end
+
+-- Uncomment a multiline comment if exists, else create a new one from the motion
+local commentBlock = function()
+	local _, api = pcall(require, "Comment.api")
+	if not api then
+		vim.notify("Comment.nvim is not installed, update configs to use 'gcc' instead", vim.log.levels.ERROR)
+		return
+	end
+
+	-- local count = (vim.v.count > 0) and vim.v.count or 1
+	api.toggle.blockwise()
+
+	-- block commenting ideas (TODO)
+	-- normal mode xd -> Take o-pending and always comment that much
+	-- normal mode xD -> Uncomment entire surrounding block
+	-- visual modes follow suit
+	-- Visual mode uncomment (xD) should ignore visual block and uncomment
+	-- > at cursor??
+
+	-- TODO: What to do if toggling linewise inside of a block?
 end
 
 local closeBuffer = function(buffer, bang)
@@ -88,6 +115,9 @@ local commands = {
 	insertLineBelow = function() insertLine(BELOW) end,
 	moveLineUp = function() moveLine(UP) end,
 	moveLineDown = function() moveLine(DOWN) end,
+	commentLine = function() commentLine(TOGGLE) end,
+	-- uncommentLine = uncommentLine,
+	-- commentBlock = commentBlock,
 	closeBuffer = closeBuffer,
 }
 

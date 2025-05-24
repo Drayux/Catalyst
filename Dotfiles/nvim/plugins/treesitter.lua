@@ -13,7 +13,7 @@ local spec = {
 		{ "nvim-treesitter/nvim-treesitter-textobjects",
 			cond = condCORE, -- Should be the same as base treesitter because binds depend on it
 		},
-		{ "drybalka/tree-climber.nvim",
+		{ "ziontee113/syntax-tree-surfer",
 			cond = condCORE, -- Should be the same as base treesitter because binds depend on it
 			init = function()
 				-- Add tree-climber bindings
