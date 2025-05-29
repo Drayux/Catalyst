@@ -50,13 +50,13 @@ end
 -- > It actually means that Neovim will run the binding returned by the function, or do nothing if it returns nil
 -- > The advantage of this is to allow lua functions to be "dot-repeatable" (remapped to 0)
 function mapexpr(mode, key, funcname, expr)
-	local commands = require("buffer")
+	local expressions = require("buffer").expressions
 	local funcstr = tostring(funcname)
-	if commands[funcstr] == nil then
+	if expressions[funcstr] == nil then
 		error("Buffer command `" .. tostring(funcstr) .. "` does not exist in lua/buffer.lua")
 	end
 	local mapping = function()
-		vim.go.operatorfunc = "v:lua.require'buffer'." .. funcstr
+		vim.go.operatorfunc = "v:lua.require'buffer'.expressions." .. funcstr
 		return expr or "g@l"
 	end
 	vim.keymap.set(mode, key, mapping, exprOpts)
@@ -229,6 +229,7 @@ local setDefaultKeymap = function()
 	vim.keymap.set(VISUAL, "xn", indent(false, VISUAL), exprOpts)
 
 	mapexpr(EDITOR, "xc", "commentLine")
+	mapexpr(EDITOR, "xC", "uncommentLine")
 
 		-- mapexpr(EDITOR, "xc", "commentLine")
 		-- mapexpr(EDITOR, "xC", "uncommentLine")

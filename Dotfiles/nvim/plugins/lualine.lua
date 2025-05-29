@@ -13,7 +13,7 @@
 -- extensions = {},
 
 local files = require("files")
-local buffers = require("buffer")
+local buffers = require("buffer").commands
 local spec = {
 	"nvim-lualine/lualine.nvim",
 	cond = condGUI,

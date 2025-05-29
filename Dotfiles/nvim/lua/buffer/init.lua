@@ -26,8 +26,9 @@ local ABOVE = true
 local BELOW = false
 local UP = -1
 local DOWN = 1
-local TOGGLE = true
-local UNCOMMENT = false
+local COMMENT = 1
+local UNCOMMENT = -1
+local TOGGLE = 0
 
 -- Expression for adding empty lines above or below the cursor 
 -- > Stolen directly from nvim runtime: `/usr/share/nvim/runtime/lua/vim/_buf.lua`
@@ -53,29 +54,60 @@ local moveLine = function(direction)
 	vim.cmd.move(final)
 end
 
-local commentLine = function(toggle)
-	require("vim._comment").operator(0) -- Param doesn't matter, just non-nil
-end
+local commentLine = function(mode)
+	-- NOTE: To call the classic "gcc" do:
+	-- require("vim._comment").operator(0) -- Param doesn't matter, just non-nil
 
--- Uncomment a multiline comment if exists, else create a new one from the motion
-local commentBlock = function()
-	local _, api = pcall(require, "Comment.api")
-	if not api then
-		vim.notify("Comment.nvim is not installed, update configs to use 'gcc' instead", vim.log.levels.ERROR)
+	-- TODO: Consider feature to add a comment to an empty line if it is the only line selected
+
+	-- Commenting logic is broken down into a sub-module
+	local commentUtils = require("buffer.comment")
+
+	local selection = commentUtils.selection()
+	-- print(selection.start[1], selection.start[2], selection.final[1], selection.final[2])
+	if not selection then
+		-- We might get here with an empty text object
+		-- > *Consider running 'ytd' on the above line*
 		return
 	end
 
-	-- local count = (vim.v.count > 0) and vim.v.count or 1
-	api.toggle.blockwise()
+	-- Try to get the comment string, quit early if none
+	-- NOTE: The runtime has something to do with a reference position, and I
+	-- > am not sure what situation this becomes helpful: perhaps 'gcgc' ?
+	local commentParts = commentUtils.parts(selection.start)
+	if not commentParts then
+		return
+	end
 
-	-- block commenting ideas (TODO)
-	-- normal mode xd -> Take o-pending and always comment that much
-	-- normal mode xD -> Uncomment entire surrounding block
-	-- visual modes follow suit
-	-- Visual mode uncomment (xD) should ignore visual block and uncomment
-	-- > at cursor??
+	-- Process all selected lines to prepare for comment operation
+	local force = false -- true
+	local lines = vim.api.nvim_buf_get_lines(0, selection.start[1] - 1, selection.final[1], false)
+	local parsed = {} -- Use pairs to iterate, not ipairs
+	for num, text in pairs(lines) do
+		-- local line = commentUtils.process(text, "/%*", "%*/")
+		local line = commentUtils.process(text, commentParts.prefix, commentParts.suffix)
+		parsed[num] = line
 
-	-- TODO: What to do if toggling linewise inside of a block?
+		if (mode == TOGGLE) and (not line.commented) then
+			mode = COMMENT
+		end
+		-- if (mode != UNCOMMENT) and force then
+			-- force = line.empty
+		-- end
+	end
+
+	-- Build and apply the comment operation closure
+	-- NOTE: If the commenting mode is still to toggle, then the entire selection was commented
+	local operator = commentUtils.operator(mode == COMMENT, force, commentParts.prefix, commentParts.suffix)
+	vim._with({ lockmarks = true }, function()
+		vim.api.nvim_buf_set_lines(
+			0,
+			selection.start[1] - 1,
+			selection.final[1],
+			false,
+			vim.tbl_map(operator, parsed)
+		)
+	end)
 end
 
 local closeBuffer = function(buffer, bang)
@@ -110,15 +142,19 @@ local closeBuffer = function(buffer, bang)
 	-- vim.cmd("bd" .. (argtable.bang and "!" or ""))
 end
 
-local commands = {
-	insertLineAbove = function() insertLine(ABOVE) end,
-	insertLineBelow = function() insertLine(BELOW) end,
-	moveLineUp = function() moveLine(UP) end,
-	moveLineDown = function() moveLine(DOWN) end,
-	commentLine = function() commentLine(TOGGLE) end,
-	-- uncommentLine = uncommentLine,
-	-- commentBlock = commentBlock,
-	closeBuffer = closeBuffer,
+local module = {
+	expressions = {
+		insertLineAbove = function() insertLine(ABOVE) end,
+		insertLineBelow = function() insertLine(BELOW) end,
+		moveLineUp = function() moveLine(UP) end,
+		moveLineDown = function() moveLine(DOWN) end,
+		commentLine = function() commentLine(TOGGLE) end,
+		uncommentLine = function() commentLine(UNCOMMENT) end,
+		-- commentBlock = commentBlock, -- (TODO)
+	},
+	commands = {
+		closeBuffer = closeBuffer,
+	}
 }
 
-return commands
+return module
