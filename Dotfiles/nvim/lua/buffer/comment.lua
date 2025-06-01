@@ -96,6 +96,9 @@ end
 --- @param location integer[]
 --- @return Table: { right: str, left: str }
 -- > Taken directly from the runtime (reorg of get_comment_parts)
+-- TODO: Comment parts padding! Make the trailing whitespace optional in the match
+-- > Likely modify this function to omit whitespace and then modify extractContents
+-- > to handle padding whitespace intuitively (maybe matching one %s char?)
 local extractCommentParts = function(location)
 	local commentstr = vim.bo.commentstring or _tsCommentString(location)
 
@@ -130,9 +133,6 @@ end
 
 -- Split a line and determine its properties
 -- > New function that merges many elements from runtime
--- BUG: Already commented lines do not have their comments doubled-up
--- > because the content is extracted anyway...however this may become nice to have?
--- > Perhaps the force option should be necessary to double-up (triple-up, etc.)? (TODO)
 local extractLineContents = function(line, prefix, suffix)
 	-- Validate line input
 	if not line or (type(line) ~= "string") then
@@ -142,91 +142,158 @@ local extractLineContents = function(line, prefix, suffix)
 	-- Prepare the line into table with defaults
 	-- TODO (tomorrow) refactor this to only use index and move the extraction logic
 	-- > This will require we save a reference to the original line, which should be faster
-	local _, indent, whitespace = line:find("^(%s*)")
+	local _, indent = line:find("^%s*")
+	local length = line:len()
 	local info = {
-		commented = false,   -- Boolean: True if prefix and suffix are matched
-		indent = whitespace, -- Depth (aka end index of indent)
-		prefix = 0,          -- Location of comment prefix (0 if not present)
-		suffix = 0,          -- Location of comment suffix (0 if not present at EOL)
-		content = nil,       -- Line contents (excluding whitespace and comment syntax)
+		line = line,                -- Reference to original line for slicing
+		commented = false,          -- Boolean: True if prefix and suffix are matched
+		empty = (indent == length), -- Boolean: True if the line contains only whitespace
+		indent = indent,            -- Depth (aka end index of indent)
+		start = indent + 1,         -- Beginning of line contents (no whitespace, no comment syntax)
+		final = length,             -- End of line contents
+		prefix = 0,                 -- Location of comment prefix (0 if not present)
+		suffix = 0,                 -- Location of comment suffix (0 if not present)
 	}
 	-- Check if line is empty (whitespace only)
-	if indent == line:len() then
+	if info.empty then
 		return info
 	end
+	local offset = info.start
 
 	-- Find the comment prefix
-	local pstart, _, post = line:find("^" .. prefix .. "(.*)", indent + 1)
-	if pstart then
-		info.prefix = pstart
-		info.commented = true -- To be reverted if suffix is defined but not matched
-	else
-		post = line:sub(indent + 1)
+	local _prefix = vim.pesc(prefix)
+	local prefixStart, prefixEnd = line:find(_prefix, offset)
+	if prefixStart then
+		info.prefix = prefixStart
+		if prefixStart == offset then
+			-- Comment was found at the start of the line
+			-- > NOTE: Don't match against ^<prefix> for reuse with textobjects
+			info.commented = true -- To be reverted if suffix is defined but not matched
+		end
+		offset = prefixEnd + 1
+		info.start = offset
 	end
 
 	-- Find the comment suffix
 	if suffix then
-		local sstart = post:find(suffix .. "%s*$")
-		if sstart then
-			info.suffix = sstart
-			post = post:sub(1, sstart - 1)
+		local _suffix = vim.pesc(suffix)
+		local suffixStart = nil
+		local suffixEnd = offset - 1 -- Correction for while loop
+
+		while suffixEnd ~= length do
+			-- When not at EOL, continue matching */ so that in the following line:
+			-- >	/* int main(/* int argc */) */
+			-- The second */ would be matched and not left hanging
+			local s, e = line:find(_suffix, suffixEnd + 1)
+			if not s then
+				break
+			end
+			suffixStart = s
+			suffixEnd = e
+		end
+
+		if suffixStart then
+			info.suffix = suffixStart
+			info.final = suffixStart - 1
+			-- The line should only count as commented if the suffix is at EOL
+			info.commented = info.commented and (suffixEnd == length)
+
+			-- TODO: Consider updating info.empty if there is no content
+			-- > AKA prefixEnd == (suffixStart + 1) -- /*  */
 		else
-			commented = false
+			info.commented = false
 		end
 	end
 
-	-- Update the final line contents
-	info.content = post
-	-- print("Line:", "'" .. (post or "<nil>") .. "'")
 	return info
+end
+
+-- Helper function for commenting a line
+-- Suffix should be normalized to a string
+local _commentLineOperator = function(force, prefix, suffix)
+	local emptyString = prefix .. suffix
+	local suffixLen = suffix:len()
+	return force and function(info)
+		-- Force mode inserts a comment string regardless of the current state
+		local text = {
+			info.line:sub(1, info.indent),
+			prefix,
+			info.line:sub(info.indent + 1),
+			suffix
+		}
+		return table.concat(text)
+
+	end or function(info)
+		-- Empty/whitespace only line should remain untouched (unless we force a comment)
+		if info.empty then
+			return info.line
+		end
+
+		-- Only insert the missing comment string parts
+		local text
+		if (info.prefix - info.indent) == 1 then
+			-- Comment prefix already present
+			text = { info.line }
+		else
+			-- Add the comment prefix
+			text = {
+				info.line:sub(1, info.indent),
+				prefix,
+				info.line:sub(info.start)
+			}
+		end
+		if (suffixLen > 0) then
+			print(info.suffix, info.line:len())
+			if ((info.suffix + suffixLen - 1) ~= info.line:len()) then
+				-- No suffix was present at EOL
+				table.insert(text, suffix)
+			end
+		end
+		return table.concat(text)
+	end
+end
+
+-- Helper function for uncommenting a line
+-- Suffix should be normalized to a string
+local _uncommentLineOperator = function(force, prefix, suffix)
+	local _prefix
+	local _suffix
+
+	if force then
+		_prefix = vim.pesc(prefix)
+		_suffix = vim.pesc(suffix)
+	end
+
+	return force and function(info)
+		-- Force mode matches all comment parts and removes all of then
+		local text = info.line:gsub(_prefix, "")
+		if suffix:len() > 0 then
+			text = text:gsub(_suffix, "")
+		end
+		return text
+
+	end or function(info)
+		if info.commented then
+			local text = {
+				info.line:sub(1, info.indent),
+				info.line:sub(info.start, info.final)
+			}
+			return table.concat(text)
+		end
+		return info.line
+	end
 end
 
 -- Returns a closure that can be used to comment or uncomment code
 -- The closure expects a line contents table as input
 local createOperator = function(comment, force, prefix, suffix)
 	suffix = suffix or ""
-
-	-- Info is the output type of extractLineContents()
-	return function(info)
-		-- Empty/whitespace only line should remain untouched (unless we force a comment)
-		if not info.content then
-			if force and comment then
-				return prefix .. suffix
-			else
-				return info.indent
-			end
-		end
-
-		-- Perform the comment/uncomment operation
-		-- TODO: Consider splitting this into seperate calls to omit the if in the closure
-		local line
-		if comment then
-			line = info.indent .. prefix .. info.content .. suffix
-			if force then
-				-- If force, then tack on an extra prefix and suffix regardless
-				-- of if one is already present
-				-- NOTE: In the current state, this might add some unexpected whitespace
-				if info.prefix > 0 then
-					line = prefix .. line
-				end
-				if info.suffix > 0 then
-					line = line .. suffix
-				end
-			end
-		else
-			line = info.indent .. info.content
-		end
-
-		return line
+	if comment then
+		return _commentLineOperator(force, prefix, suffix)
+	else
+		return _uncommentLineOperator(force, prefix, suffix)
 	end
 end
-
-local module = {
-	selection = getSelectionRange,
-	parts = extractCommentParts,
-	process = extractLineContents,
-	operator = createOperator,
-}
 
 -- Rough idea for comment block
 -- This would mostly entail a comment operator function with different logic that would
@@ -236,120 +303,20 @@ local module = {
 -- the selection. If not, comment the selection. If we cross commented/uncommented sections,
 -- then extend the commented portion through the uncommented portion.
 
+-- TODO: For text object mode...
+-- Well, text object mode itself
+-- But also, right now a string that happens to contain the comment string will get matched
+-- as a comment all the same. It is probably worthwhile to offer some sort of trivial string-
+-- detection, or perhaps query the treesitter AST to check if the text object we think is a
+-- comment actually gets parsed as a comment, too
+-- '...ic' for "inner comment" aka contents minus comment syntax
+-- '...oc' for "outer comment" aka the entire comment (syntax and content)
 
---==-- OLD STUFF FROM COMMENT PLUGIN... --==--
-
--- Toggles the current line and `count` following lines (add comment if mixed)
-local commentLine = function()
-	-- local _, utils = pcall(require, "Comment.utils")
-	local _, api = pcall(require, "Comment.api")
-	if not api then
-		vim.notify("Comment.nvim is not installed, update configs to use 'gcc' instead", vim.log.levels.ERROR)
-		return
-	end
-
-	local mode = vim.api.nvim_get_mode().mode
-	if mode == "v"
-		or mode == "V"
-		-- or mode == "^V"
-	then
-		-- Comment.nvim API is weird
-		-- To toggle a visual selection, first exit visual mode and then call
-		-- > the toggle linewise function, specifying "visual mode"
-		local escapeKey = vim.api.nvim_replace_termcodes("<esc>", true, false, true)
-		vim.api.nvim_feedkeys(escapeKey, "nx", false)
-		api.toggle.linewise(mode)
-	else
-		-- Otherwise, call the toggle linewise function with a number of lines
-		local count = (vim.v.count > 0) and vim.v.count or 1
-		api.toggle.linewise.count(count)
-	end
-end
-
--- Uncomment all targeted lines (toggle prioritizes commenting)
-local uncommentLine = function()
-	local _, utils = pcall(require, "Comment.utils")
-	if not utils then
-		vim.notify("Comment.nvim is not installed, update configs to use 'gcc' instead", vim.log.levels.ERROR)
-		return
-	end
-
-	-- Leave visual mode if active
-	local mode = vim.api.nvim_get_mode().mode
-	if mode == "v" or mode == "V" then
-		local escapeKey = vim.api.nvim_replace_termcodes("<esc>", true, false, true)
-		vim.api.nvim_feedkeys(escapeKey, "nx", false)
-	else
-		mode = "line" -- Convert to Comment.nvim's expected format
-	end
-
-	local range = utils.get_region(mode)
-	local lines = utils.get_lines(range)
-
-	-- Recreate internal API to construct the "comment context"
-	-- > https://github.com/numToStr/Comment.nvim/blob/master/lua/Comment/opfunc.lua#L46
-	local left_cs, right_cs = utils.parse_cstr({}, {
-		cmode = utils.cmode.uncomment,
-		cmotion = "line",
-		ctype = utils.ctype.linewise,
-		range = range,
-	})
-
-	-- Closures to perform the uncomment operation
-	-- > Boolean params enable padding (yes please, daddy!)
-	local check = utils.is_commented(left_cs, right_cs, true)
-	local uncomment = utils.uncommenter(left_cs, right_cs, true)
-	local changes = false
-	for idx, line in pairs(lines) do
-		if check(line) then
-			lines[idx] = uncomment(line)
-			changes = true
-		end
-	end
-
-	-- TODO: Currently, nvim_buf_set_lines has a bug where all marks that are
-	-- > within the changed content region are cleared
-	-- > Currently only in the nightly builds is the vim._with function, which
-	-- > should resolve this bug
-	-- > https://github.com/neovim/neovim/pull/29168
-
-	-- Call nvim api to update the buffer
-	-- vim._with({ lockmarks = true }, function()
-		if changes then
-			vim.api.nvim_buf_set_lines(0, range.srow - 1, range.erow, false, lines)
-		else
-			vim.notify("Nothing to uncomment!", vim.log.levels.WARN)
-		end
-	-- end)
-
-	-- Re-enter previous visual mode selection
-	-- if mode == "v" or mode == "V" then
-		-- vim.api.nvim_feedkeys("gv", "nx", false)
-	-- end
-end
-
--- Uncomment a multiline comment if exists, else create a new one from the motion
-local commentBlock = function()
-	local _, api = pcall(require, "Comment.api")
-	if not api then
-		vim.notify("Comment.nvim is not installed, update configs to use 'gcc' instead", vim.log.levels.ERROR)
-		return
-	end
-
-	-- local count = (vim.v.count > 0) and vim.v.count or 1
-	api.toggle.blockwise()
-
-	-- block commenting ideas (TODO)
-	-- normal mode xd -> Take o-pending and always comment that much
-	-- normal mode xD -> Uncomment entire surrounding block
-	-- visual modes follow suit
-	-- Visual mode uncomment (xD) should ignore visual block and uncomment
-	-- > at cursor??
-
-	-- TODO: What to do if toggling linewise inside of a block?
-end
-
---==-- ^^^OLD STUFF FROM COMMENT PLUGIN --==--
-
+local module = {
+	selection = getSelectionRange,
+	pattern = extractCommentParts,
+	process = extractLineContents,
+	operator = createOperator,
+}
 
 return module

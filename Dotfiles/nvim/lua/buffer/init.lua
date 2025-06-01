@@ -67,45 +67,73 @@ local commentLine = function(mode)
 	-- print(selection.start[1], selection.start[2], selection.final[1], selection.final[2])
 	if not selection then
 		-- We might get here with an empty text object
-		-- > *Consider running 'ytd' on the above line*
-		return
+		-- > *Such as running 'ytd' on the above line*
+
+		-- For now, just assume we want the line at the cursor
+		-- This likely could be improved to be the fallback within commentUtils.selection()
+		local cursor = vim.api.nvim_win_get_cursor(0)
+		selection = {
+			start = { cursor[1], cursor[2] },
+			final = { cursor[1], cursor[2] }
+		}
 	end
+	local lineStart = selection.start[1] - 1 -- Neovim lines are 0-indexed
+	local lineEnd = selection.final[1] -- Offset OK because API excludes the end line
 
 	-- Try to get the comment string, quit early if none
 	-- NOTE: The runtime has something to do with a reference position, and I
 	-- > am not sure what situation this becomes helpful: perhaps 'gcgc' ?
-	local commentParts = commentUtils.parts(selection.start)
-	if not commentParts then
+	local pattern = commentUtils.pattern(selection.start)
+	if not pattern then
 		return
 	end
 
 	-- Process all selected lines to prepare for comment operation
-	local force = false -- true
-	local lines = vim.api.nvim_buf_get_lines(0, selection.start[1] - 1, selection.final[1], false)
-	local parsed = {} -- Use pairs to iterate, not ipairs
+	local empty = true
+	local lines = vim.api.nvim_buf_get_lines(0, lineStart, lineEnd, false)
+	local segments = {}
 	for num, text in pairs(lines) do
-		-- local line = commentUtils.process(text, "/%*", "%*/")
-		local line = commentUtils.process(text, commentParts.prefix, commentParts.suffix)
-		parsed[num] = line
+		local line = commentUtils.process(text, pattern.prefix, pattern.suffix)
+		segments[num] = line
 
+		-- Check for non-empty lines
+		empty = empty and line.empty
+
+		-- Check for uncommented lines (empty lines count!)
 		if (mode == TOGGLE) and (not line.commented) then
 			mode = COMMENT
 		end
-		-- if (mode != UNCOMMENT) and force then
-			-- force = line.empty
-		-- end
+	end
+
+	if empty then
+		local startLine = selection.start[1] -- Used for second condition, saved for convenience
+		if (mode == UNCOMMENT) then
+			vim.notify("Nothing to uncomment!", vim.log.levels.WARN)
+			return
+		elseif startLine > 1 then
+			-- Fixup the empty line whitespace
+			-- NOTE: *Don't* recurse this search -- consider using this on a python script...
+			local aboveText = vim.api.nvim_buf_get_lines(0, startLine - 2, startLine - 1, false)
+			local aboveInfo = commentUtils.process(aboveText[1], pattern.prefix, pattern.suffix)
+
+			for _, info in pairs(segments) do
+				info.indent = aboveInfo.indent
+				info.line = aboveInfo.line:sub(1, info.indent)
+			end
+		end
 	end
 
 	-- Build and apply the comment operation closure
 	-- NOTE: If the commenting mode is still to toggle, then the entire selection was commented
-	local operator = commentUtils.operator(mode == COMMENT, force, commentParts.prefix, commentParts.suffix)
+	-- NOTE: Currently we use empty to specify the force mode--likely on the radar to be tweaked
+	-- > to allow for a user-specified force mode (TODO)
+	local operator = commentUtils.operator(mode == COMMENT, empty, pattern.prefix, pattern.suffix)
 	vim._with({ lockmarks = true }, function()
 		vim.api.nvim_buf_set_lines(
-			0,
-			selection.start[1] - 1,
-			selection.final[1],
-			false,
-			vim.tbl_map(operator, parsed)
+			0,     -- Zero targets the active buffer
+			lineStart, lineEnd,
+			false, -- False allows out-of-bounds clamping
+			vim.tbl_map(operator, segments)
 		)
 	end)
 end
