@@ -21,7 +21,7 @@ local spec = {
 	config = function(_, opts)
 		-- Load plugin integrations
 		if vim.g.themer_enabled then
-			local _, api = pcall(require, "colors")
+			local _, api = pcall(require, "editor.colors")
 			if api then
 				api.setupTelescope()
 			end

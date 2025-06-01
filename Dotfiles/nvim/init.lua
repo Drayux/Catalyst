@@ -112,7 +112,7 @@ vim.g.host = (desktopFavor < 0) and "WORK"
 
 
 -- >> CONFIG <<
-pcall(require, "editor") -- Editor behavior (global options)
+pcall(require, "options") -- Editor behavior (global options)
 pcall(require, "layout") -- Custom (completely sane) key binds
 
 -- Super-user config stops here

@@ -66,7 +66,7 @@ local retheme = function(theme, transparency)
 		opts.colorscheme = colors
 		-- NOTE: Currently disabled as lualine follows the current
 		-- > highlight groups anyway
-		require("status").retheme(colors)
+		require("editor.status").retheme(colors)
 
 		-- Set transparency
 		-- NOTE: When transparency is nil, keep current

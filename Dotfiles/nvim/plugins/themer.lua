@@ -8,7 +8,7 @@
 
 vim.g.disable_themer = false -- Debugging override
 
-local api = require("colors")
+local api = require("editor").colors
 local spec = {
 	"ThemerCorp/themer.lua",
 	cond = function()
