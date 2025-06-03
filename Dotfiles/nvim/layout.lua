@@ -174,11 +174,13 @@ local setDefaultKeymap = function()
 	map(EDITOR, "H", "<C-e>") -- Buffer view down
 	map(ACTIVE, "<C-h>", "<cmd>vertical resize -2<cr>")
 	-- > J: Down
-	map(EDITOR, "J", "<C-d>") -- Jump page down (1/2)
-	map(ACTIVE, "<C-j>", "<cmd>resize +2<cr>")
+	map(EDITOR, "J", "<C-d>") -- TODO: Treesitter node movement
+	map(ACTIVE, "<C-j>", "<C-d>") -- Jump page down (1/2)
+	-- map(ACTIVE, "<C-j>", "<cmd>resize +2<cr>")
 	-- > K: Up
-	map(EDITOR, "K", "<C-u>") -- Jump page up (1/2)
-	map(ACTIVE, "<C-k>", "<cmd>resize -2<cr>")
+	map(EDITOR, "K", "<C-u>") -- TODO: Treesitter node movement
+	map(ACTIVE, "<C-k>", "<C-u>") -- Jump page up (1/2)
+	-- map(ACTIVE, "<C-k>", "<cmd>resize -2<cr>")
 	-- > L: Right (TODO - Fix me!)
 	map(EDITOR, "L", "<C-y>") -- Buffer view up
 	map(ACTIVE, "<C-l>", "<cmd>vertical resize +2<cr>")
@@ -256,6 +258,7 @@ local setDefaultKeymap = function()
 	map(NORMAL, "vvk", "<cmd>leftabove sp<cr>")
 	map(NORMAL, "vvl", "<cmd>rightbelow vs<cr>")
 	map(NORMAL, "vvo", "<cmd>only<cr>")
+	map(NORMAL, "vvp", "<C-w>=")
 	map(NORMAL, "vvq", "<cmd>q<cr>")
 	map(NORMAL, "vc", function()
 			-- TODO: Consider adding autocommand to toggle whenever in insert mode

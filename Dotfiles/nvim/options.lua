@@ -1,4 +1,4 @@
--- >>> editor.lua: Neovim global options
+-- >>> options.lua: Neovim global options
 
 -- Reference: https://neovim.io/doc/user/options.html#_3.-options-summary
 -- Global defaults: https://neovim.io/doc/user/options.html#local-noglobal

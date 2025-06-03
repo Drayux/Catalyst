@@ -1,4 +1,4 @@
--- >>> plugins.lua: Lazy loader and third-party plugins
+-- >>> loader.lua: Lazy loader and third-party plugins
 
 -- Leader key dedicated to plugin key bindings
 vim.g.mapleader = ";"

@@ -14,26 +14,17 @@ local spec = {
 			cond = condCORE, -- Should be the same as base treesitter because binds depend on it
 		},
 		{ "ziontee113/syntax-tree-surfer",
+			-- TODO: Take this plugin and build custom navigation functionality withinin buffer/
 			cond = condCORE, -- Should be the same as base treesitter because binds depend on it
 			init = function()
-				-- Add tree-climber bindings
-				-- > TODO: Tweak these until they make sense (angry)
-				local EDITOR = { "n", "v" } -- "Editor" modes (normal, visual, select)
-
-				local next = function()
-					require("tree-climber").goto_next({ skip_comments = true })
-					require("tree-climber").goto_child({ skip_comments = true })
-				end
-				local parent = function()
-					require("tree-climber").goto_parent({ skip_comments = true })
-				end
-				local select = function()
-					require("tree-climber").select_node({ skip_comments = true })
-				end
-
-				vim.keymap.set(EDITOR, "d", next)
-				vim.keymap.set(EDITOR, "D", parent)
-				vim.keymap.set(EDITOR, "<C-d>", select)
+				local EDITOR = { "n", "v" }
+				vim.keymap.set(EDITOR, "d", "<cmd>STSJumpToEndOfCurrentNode<cr>")
+				vim.keymap.set(EDITOR, "D", "<cmd>STSJumpToStartOfCurrentNode<cr>")
+				vim.keymap.set(EDITOR, "<C-d>", "<cmd>STSSelectCurrentNode<cr>")
+			end,
+			config = function()
+				-- No "plugin main", we just need to require it
+				require("syntax-tree-surfer")
 			end
 		},
 		{ "nvim-treesitter/nvim-treesitter-context",

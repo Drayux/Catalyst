@@ -123,7 +123,7 @@ end
 
 
 -- >> FUNCTIONALITY <<
-pcall(require, "plugin") -- Lazy plugin loader
+pcall(require, "loader") -- Lazy plugin loader
 pcall(require, "events") -- Extra user commands/events
 
 -- The following are not yet implemented at all, this idea may be replaced sometime
