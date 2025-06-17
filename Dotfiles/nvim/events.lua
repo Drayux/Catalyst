@@ -26,8 +26,9 @@ vim.api.nvim_create_autocmd("FileType", {
 -- TODO: Fancy fold behavior
 -- > Also make note of referencing the default fold options in editor.lua
 
--- Work style guideline options
-if (vim.g.host == "WORK") then
+-- DOMAIN 1: Gentex (work) style/process
+if (vim.g.envdomain == 1) then
+	-- Prefer spaces over tabs for C and Ruby sources
 	vim.api.nvim_create_autocmd("BufReadPost", {
 		pattern = { "*.c", "*.cpp", "*.h", "*.rb" },
 		callback = function()

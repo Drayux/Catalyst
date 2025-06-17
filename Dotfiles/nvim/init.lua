@@ -13,10 +13,10 @@
 -- Runtime path does...something??
 -- ... (todo, put layout.lua and editor.lua in /etc/ and symlink)
 
--- Load features depending on runtime env
+-- Load feature set depending on the mode and run level
 -- > (TODO) Pager mode : LESS
 --  - keymaps
--- > Root (GUI or TTY) : ROOT
+-- > Root (GUI or TTY) : BASE
 --  - keymaps
 --  - global config
 -- > User account (TTY) : TTY
@@ -33,26 +33,27 @@
 --  - plugins
 --  - theme
 local mode = "LESS"
-if (os.execute("exit $(id -u)") ~= 0) then
+if (vim.fn.system("id -u") ~= 0) then
 	-- Non-superuser, determine if TTY or emulator
 	local term = vim.env.TERM
 		or "unknown"
 	if (term == "linux") then
-		-- TTY
-		mode = "TTY"
+		-- User in console
+		mode = "TERM"
 	else
-		mode = "GUI"
+		-- User in graphical terminal emulator
+		mode = "USER"
 	end
 else
-	mode = "ROOT"
+	mode = "BASE" -- Fallback to base (super user gets safest config)
 end
-vim.g.envmode = (mode == "GUI" and 4)
-	or (mode == "TTY" and 3)
+vim.g.envmode = (mode == "USER" and 4)
+	or (mode == "TERM" and 3)
 	or (mode == "LESS" and 1)
 	or 0
 
--- Insert preferred lua search paths to package.path
--- > This path is used by lua when a module called with require()
+-- Prepare to include custom lua paths in package.path (.config/nvim/<script>.lua)
+-- > Lua uses this path when a module called: require(<script>)
 local packagePaths = {}
 local insertAfter = -1 -- Hold the location of `./?.lua`
 for path in package.path:gmatch("([^;]+)") do
@@ -65,10 +66,9 @@ for path in package.path:gmatch("([^;]+)") do
 	end
 	table.insert(packagePaths, path)
 end
-
--- NOTE: Inserting both paths into one line
--- > We don't need to search for these so save the cycles
-if (mode == "ROOT") then
+-- Insert new paths into the table and merge 
+-- NOTE: New paths are added with one insertion since we don't reuse packagePaths later
+if (mode == "BASE") then
 	table.insert(packagePaths, insertAfter,
 		"/etc/nvim/config/lua/?.lua;/etc/nvim/config/lua/?/init.lua")
 else
@@ -79,9 +79,8 @@ else
 end
 package.path = table.concat(packagePaths, ";")
 
--- Editor settings differ across devices
--- TODO: If a known hostname exists, no need to use the heuristic
--- > Use a heuristic to make our best guess
+-- Determine the host for environment-specific editor rules
+-- > A best-guess heuristic is used when the hostname is unknown
 local desktopFavor = 0
 local hostname = vim.fn.system("hostname")
 if (hostname and #hostname > 0) then
@@ -93,9 +92,8 @@ if (hostname and #hostname > 0) then
 	elseif hostname:match("LX%-.+") then
 		desktopFavor = desktopFavor - 1
 	end
-	-- Save the hostname to the environment for later reference
-	vim.env.HOST = hostname
-
+	-- Save the hostname to the environment
+	vim.env.HOSTNAME = hostname
 -- For now, only one check should be necessary
 elseif vim.env.HOME then
 	subdir = vim.env.HOME:match("/home(.*)")
@@ -105,29 +103,39 @@ elseif vim.env.HOME then
 		desktopFavor = desktopFavor + 1
 	end
 end
-
 -- A non-negative result indicates a personal device
-vim.g.host = (desktopFavor < 0) and "WORK"
-	or "HOME"
+-- > Domain 0 - Personal developments
+-- > Domain 1 - Config for Gentex code process
+vim.g.envdomain = (desktopFavor < 0) and 1
+	or 0
 
+local load = function(module)
+	local status = pcall(require, module)
+	if not status then
+		-- Notify the user that the file could not be found
+		-- > TODO: Defer message so that it is visible upon startup
+		local message = "Failed to load config module " .. tostring(module)
+		vim.api.nvim_echo({
+			{ message, "WarningMsg" }
+		}, true, {})
+	end
+end
 
 -- >> CONFIG <<
-pcall(require, "options") -- Editor behavior (global options)
-pcall(require, "layout") -- Custom (completely sane) key binds
-
+load("options") -- Editor behavior (global options)
+load("layout") -- Custom (and completely sane) key binds
 -- Super-user config stops here
 -- > TODO: Still not sure how I want to link the init.lua
-if (nvimMode == "ROOT") then
+if (mode == "BASE") then
 	return
 end
 
 
 -- >> FUNCTIONALITY <<
-pcall(require, "loader") -- Lazy plugin loader
-pcall(require, "events") -- Extra user commands/events
-
+load("loader") -- Lazy plugin loader
+load("events") -- Extra user commands/events
 -- The following are not yet implemented at all, this idea may be replaced sometime
--- if (nvimMode == "GUI") then
+-- if (mode == "GUI") then
 	-- pcall(require, "gui") -- Load fancy UI plugins and features
 	-- pcall(require, "session") -- Custom session management plugin (WIP)
 -- end
