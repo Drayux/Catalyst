@@ -1,3 +1,3 @@
 #!/bin/bash
-export GHS_LMHOST=@ghs-license-server.gentex.com:2009
-/home/.rvm/gems/ruby-3.1.2/gems/gentex-tools-ghs-8.1.4.202354.1.0.0/multi_814/svc_router -port 2009 &
+GHS_LMHOST=@ghs-license-server.gentex.com:2009 /home/.rvm/gems/ruby-3.1.2/gems/gentex-tools-ghs-8.1.4.202354.1.0.0/multi_814/svc_router -port 2009 &
+GHS_LMHOST=@ghs-license-server.gentex.com:2010 /home/.rvm/gems/ruby-3.1.2/gems/gentex-tools-ghs_arm-8.1.4.202354.0.1.0.0/multi_814/svc_router -port 2010 &
