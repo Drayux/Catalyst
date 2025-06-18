@@ -1,10 +1,8 @@
 -- >>> layout.lua: Prepare keymap as an auto-event
 
 -- For details, see: cheatsheet.svg
--- vim.o.langmap is another compelling option for accomplishing this
--- > However, for any purpose other than swapping some keys, it is likely to complicate this configuration substantially
--- > - O-pending types (yIw, dAb, etc.) will look for the moved key
--- > - Custom behavior requires the newly mapped key to be specified (for example, if swapping Q and B but I don't want B to mean macros, then all of the vim.keymap calls need to use "Q" even though we are modifying the B key)
+-- vim.o.langmap is another compelling option for accomplishing this, but it would
+-- > work best only with key swaps. For any other purpose, the effects are dubious
 
 local NORMAL = "n" -- Normal mode
 local INSERT = "i" -- Insert mode

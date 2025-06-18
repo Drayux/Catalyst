@@ -1,18 +1,10 @@
 -- Commenting submodule for buffer manipulation
 
--- This file is mostly a recreation of _comment.lua from the runtime
+-- This file is mostly a recreation of _comment.lua from the runtime but with extra stuff
 -- > /usr/share/nvim/runtime/lua/vim/_comment.lua
-
--- The reason the functions have been copied here is to introduce some custom
--- > commenting functionality, notably the "uncomment all" keymap (xC)
--- > The runtime provides many useful comment utilities that are not exposed as
--- > part of the _comment.lua api, thus requiring a silly workaround like this
-
--- NOTE: As an advanced feature, supporting block comments may be deceptively difficult
--- > This entails storing the block comment string and the line comment string
--- > After that, determining if a comment "block" exists is not so trivial, as the
--- > beginning of the line cannot simply be checked for the pattern
--- > Thus, it may be necessary to parse the entire file for this functionality
+-- The reason the functions have been copied here is to introduce some custom functionality
+-- > notably the "uncomment all" keymap (xC) to portions of logic that are not otherwise
+-- > exposed via any form of API, demanding multiplicity as a workaround
 
 
 -- Determine the target range of the comment using the API
