@@ -6,30 +6,6 @@
 -- > 	to a unified format (instead of using a HighlightGroup), but right
 -- > 	now, no plugins in this configuration use this
 
--- Get a list of the available themes
--- lightmode -> Returns a list of light themes if true, else dark (default)
-local list = function(lightmode)
-	-- TODO: Consider making the themes directory an option (or even supporting multiple at once)
-	local entries = vim.fn.readdir(vim.fn.stdpath("config") .. "/themes",
-		function(name)
-			-- Skip files beginning with an underscore
-			if name:match("^[^_].+.lua$") then return 1 end
-			return 0
-		end)
-	
-	local suggestions = {}
-	for _, name in ipairs(entries) do
-		local theme = name:gsub("%.lua$", "")
-		local light = theme:match("(.+)_light$")
-		if (light and lightmode) -- Light themes
-			or (not light and not lightmode) -- Dark themes
-		then
-			table.insert(suggestions, light or theme)
-		end
-	end
-	return suggestions
-end
-
 -- Function to change color scheme for themer and subsequent UI plugins
 -- > Returns active theme and transparency setting
 -- (This is how the theme should be changed)
@@ -46,7 +22,7 @@ local retheme = function(theme, transparency)
 	end
 
 	-- When both are nil, we just want to get the current state
-	if not theme and transparency ~= nil then
+	if not (theme or transparency) then
 		return current_theme, current_transparency
 	end
 
@@ -89,10 +65,40 @@ local retheme = function(theme, transparency)
 	end
 end
 
+-- Get a list of the available themes
+-- lightmode -> Returns a list of light themes if true, else dark (default)
+local list = function(lightmode)
+	-- TODO: Consider making the themes directory an option (or even supporting multiple at once)
+	local entries = vim.fn.readdir(vim.fn.stdpath("config") .. "/themes",
+		function(name)
+			-- Skip files beginning with an underscore
+			if name:match("^[^_].+.lua$") then return 1 end
+			return 0
+		end)
+	
+	local suggestions = {}
+	local current_idx = nil -- Curated for telescope, don't set a default if the theme is not listed
+	for _, name in ipairs(entries) do
+		local theme = name:gsub("%.lua$", "")
+		local light = theme:match("(.+)_light$")
+		if (light and lightmode) -- Light themes
+			or (not light and not lightmode) -- Dark themes
+		then
+			local _theme = light or theme
+			table.insert(suggestions, _theme)
+			if (not current_idx) and (_theme == current_theme) then
+				-- Since we're looping already, search for the index of the active theme
+				current_idx = #suggestions
+			end
+		end
+	end
+	return suggestions, current_idx
+end
+
 -- Return a picker for use with telescope
 local extension = function(args)
 	local lightmode = args.light and true
-	local themes = list(lightmode)
+	local themes, current = list(lightmode)
 	local opts = require("telescope.themes").get_ivy({
 		finder = require("telescope.finders").new_table({
 			results = themes,
@@ -108,7 +114,7 @@ local extension = function(args)
 		layout_config = {
 			preview_cutoff = 1,
 			width = function(_, max_columns, _)
-				return math.min(max_columns, 40) end,
+				return math.min(max_columns, 52) end,
 			height = function(_, _, max_lines)
 				return math.min(max_lines, 16) end,
 		},
@@ -120,7 +126,15 @@ local extension = function(args)
 			preview = { "─", "│", "─", "│", "╭", "╮", "╯", "╰" },
 		},
 
-		-- TODO: Keybind to preview theme maybe?
+		selection_strategy = "follow",
+		default_selection_index = current,
+
+		-- >> Using attach_mappings in this way is a bit unintuitive
+		-- This function is intended for use in setting keymaps for actions within
+		-- the picker's lifetime. The actions.<action>:replace() routine can actually
+		-- be set at any time since Telescope uses a singleton instance for any of
+		-- its pickers. Its use here is because the buffer (bufnr) is passed to this
+		-- function, and this function will always be ran upon the picker's invocation.
 		attach_mappings = function(prompt_bufnr)
 			local active = retheme() -- Get the name of the current theme
 			local ext = lightmode and "_light" or ""
@@ -176,24 +190,20 @@ local extension = function(args)
 				if selection then retheme(selection .. ext) end
 			end)
 
-			-- NOTE: Currently not changing theme on load
-			-- This is doable, but I want the arrow keys to feel like
-			-- an explicit "preview this theme" action
+			-- TODO: Currently not changing theme on load
 
-			-- Trigger theme on text entry (as this may select a new theme)
-			-- Enable this only when also previewing by default^^
-			-- TODO: Does this "leak"?
 			-- vim.schedule(function()
-			-- 	vim.api.nvim_create_autocmd("TextChangedI", {
-			-- 		buffer = prompt_bufnr,
-			-- 		callback = function()
-			-- 			local selection = state.get_selected_entry()[1]
-			-- 			if selection then select(selection) end
-			-- 			end,
-			-- 	})
+				-- vim.api.nvim_create_autocmd("TextChangedI", {
+					-- buffer = prompt_bufnr,
+					-- callback = function()
+						-- local selection = state.get_selected_entry()[1]
+						-- print(selection)
+						-- if selection then retheme(selection .. ext) end
+					-- end,
+				-- })
 			-- end)
 
-			return true end,
+		return true end,
 	})
 
 	-- Call for the telescope prompt
