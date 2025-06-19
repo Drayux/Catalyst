@@ -24,8 +24,10 @@
 -- functions, so define some constants to clear up what they are doing
 local ABOVE = true
 local BELOW = false
+
 local UP = -1
 local DOWN = 1
+
 local COMMENT = 1
 local UNCOMMENT = -1
 local TOGGLE = 0
@@ -36,8 +38,8 @@ local TOGGLE = 0
 local insertLine = function(location)
 	local offset = location and 1 or 0
 	local repeated = vim.fn["repeat"]({ '' }, vim.v.count1)
-	local linenr = vim.api.nvim_win_get_cursor(0)[1]
-	vim.api.nvim_buf_set_lines(0, linenr - offset, linenr - offset, true, repeated)
+	local line = vim.api.nvim_win_get_cursor(0)[1]
+	vim.api.nvim_buf_set_lines(0, line - offset, line - offset, true, repeated)
 end
 
 local moveLine = function(direction)
@@ -171,7 +173,7 @@ local closeBuffer = function(buffer, bang)
 end
 
 local module = {
-	expressions = {
+	action = {
 		insertLineAbove = function() insertLine(ABOVE) end,
 		insertLineBelow = function() insertLine(BELOW) end,
 		moveLineUp = function() moveLine(UP) end,
@@ -180,7 +182,7 @@ local module = {
 		uncommentLine = function() commentLine(UNCOMMENT) end,
 		-- commentBlock = commentBlock, -- (TODO)
 	},
-	commands = {
+	command = {
 		closeBuffer = closeBuffer,
 	}
 }

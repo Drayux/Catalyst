@@ -1,4 +1,4 @@
--- >>> mapping.lua: Utilities for setting keybinds
+-- >>> keymap.lua: Utilities for setting keybinds
 
 local module = {
 	-- >>> Enumerations for vim modes
@@ -41,14 +41,20 @@ module.options = function(description, expression)
 end
 
 -- Wrapper function to cleanup calls to vim.keymap.set()
-module.bind = function(mode, key, mapping, _opts)
+module.bind = function(mode, key, action, _opts)
 	local opts = _opts or _defaults
-	vim.keymap.set(mode, key, bind, opts)
+	vim.keymap.set(mode, key, action, opts)
 end
 
 -- Wrapper function to cleanup binding to no-op
-module.unbind = function(mode, key)
+module.disable = function(mode, key)
 	vim.keymap.set(mode, key, "<nop>", _defaults)
+end
+
+-- Wrapper function to reset a key to its default binding
+-- NOTE: Will fail for binds set in the runtime, such as `gcc`
+module.reset = function(mode, key)
+	vim.keymap.del(mode, key, _defaults)
 end
 
 return module

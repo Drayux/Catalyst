@@ -1,4 +1,4 @@
--- >>> layout.lua: Prepare keymap as an auto-event
+-- >>> keymap.lua: Prepare keymap as an auto-event
 
 -- For details, see: cheatsheet.svg
 -- vim.o.langmap is another compelling option for accomplishing this, but it would
@@ -54,7 +54,7 @@ function mapexpr(mode, key, funcname, expr)
 		error("Buffer command `" .. tostring(funcstr) .. "` does not exist in lua/buffer.lua")
 	end
 	local mapping = function()
-		vim.go.operatorfunc = "v:lua.require'buffer'.expressions." .. funcstr
+		vim.go.operatorfunc = "v:lua.require'buffer'.action." .. funcstr
 		return expr or "g@l"
 	end
 	vim.keymap.set(mode, key, mapping, exprOpts)

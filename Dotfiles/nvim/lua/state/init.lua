@@ -1,0 +1,2 @@
+-- Placeholder for the editor state (run level, "domain"/host, enabled plugins, etc. from my obisidan notes)
+-- + Now including session logic as well, if I'm to implement those ideas!

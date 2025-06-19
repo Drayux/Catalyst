@@ -109,6 +109,8 @@ end
 vim.g.envdomain = (desktopFavor < 0) and 1
 	or 0
 
+
+-- >> FUNCTIONALITY <<
 local load = function(module)
 	local status = pcall(require, module)
 	if not status then
@@ -121,19 +123,16 @@ local load = function(module)
 	end
 end
 
--- >> CONFIG <<
+-- TODO: Unsure how to set up superuser to use this config
+-- > Yes, I know that I *shouldn't* do this can could use something like tee instead
 load("options") -- Editor behavior (global options)
-load("layout") -- Custom (and completely sane) key binds
--- Super-user config stops here
--- > TODO: Still not sure how I want to link the init.lua
+load("binds") -- Custom (and completely sane) key binds
 if (mode == "BASE") then
-	return
+	return -- Super-user config stops here
 end
-
-
--- >> FUNCTIONALITY <<
 load("loader") -- Lazy plugin loader
 load("events") -- Extra user commands/events
+
 -- The following are not yet implemented at all, this idea may be replaced sometime
 -- if (mode == "GUI") then
 	-- pcall(require, "gui") -- Load fancy UI plugins and features

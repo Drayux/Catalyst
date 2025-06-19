@@ -5,11 +5,11 @@ vim.g.mapleader = ";"
 vim.g.plugpath = vim.fn.stdpath("config") .. "/plugins/"
 
 -- >>> Plugin load levels
-local level = vim.g.envmode -- Lock in the initialization mode
-function condCORE() return level > 0 end
-function condUSER() return level > 2 end
-function condBASE() return level < 4 end
-function condGUI() return level == 4 end
+-- TODO: These currently feel a bit vague and their use case ambiguous
+function condCORE() return vim.g.envmode > 0 end
+function condUSER() return vim.g.envmode > 2 end
+function condBASE() return vim.g.envmode < 4 end
+function condGUI() return vim.g.envmode == 4 end
 -- <<<
 
 -- Add lazy to the vim runtime path
@@ -47,18 +47,19 @@ local config = {
 			-- > for imports (aka this function) so we can return
 			-- > our own table of plugin specs for any source
 			for _, file in ipairs(vim.fn.readdir(dir, [[v:val =~ '\.lua$']])) do
-				local plugconfig, err = loadfile(dir .. file)
 				local spec = nil
+				local plugconfig, err = loadfile(dir .. file)
 				if plugconfig then
 					spec, err = plugconfig()
 				end
+
 				if err then
 					-- Lua error while loading the plugin spec
 					print("Failed to load plugin: "
 						.. file
 						.. "\n > "
 						.. (err or "~ unexpected error ~"))
-				else
+				elseif spec then
 					if (type(spec) == "table") then
 						table.insert(plugins, spec)
 					elseif (type(spec) == "string") then
