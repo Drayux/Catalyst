@@ -126,7 +126,8 @@ end
 -- TODO: Unsure how to set up superuser to use this config
 -- > Yes, I know that I *shouldn't* do this can could use something like tee instead
 load("options") -- Editor behavior (global options)
-load("binds") -- Custom (and completely sane) key binds
+load("_binds")
+-- load("editor.binds") -- Custom (and completely sane) key binds
 if (mode == "BASE") then
 	return -- Super-user config stops here
 end
@@ -138,3 +139,6 @@ load("events") -- Extra user commands/events
 	-- pcall(require, "gui") -- Load fancy UI plugins and features
 	-- pcall(require, "session") -- Custom session management plugin (WIP)
 -- end
+
+-- local binds = require("editor.binds")
+-- binds.loadmap("defaults")

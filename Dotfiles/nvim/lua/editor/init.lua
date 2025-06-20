@@ -5,7 +5,7 @@
 local module = {
 	colors = require("editor.colors"),
 	status = require("editor.status"),
-	keymap = require("editor.keymap"),
+	binds = require("editor.binds"),
 }
 
 return module

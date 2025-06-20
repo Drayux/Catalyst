@@ -4,6 +4,14 @@
 -- vim.o.langmap is another compelling option for accomplishing this, but it would
 -- > work best only with key swaps. For any other purpose, the effects are dubious
 
+-- TODO: This file is target for a refactor
+-- My temptation is to split up this "map" simliar to that of a color scheme where
+-- all color palletes are given their own file in the themes/ directory.
+-- Instead of each entry being exclusive, however, they would be additive.
+-- I fear that this may only complicate the map instead of "consolidate", but if
+-- adding a "which key" type of plugin, it may prove extra helpful, as a static
+-- table could be referenced
+
 local NORMAL = "n" -- Normal mode
 local INSERT = "i" -- Insert mode
 local VISUAL = "v" -- Visual mode
@@ -48,7 +56,7 @@ end
 -- > It actually means that Neovim will run the binding returned by the function, or do nothing if it returns nil
 -- > The advantage of this is to allow lua functions to be "dot-repeatable" (remapped to 0)
 function mapexpr(mode, key, funcname, expr)
-	local expressions = require("buffer").expressions
+	local expressions = require("buffer").action
 	local funcstr = tostring(funcname)
 	if expressions[funcstr] == nil then
 		error("Buffer command `" .. tostring(funcstr) .. "` does not exist in lua/buffer.lua")
