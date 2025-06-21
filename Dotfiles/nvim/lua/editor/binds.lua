@@ -26,7 +26,7 @@ function _loadqueue:insert(mapname)
 		error("Bad keymap name requested")
 	end
 end
-function _loadqueue:load()
+function _loadqueue:process(_overwrite)
 	if not _nvimready then
 		-- Do nothing; Load deferred to the autocommand
 		-- Not refactor-proof, this assumes the autocommand is created below!
@@ -60,6 +60,9 @@ function _loadqueue:load()
 			mapobj, err = keymap()
 		end
 		if mapobj then
+			if (_overwrite == false) then
+				mapobj._overwrite = false
+			end
 			_loadedmaps[mapname:lower()] = mapobj
 			_, err = pcall(mapobj._activate, mapobj)
 		end
@@ -88,7 +91,7 @@ vim.api.nvim_create_autocmd("VimEnter", {
 		_nvimready = true
 
 		-- Load all keymaps waiting in the queue
-		while _loadqueue:load() do end
+		while _loadqueue:process() do end
 	end,
 })
 
@@ -155,25 +158,44 @@ module.reset = function(mode, key)
 	vim.keymap.del(mode, key, _defaults)
 end
 
--- Enqueue a keymap to be loaded (and trigger if ready)
-local _mapload = function(mapname)
-	_loadqueue:insert(mapname)
-	_loadqueue:load()
-end
-
--- Metatable for keymaps
-module._api = {
+-- Keymap API metatable
+local _kmapi = {
 	__index = {
-		-- Place the keymap into the load queue
-		load = function(self)
-			-- _mapload(self._name)
-			print("ooga booga")
+		-- Enqueue a keymap to be loaded (and trigger if ready)
+		-- @overwrite - false: only set unset binds; true: overwrite all binds
+		load = function(self, _overwrite)
+			_loadqueue:insert(self._name)
+			_loadqueue:process(_overwrite)
 		end,
 
 		-- Set the binds in the editor
+		-- TODO: If maps are to be logged/stored, this is probably the place to do it
+		-- Else, it could be done in the bind function, if that is left as is (not a bind table)
 		_activate = function(self)
+			-- TODO: Fallback behavior until a bind table format is designed
+			if type(self._bind) == "function" then
+				self._bind(self._overwrite)
+			else
+				print("TODO: Load keymap from a table of binds")
+			end
+		end,
+
+		-- TODO: Support a "reset" of a single key to what is defined by this map
+		-- (depends on moving the map into a table)
+		_reset = function(self)
+			-- For consideration as well, it may be preferable to make this a
+			-- "global" reset, and move the keymap.set logic from _activate() into here
+			-- _activate() would then become copying the keymap table reference here,
+			-- where it would be called by this _reset() command
+			-- (Although as I'm writing that, _reset() would not need anything stored
+			-- here, since it would be scoped to the table already via self)
+			print("TODO: Reset a bind to the value given by this map")
 		end,
 	},
 }
+-- "Hidden" function to set the API metatable for a given keymap
+module._register = function(keymap)
+	return setmetatable(keymap, _kmapi)
+end
 
 return module

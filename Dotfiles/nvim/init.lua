@@ -128,6 +128,7 @@ end
 load("options") -- Editor behavior (global options)
 load("_binds")
 -- load("editor.binds") -- Custom (and completely sane) key binds
+require("keymap.defaults"):load()
 if (mode == "BASE") then
 	return -- Super-user config stops here
 end

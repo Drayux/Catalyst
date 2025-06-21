@@ -95,24 +95,70 @@ local list = function(lightmode)
 	return suggestions, current_idx
 end
 
+-- >> Using attach_mappings in this way is a bit unintuitive
+-- This function is intended for use in setting keymaps for actions within
+-- the picker's lifetime. The actions.<action>:replace() routine can actually
+-- be set at any time since Telescope uses a singleton instance for any of
+-- its pickers. Its use here is because the buffer (bufnr) is passed to this
+-- function, and this function will always be ran upon the picker's invocation.
+local _mappings = function(prompt_bufnr)
+	local active = retheme() -- Get the name of the current theme
+	local ext = lightmode and "_light" or ""
+
+	-- Copy of original close function
+	-- Necessary because we override the original, thus causing any call to recurse indefinitely (TODO: Is there a better way to do this?)
+	-- > https://github.com/nvim-telescope/telescope.nvim/blob/master/lua/telescope/actions/init.lua#L379
+	-- > https://github.com/nvim-telescope/telescope.nvim/blob/master/lua/telescope/actions/mt.lua#L116
+	local _close = function(pbnr)
+		local current_picker = require("telescope.actions.state").get_current_picker(pbnr)
+
+		local win_id = current_picker.original_win_id
+		local cursor_valid, original_cursor = pcall(vim.api.nvim_win_get_cursor, win_id)
+
+		require("telescope.actions").close_pum(pbnr)
+		require("telescope.pickers").on_close_prompt(pbnr)
+
+		pcall(vim.api.nvim_set_current_win, win_id)
+		if cursor_valid
+			and (vim.api.nvim_get_mode().mode == "i")
+			and (current_picker._original_mode ~= "i")
+		then
+			pcall(vim.api.nvim_win_set_cursor, win_id, {
+				original_cursor[1],
+				original_cursor[2] + 1,
+			})
+		end
+	end
+
+	-- ENTER - Select does nothing (theme is already set, don't open a buffer)
+	-- TODO: Call retheme() on selection if the previewer was disabled
+	require("telescope.actions").select_default:replace(function()
+		-- local selection = state.get_selected_entry()[1]
+		-- if selection then retheme(selection .. ext) end
+		_close(prompt_bufnr)
+	end)
+
+	-- CANCEL - Revert to original theme
+	require("telescope.actions").close:replace(function()
+		if active then retheme(active) end
+		_close(prompt_bufnr)
+	end)
+
+	return true
+end
+
 -- Return a picker for use with telescope
 local extension = function(args)
 	local lightmode = args.light and true
 	local themes, current = list(lightmode)
 	local opts = require("telescope.themes").get_ivy({
-		finder = require("telescope.finders").new_table({
-			results = themes,
-		}),
-		sorter = require("telescope.config").values.generic_sorter({}),
-		sorting_strategy = "ascending",
-		previewer = false,
-
 		prompt_title = "Themes",
 		results_title = false,
-		
+
 		layout_strategy = "center",
 		layout_config = {
-			preview_cutoff = 1,
+			-- preview_cutoff = 10, -- No apparent effect?
+			prompt_position = "bottom",
 			width = function(_, max_columns, _)
 				return math.min(max_columns, 52) end,
 			height = function(_, _, max_lines)
@@ -121,89 +167,33 @@ local extension = function(args)
 
 		border = true,
 		borderchars = {
-			prompt = { "─", "│", " ", "│", "╭", "╮", "│", "│" },
-			results = { "─", "│", "─", "│", "├", "┤", "╯", "╰" },
-			preview = { "─", "│", "─", "│", "╭", "╮", "╯", "╰" },
+			results = { "─", "│", "─", "│", "╭", "╮", "│", "│" },
+			prompt = { " ", "│", "─", "│", "├", "┤", "╯", "╰" },
+			-- preview = { "", "", "", "", "", "", "", "" },
 		},
 
+		finder = require("telescope.finders").new_table({
+			results = themes,
+		}),
+		sorter = require("telescope.config").values.generic_sorter({}),
+		previewer = require("telescope.previewers").new({
+			-- The previewer performs the logic of changing the theme
+			-- As the theme is global, we "set" the theme by taking no action on close
+			preview_fn = function(_, entry)
+				local theme_name = entry[1]
+				if theme_name then
+					retheme(theme_name)
+				end
+			end,
+		}),
+
+		-- create_layout = function(picker) end,
+
+		sorting_strategy = "ascending",
 		selection_strategy = "follow",
 		default_selection_index = current,
 
-		-- >> Using attach_mappings in this way is a bit unintuitive
-		-- This function is intended for use in setting keymaps for actions within
-		-- the picker's lifetime. The actions.<action>:replace() routine can actually
-		-- be set at any time since Telescope uses a singleton instance for any of
-		-- its pickers. Its use here is because the buffer (bufnr) is passed to this
-		-- function, and this function will always be ran upon the picker's invocation.
-		attach_mappings = function(prompt_bufnr)
-			local active = retheme() -- Get the name of the current theme
-			local ext = lightmode and "_light" or ""
-
-			local actions = require("telescope.actions")
-			local set = require("telescope.actions.set")
-			local state = require("telescope.actions.state")
-
-			-- Original close function (TODO: Is there a better way to do this?)
-			-- https://github.com/nvim-telescope/telescope.nvim/blob/master/lua/telescope/actions/init.lua#L379
-			local close = function(pbnr)
-				local picker = state.get_current_picker(pbnr)
-				local win_id = picker.original_win_id
-				local cursor_valid, cursor = pcall(vim.api.nvim_win_get_cursor, win_id)
-
-				actions.close_pum(pbnr)
-				require("telescope.pickers").on_close_prompt(pbnr)
-
-				pcall(vim.api.nvim_set_current_win, win_id)
-				if cursor_valid and (vim.api.nvim_get_mode().mode == "i") and (picker._original_mode ~= "i") then
-					pcall(vim.api.nvim_win_set_cursor, win_id, {
-						cursor[1],
-						cursor[2] + 1,
-					})
-				end
-			end
-
-			-- ENTER - Don't open a new buffer, just set the theme
-			actions.select_default:replace(function()
-				-- > Do something here, if desired
-				local selection = state.get_selected_entry()[1]
-				if selection then retheme(selection .. ext) end
-				close(prompt_bufnr)
-			end)
-
-			-- CANCEL - Revert to original theme
-			actions.close:replace(function()
-				if active then retheme(active) end
-				close(prompt_bufnr)
-			end)
-
-			-- ARROW-UP - Trigger theme preview (and move selection up)
-			actions.move_selection_previous:replace(function()
-				set.shift_selection(prompt_bufnr, -1)
-				local selection = state.get_selected_entry()[1]
-				if selection then retheme(selection .. ext) end
-			end)
-
-			-- ARROW-DOWN - Trigger theme preview (and move selection down)
-			actions.move_selection_next:replace(function()
-				set.shift_selection(prompt_bufnr, 1)
-				local selection = state.get_selected_entry()[1]
-				if selection then retheme(selection .. ext) end
-			end)
-
-			-- TODO: Currently not changing theme on load
-
-			-- vim.schedule(function()
-				-- vim.api.nvim_create_autocmd("TextChangedI", {
-					-- buffer = prompt_bufnr,
-					-- callback = function()
-						-- local selection = state.get_selected_entry()[1]
-						-- print(selection)
-						-- if selection then retheme(selection .. ext) end
-					-- end,
-				-- })
-			-- end)
-
-		return true end,
+		attach_mappings = _mappings, -- See comment above _mappings()
 	})
 
 	-- Call for the telescope prompt
