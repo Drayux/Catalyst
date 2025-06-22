@@ -13,10 +13,10 @@ local spec = {
 		vim.g.telescope_enabled = true
 
 		-- Plugin keybinds
-		mapcmd("ff", "Telescope find_files")
-		mapcmd("fe", "Telescope buffers")
-		mapcmd("fg", "Telescope live_grep")
-		mapcmd("fs", "Telescope treesitter")
+		require("editor.binds").command("ff", "Telescope find_files")
+		require("editor.binds").command("fe", "Telescope buffers")
+		require("editor.binds").command("fg", "Telescope live_grep")
+		require("editor.binds").command("fs", "Telescope treesitter")
 	end,
 	config = function(_, opts)
 		-- Load plugin integrations

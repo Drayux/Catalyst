@@ -42,7 +42,7 @@ local spec = {
 			nargs = 0,
 			desc = "Focus a window indicated by letter prompts",
 		})
-		map(NORMAL, "V", "<cmd>QuickSelectWindow<cr>")
+		require("editor.binds").command("V", "<cmd>QuickSelectWindow<cr>")
 		-- map(NORMAL, "V", require("window-picker").pick_window) -- also works
 	end
 }

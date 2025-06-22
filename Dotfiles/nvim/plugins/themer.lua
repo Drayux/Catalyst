@@ -60,9 +60,8 @@ local spec = {
 		-- >> Load telescope key bindings
 		-- NOTE: This may not be sufficent when both plugins are lazy-loaded
 		if vim.g.telescope_enabled then
-			-- mapcmd from layout.lua
-			mapcmd("ft", "Telescope themes")
-			mapcmd("flt", "Telescope themes light=true")
+			require("editor.binds").command("ft", "Telescope themes")
+			require("editor.binds").command("flt", "Telescope themes light=true")
 		end
 
 		-- >> Set the default theme

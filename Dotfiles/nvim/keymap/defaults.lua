@@ -144,7 +144,101 @@ local rowHome = function()
 	binds.disable(EDITOR, "<enter>")
 end
 
+-- >> BOTTOM ROW
 local rowBottom = function()
+	-- > Z: Fold operations
+	binds.set(EDITOR, "Z", "zi") -- Toggle folds
+	-- > X: Editor (eXtra) operations
+	-- TODO: Delete and paste but don't change register contents 
+	binds.disable(EDITOR, "x") -- Remove default for subcommands instead
+	binds.set(NORMAL, "X", "==") -- Fix whitespace
+	binds.set(ACTIVE, "<C-x>", "<C-o>")
+	binds.set(NORMAL, "xb", "==")
+	binds.set(VISUAL, "X", "=") -- (symmetry)
+	binds.set(VISUAL, "xb", "=")
+	binds.set(NORMAL, "xf", "gv")
+	binds.set(NORMAL, "xo", binds.wrap("insertLineBelow"))
+	binds.set(NORMAL, "xO", binds.wrap("insertLineAbove"))
+	binds.set(NORMAL, "xj", binds.wrap("moveLineDown"))
+	binds.set(NORMAL, "xk", binds.wrap("moveLineUp"))
+	-- mapexpr(EDITOR, "xc", "commentLine")
+	-- mapexpr(EDITOR, "xC", "uncommentLine")
+	-- mapexpr(EDITOR, "xd", "commentBlock") (TODO)
+	binds.set(EDITOR, "xc", binds.wrap("commentLine"))
+	binds.set(EDITOR, "xC", binds.wrap("uncommentLine"))
+	-- > Expression here so we can add vim.v.count to << or >>
+	-- TODO: vim.v.count not working as expected and I don't care to fix it right now
+	local _count = function(expr)
+		local count = tostring(vim.v.count)
+		-- Function support idea (commented because not currently used by anything)
+		-- if type(expr) == "function" then
+			-- return function()
+				-- local pre, post = expr()
+				-- return pre .. count .. post
+			-- end
+		-- else
+			return function()
+				return count .. expr
+			end
+		-- end
+	end
+	binds.set(NORMAL, "xm", _count(">>"), binds.options(nil, true))
+	binds.set(NORMAL, "xn", _count("<<"), binds.options(nil, true))
+	binds.set(VISUAL, "xm", _count(">gv"), binds.options(nil, true))
+	binds.set(VISUAL, "xn", _count("<gv"), binds.options(nil, true))
+	-- > C: Replace
+	binds.set(EDITOR, "c", "r")
+	binds.set(EDITOR, "C", "x")
+	binds.set(VISUAL, "<C-c>", "<esc>") -- (v-block symmetry)
+	-- > V: Window Navigation
+	binds.disable(EDITOR, "v") -- Remove default for subcommands instead
+	-- TODO: `V` for window selection popup (plugin)
+	binds.set(NORMAL, "vh", "<C-w>h") -- Window navigation
+	binds.set(NORMAL, "vj", "<C-w>j")
+	binds.set(NORMAL, "vk", "<C-w>k")
+	binds.set(NORMAL, "vl", "<C-w>l")
+	binds.set(NORMAL, "vvh", "<cmd>leftabove vs<cr>")
+	binds.set(NORMAL, "vvj", "<cmd>rightbelow sp<cr>")
+	binds.set(NORMAL, "vvk", "<cmd>leftabove sp<cr>")
+	binds.set(NORMAL, "vvl", "<cmd>rightbelow vs<cr>")
+	binds.set(NORMAL, "vvo", "<cmd>only<cr>")
+	binds.set(NORMAL, "vvp", "<C-w>=")
+	binds.set(NORMAL, "vvq", "<cmd>q<cr>")
+	binds.set(NORMAL, "vc", function()
+			-- TODO: Consider adding autocommand to toggle whenever in insert mode
+			local width = tonumber(vim.wo.colorcolumn) or 0
+			vim.wo.colorcolumn = (width > 0) and "0" or "80"
+			vim.cmd.redraw() -- Trigger neovim to redraw the window so the column shows immediately
+		end)
+	-- > B: Buffer Navigation
+	-- TODO: b<any> for treesitter-textobjects jumping
+	-- binds.set(EDITOR, "b", "g")
+	-- binds.set(EDITOR, "bg", NOP) -- (this subcommand does not move automagically)
+	binds.disable(EDITOR, "b")
+	binds.set(EDITOR, "bm", "zt")
+	binds.set(EDITOR, "bb", "zz")
+	binds.set(EDITOR, "bn", "zb")
+	binds.set(EDITOR, "B", "gg")
+	binds.set(EDITOR, "<C-b>", "G")
+	-- > N: Search Navigation
+	binds.set(NORMAL, "n", "nzz") -- Center result on screen
+	binds.set(NORMAL, "N", "Nzz")
+	binds.set(ACTIVE, "<C-n>", "<cmd>noh<cr>")
+	-- > M: Mark Navigation
+	binds.set(EDITOR, "m", "'")
+	binds.set(EDITOR, "M", "m")
+	-- > ,: Undo
+	binds.set(NORMAL, ",", "u")
+	binds.set(VISUAL, ",", "<esc>ugv")
+	binds.set(EDITOR, "<", "U")
+	-- TODO: `Ctrl-,` for undo tree (plugin)
+	-- > .: Redo
+	binds.set(NORMAL, ".", "<C-r>")
+	binds.set(VISUAL, ",", "<esc><C-r>gv")
+	-- TODO: `>` for redo line
+	-- > /: Search
+	binds.set(EDITOR, "?", "*zz") -- Search word at cursor
+	binds.set(EDITOR, "<C-/>", "*0ggnzt") -- ^^Same but from the top
 end
 
 -- >> CONTROL ROW
@@ -169,10 +263,12 @@ local rowControl = function()
 end
 
 -- TODO: This function is obsolete if a table of binds is used instead
--- TODO: @force - false: only set unset binds; true: overwrite all binds
-local bindKeymap = function(_force)
-	-- The maps are split up by keyboard row, not as a design nuance,
-	-- but for code folding and location convenience
+local bindKeymap = function(self)
+	-- TODO: @force - false: only set unset binds; true: overwrite all binds
+	-- local force = self._overwrite
+
+	-- The maps are split up by keyboard row, not as implementation design,
+	-- but for code folding and convenience when tweaking the map
 	rowNumbers()
 	rowQwerty()
 	rowHome()
@@ -185,7 +281,7 @@ end
 local keymap = {
 	_name = "defaults",
 	_bind = bindKeymap,
-	_overwrite = true, -- Hacky fix, set to false to only set unbound keys (TODO)
+	_overwrite = true, -- Somewhat hacky, set to false to only set unbound keys (TODO)
 }
 
 return binds._register(keymap)

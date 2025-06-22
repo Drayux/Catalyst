@@ -1,5 +1,9 @@
 -- >>> binds.lua: Utilities for setting key bindings
 
+-- For details, see: cheatsheet.svg
+-- vim.o.langmap is another compelling option for accomplishing this, but it would
+-- > work best only with key swaps. For any other purpose, the effects are dubious
+
 -- NOTE: (For future me)
 -- The following is a ton of boilerplate for a problem I don't currently have.
 -- I wanted to create a system where I could call to have my keymap(s) loaded during
@@ -113,6 +117,16 @@ local module = {
 	MOTION = "", -- "Motion" modes (normal, visual, select, and operator-pending)
 	GLOBAL = { "n", "i", "c", "v", "o", "t", "l" }, -- All supported modes (dangerous)
 	-- <<< See | map-table |
+
+	-- Allow functions to be included for the g@l operator
+	_closures = setmetatable({}, {
+		__index = function(self, key)
+			local idx = key:match("^_(%d+)$")
+			if idx then
+				return self[tonumber(idx)]
+			end
+		end
+	})
 }
 
 local _defaults = {
@@ -122,7 +136,7 @@ local _defaults = {
 -- Generates an options tables
 -- Available options not enumerated here: nowait, buffer, script, unique
 -- > :h map-arguments
-module.options = function(description, expression)
+function module.options(description, expression)
 	if not (description or expression) then
 		-- TODO: Since this is a reference, consider using metatables to make
 		-- > this table immutable
@@ -137,24 +151,88 @@ module.options = function(description, expression)
 		_options.desc = description
 	end
 	if expression then
-		_options.expression = true
+		_options.expr = true
+	end
+	return _options
+end
+
+-- Map a function to a g@l expression
+-- @func - string (function in lua/buffer.action) or closure
+-- NOTE: Using the function option has the potential to leak resources if
+-- rebinding on the fly, making new calls to this function
+-- > To remedy this, the returned closure should be stored for reuse
+function module.wrap(func, _opts)
+	local operator
+	if type(func) == "function" then
+		-- Closure - Save a reference locally
+		-- Usage: module.set(module.NORMAL, "<C-d>", module.wrap(function() print("hello world") end))
+
+		-- TODO: I might be able to fix the leak by a complicated proxy table system
+		-- In short, main table uses the function as the key (which should match the
+		-- address) and the second table tracks its name index. When wrapping, use
+		-- the address of the function as the key with the index the corresponding
+		-- value. The proxy table maps the opposite, so that each function can be
+		-- called via an index, which is the name saved to the closure table.
+		-- > Not implemented because this config does not use this yet
+
+		table.insert(module._closures, func)
+
+		-- Update func for the returned options table
+		func = tostring(#module._closures)
+		operator = "v:lua.require'editor.binds'._closures._" .. func
+
+	elseif type(func) == "string" then
+		-- Function name - Pull in from lua buffer operations (actions)
+		local closure = require("buffer").action[func] -- Verify the function exists
+		if not closure then
+			error("Buffer action `" .. tostring(funcstr) .. "` does not exist")
+		end
+		operator = "v:lua.require'buffer'.action." .. func
+
+	else
+		error("Cannot wrap nil function for keymap")
+	end
+
+	local wrapfunc = function()
+		vim.go.operatorfunc = operator
+		return "g@l"
+	end
+
+	if _opts == false then
+		-- Let the bind specify the options
+		return wrapfunc
+	elseif type(_opts) == "table" then
+		-- If options provided, ensure expression is set to true
+		_opts.expr = true
+		return wrapfunc, _opts
+	else
+		-- Default to tacking on expression options for convenience
+		return wrapfunc, module.options(func .. " expression", true)
 	end
 end
 
 -- Wrapper function to cleanup calls to vim.keymap.set()
-module.set = function(mode, key, action, _opts)
+function module.set(mode, key, action, _opts)
 	local opts = _opts or _defaults
 	vim.keymap.set(mode, key, action, opts)
 end
 
+-- Wrapper function to set a leader command (mostly used by plugins)
+function module.command(key, command)
+	if (type(key) ~= "string") or (#key == 0) then
+		error("Cannot bind command with invalid key sequence")
+	end
+	vim.keymap.set(module.NORMAL, "<leader>" .. key, "<cmd>" .. command .. "<cr>", _defaults)
+end
+
 -- Wrapper function to cleanup binding to no-op
-module.disable = function(mode, key)
+function module.disable(mode, key)
 	vim.keymap.set(mode, key, "<nop>", _defaults)
 end
 
 -- Wrapper function to reset a key to its default binding
 -- NOTE: Will fail for binds set in the runtime, such as `gcc`
-module.reset = function(mode, key)
+function module.reset(mode, key)
 	vim.keymap.del(mode, key, _defaults)
 end
 
@@ -168,13 +246,19 @@ local _kmapi = {
 			_loadqueue:process(_overwrite)
 		end,
 
+		-- Currently just a module debugging table
+		-- (I'm trying some module/metatable stuff for the first time)
+		show = function(self)
+			print("TODO: Show keymap")
+		end,
+
 		-- Set the binds in the editor
 		-- TODO: If maps are to be logged/stored, this is probably the place to do it
 		-- Else, it could be done in the bind function, if that is left as is (not a bind table)
 		_activate = function(self)
 			-- TODO: Fallback behavior until a bind table format is designed
 			if type(self._bind) == "function" then
-				self._bind(self._overwrite)
+				self:_bind()
 			else
 				print("TODO: Load keymap from a table of binds")
 			end

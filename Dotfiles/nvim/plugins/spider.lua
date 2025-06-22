@@ -13,12 +13,18 @@ local spec = {
 	init = function()
 		vim.g.spider_enabled = true
 
-		-- Set keymaps
-		-- > Note that some keymaps set in this way could be overwritten!
-		local MOTION = "" -- (copied from plugin.lua)
-		map(MOTION, "w", "<cmd>lua require('spider').motion('w')<cr>")
-		map(MOTION, "e", "<cmd>lua require('spider').motion('e')<cr>")
-		map(MOTION, "q", "<cmd>lua require('spider').motion('b')<cr>")
+		-- Keybinds
+		-- NOTE: some keymaps set in this way could be overwritten
+		-- Swapping to the keymap file/table format should mitigate this :)
+		local binds = require("editor.binds")
+		local bindClosure = function(_motion)
+			return function()
+				require("spider").motion(_motion)
+			end
+		end
+		binds.set(binds.MOTION, "w", bindClosure("w"))
+		binds.set(binds.MOTION, "e", bindClosure("e"))
+		binds.set(binds.MOTION, "q", bindClosure("b"))
 	end
 }
 

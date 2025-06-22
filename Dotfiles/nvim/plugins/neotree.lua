@@ -125,13 +125,13 @@ local spec = {
 		})
 
 		-- Key mappings
-		mapcmd("fb", "Neofiles")
-		mapcmd("tt", "Neotoggle")
-		mapcmd("tb", "Neotree focus filesystem left")
-		mapcmd("te", "Neotree focus buffers left")
-		mapcmd("tg", "Neotree focus git_status left")
-		mapcmd("ts", "Neotree focus document_symbols left")
-		-- mapcmd("th", "Neotree focus undo_history left") -- (TODO - CUSTOM)
+		require("editor.binds").command("fb", "Neofiles")
+		require("editor.binds").command("tt", "Neotoggle")
+		require("editor.binds").command("tb", "Neotree focus filesystem left")
+		require("editor.binds").command("te", "Neotree focus buffers left")
+		require("editor.binds").command("tg", "Neotree focus git_status left")
+		require("editor.binds").command("ts", "Neotree focus document_symbols left")
+		-- require("editor.binds").command("th", "Neotree focus undo_history left") -- (TODO - CUSTOM)
 		-- > https://github.com/mbbill/undotree
 	end,
 	config = function(_, opts)

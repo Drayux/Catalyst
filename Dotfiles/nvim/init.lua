@@ -126,9 +126,7 @@ end
 -- TODO: Unsure how to set up superuser to use this config
 -- > Yes, I know that I *shouldn't* do this can could use something like tee instead
 load("options") -- Editor behavior (global options)
-load("_binds")
--- load("editor.binds") -- Custom (and completely sane) key binds
-require("keymap.defaults"):load()
+require("keymap.defaults"):load() -- Completely sane personalized key binds
 if (mode == "BASE") then
 	return -- Super-user config stops here
 end

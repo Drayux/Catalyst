@@ -211,7 +211,7 @@ local spec = {
 					vim.notify("Buffer index does not exist!", vim.log.levels.WARN)
 				end
 			end
-			map("n", "b" .. index_str, jumpClosure)
+			require("editor.binds").set("n", "b" .. index_str, jumpClosure)
 		end
 
 		-- Create builtin-like vim commands (abbreviations)
