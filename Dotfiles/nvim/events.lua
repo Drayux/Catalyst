@@ -26,7 +26,10 @@ vim.api.nvim_create_autocmd("BufEnter", {
 
 		if isdir then
 			vim.cmd.cd(event.file)
-			require("neo-tree").ensure_config()
+			local _, ntree = pcall(require, "neo-tree")
+			if ntree then
+				ntree.ensure_config()
+			end
 		end
 	end
 })
