@@ -1,7 +1,7 @@
 -- >>> events.lua: Extra user commands and autoevents
 
 -- >> ALIASES <<
--- TODO: Smart windows
+-- TODO: Smart windows (lua/buffer/init.lua -> closeBuffer)
 vim.cmd("cnorea bq bd")
 vim.cmd("cnorea bquit bd")
 -- >>> TODO: Move these to buffers.closeBuffer when finished
@@ -20,6 +20,29 @@ vim.api.nvim_create_autocmd("FileType", {
 	callback = function()
 		-- vim.cmd.setlocal("formatoptions-=o")
 		vim.opt_local.formatoptions:remove("o")
+	end
+})
+
+-- Dynamically set wrap/nowrap depending on window width
+-- Small windows will not wrap and big ones will (since *super* long lines
+-- should be quite rare)
+-- TODO: Add a setting to disable this (should it be window-local or global?)
+-- > Thinking of calling it "autowrap"
+vim.api.nvim_create_autocmd("WinResized", {
+	callback = function()
+		for _, winid in ipairs(vim.v.event.windows) do
+			local wrap = vim.wo[winid].wrap
+			local width = vim.api.nvim_win_get_width(winid)
+			if width < 80 then
+				if wrap then
+					vim.wo[winid].wrap = false
+				end
+			else
+				if not wrap then
+					vim.wo[winid].wrap = true
+				end
+			end
+		end
 	end
 })
 
