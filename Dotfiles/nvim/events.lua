@@ -13,9 +13,29 @@ vim.cmd("cnorea bdelete bp<bar>sp<bar>bn<bar>bd")
 -- >> COMMANDS <<
 -- (none....yet)
 
+-- >> EDITOR-BEHAVIOR <<
+-- If nvim is invoked on a directory, don't open netrw, set the working directory
+-- and continue as though no path was given
+-- NOTE: BufEnter here because VimEnter appears to be too late
+-- > Not sure if this is bad practice, or if this gets cleaned up with once
+vim.api.nvim_create_autocmd("BufEnter", {
+	once = true,
+	callback = function(event)
+		local isdir = event.file
+			and (vim.fn.isdirectory(event.file) == 1)
+
+		if isdir then
+			vim.cmd.cd(event.file)
+			require("neo-tree").ensure_config()
+		end
+	end
+})
+
 -- >> BUFFER-OPTIONS <<
 -- Comment newline behavior is set by the builtin FileType plugin
 -- > https://www.reddit.com/r/neovim/comments/1bduxqd/prevent_vimofo_reset_by/
+-- TODO: It might be "better" to use the parameter passed in and set the
+-- option via its referenced buffer
 vim.api.nvim_create_autocmd("FileType", {
 	callback = function()
 		-- vim.cmd.setlocal("formatoptions-=o")
