@@ -27,9 +27,11 @@ vim.api.nvim_create_autocmd("BufEnter", {
 		if isdir then
 			vim.cmd.cd(event.file)
 			local _, ntree = pcall(require, "neo-tree")
-			if ntree then
-				ntree.ensure_config()
-			end
+
+			-- This was my original "ensure neotree gets loaded" code--might be useful
+			-- if ntree then
+				-- ntree.ensure_config()
+			-- end
 		end
 	end
 })
