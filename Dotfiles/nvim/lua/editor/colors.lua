@@ -1,17 +1,13 @@
--- Dynamic theming
--- TODO: Determine if I can replace themer entirely
--- > As lualine now follows highlights, this could be retrofitted to the
--- > 	classic ":colorscheme xxx" format which is likely to be much faster
--- > The benefit of themer is the support for extracting themes
--- > 	to a unified format (instead of using a HighlightGroup), but right
--- > 	now, no plugins in this configuration use this
+-- >>> colors.lua: Dynamic theming utilities
+
+local module = {}
 
 -- Function to change color scheme for themer and subsequent UI plugins
 -- > Returns active theme and transparency setting
 -- (This is how the theme should be changed)
 local current_theme = nil
 local current_transparency = nil
-local retheme = function(theme, transparency)
+function module.retheme(theme, transparency)
 	-- Normalize theme parameter (when called from user command)
 	if type(theme) == "table" then theme = theme.args end
 	if theme and (type(theme) ~= "string") then
@@ -33,7 +29,9 @@ local retheme = function(theme, transparency)
 		local status, colors = pcall(require, "themes." .. theme)
 		if not status then
 			-- TODO: Make this print red text
-			print("Unable to load `" .. theme .. "` theme")
+			vim.api.nvim_echo({
+				{ "Unable to load `" .. theme .. "` theme", "ErrorMsg" }
+			}, true, {})
 
 			-- Don't set transparency if invalid theme name
 			return current_theme, current_transparency
@@ -67,7 +65,7 @@ end
 
 -- Get a list of the available themes
 -- lightmode -> Returns a list of light themes if true, else dark (default)
-local list = function(lightmode)
+function module.list(lightmode)
 	-- TODO: Consider making the themes directory an option (or even supporting multiple at once)
 	local entries = vim.fn.readdir(vim.fn.stdpath("config") .. "/themes",
 		function(name)
@@ -102,7 +100,7 @@ end
 -- its pickers. Its use here is because the buffer (bufnr) is passed to this
 -- function, and this function will always be ran upon the picker's invocation.
 local _mappings = function(prompt_bufnr)
-	local active = retheme() -- Get the name of the current theme
+	local active = module.retheme() -- Get the name of the current theme
 	local ext = lightmode and "_light" or ""
 
 	-- Copy of original close function
@@ -140,7 +138,7 @@ local _mappings = function(prompt_bufnr)
 
 	-- CANCEL - Revert to original theme
 	require("telescope.actions").close:replace(function()
-		if active then retheme(active) end
+		if active then module.retheme(active) end
 		_close(prompt_bufnr)
 	end)
 
@@ -148,10 +146,11 @@ local _mappings = function(prompt_bufnr)
 end
 
 -- Return a picker for use with telescope
-local extension = function(args)
+-- TODO: Move this to the plugin spec file instead
+function module.extension(args)
 	local lightmode = args.light and true
-	local themes, current = list(lightmode)
-	local opts = require("telescope.themes").get_ivy({
+	local themes, current = module.list(lightmode)
+	local opts = {
 		prompt_title = "Themes",
 		results_title = false,
 
@@ -169,45 +168,42 @@ local extension = function(args)
 		borderchars = {
 			results = { "─", "│", "─", "│", "╭", "╮", "│", "│" },
 			prompt = { " ", "│", "─", "│", "├", "┤", "╯", "╰" },
-			-- preview = { "", "", "", "", "", "", "", "" },
 		},
 
 		finder = require("telescope.finders").new_table({
 			results = themes,
 		}),
 		sorter = require("telescope.config").values.generic_sorter({}),
-		previewer = require("telescope.previewers").new({
-			-- The previewer performs the logic of changing the theme
-			-- As the theme is global, we "set" the theme by taking no action on close
-			preview_fn = function(_, entry)
-				local theme_name = entry[1]
-				if theme_name then
-					retheme(theme_name)
-				end
-			end,
-		}),
-
-		-- create_layout = function(picker) end,
 
 		sorting_strategy = "ascending",
 		selection_strategy = "follow",
 		default_selection_index = current,
 
 		attach_mappings = _mappings, -- See comment above _mappings()
-	})
+	}
 
 	-- Call for the telescope prompt
 	local prompt = require("telescope.pickers").new(opts)
+
+	-- This is a bit of a telescope hack to gracefully preview themes
+	-- picker:refresh_previewer is responsible for populating the previewer, if present
+	-- However, it can be overloaded so that "we always run a previewing function"
+	-- As the theme is global, it can be "set" by taking no action on close
+	prompt.refresh_previewer = function(picker)
+		local entry = picker._selection_entry
+		if entry then
+			local theme_name = entry[1]
+			if theme_name then
+				module.retheme(theme_name)
+			end
+		end
+	end
+
 	prompt:find()
 end
 
-local module = {
-	complete = list,
-	select = retheme,
-	setupTelescope = function()
-			local extmgr = require("telescope._extensions").manager
-			extmgr["themes"] = { themes = extension }
-		end,
-}
+-- TODO: Old function names, clean this up
+module.complete = module.list
+module.select = module.retheme
 
 return module

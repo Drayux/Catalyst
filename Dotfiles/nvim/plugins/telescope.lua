@@ -23,7 +23,8 @@ local spec = {
 		if vim.g.themer_enabled then
 			local _, api = pcall(require, "editor.colors")
 			if api then
-				api.setupTelescope()
+				local extmgr = require("telescope._extensions").manager
+				extmgr["themes"] = { themes = api.extension }
 			end
 		end
 

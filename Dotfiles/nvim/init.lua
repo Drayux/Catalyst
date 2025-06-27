@@ -118,7 +118,7 @@ local load = function(module)
 		-- > TODO: Defer message so that it is visible upon startup
 		local message = "Failed to load config module " .. tostring(module)
 		vim.api.nvim_echo({
-			{ message, "WarningMsg" }
+			{ message, "ErrorMsg" }
 		}, true, {})
 	end
 end
