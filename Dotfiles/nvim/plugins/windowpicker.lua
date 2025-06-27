@@ -32,18 +32,9 @@ local spec = {
 			local window = require("window-picker").pick_window()
 			return not window or vim.api.nvim_set_current_win(window)
 		end
-		-- NOTE: For whatever reason, calling quickSelect as an expression
-		-- > keymap would invoke error E565 without fail, so the following is a
-		-- > workaround by defining the expression as a user command
-		-- UPDATE: Apparently it would seem that expressions cannot call lua
-		-- > code that changes buffers in any capacity, and I've merely managed
-		-- > to dodge the effects of this on every config tweak before this one
-		vim.api.nvim_create_user_command("QuickSelectWindow", quickSelect, {
-			nargs = 0,
-			desc = "Focus a window indicated by letter prompts",
-		})
-		require("editor.binds").command("V", "<cmd>QuickSelectWindow<cr>")
-		-- map(NORMAL, "V", require("window-picker").pick_window) -- also works
+
+		-- TODO: Move this to keymap layers instead of toggling with vim.g.windowpicker_enabled
+		require("editor.binds").set("n", "V", quickSelect)
 	end
 }
 

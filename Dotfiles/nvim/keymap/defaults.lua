@@ -18,7 +18,7 @@ local rowNumbers = function()
 	binds.set(NORMAL, "!", "<cmd>bp<cr>") -- (only supported in normal mode)
 	binds.set(NORMAL, "@", "<cmd>bn<cr>")
 	-- > 3/4: Repeat Find (last searched character)
-	-- binds.set(NORMAL, "=", ";") -- TODO: What was this?
+	-- binds.set(NORMAL, "=", ";") -- TODO: What was this supposed to be?
 	binds.set(MOTION, "$", ";")
 	-- > 5: Match parentheses
 	-- (default)
@@ -191,8 +191,10 @@ local rowBottom = function()
 	binds.set(EDITOR, "C", "x")
 	binds.set(VISUAL, "<C-c>", "<esc>") -- (v-block symmetry)
 	-- > V: Window Navigation
+	if not vim.g.windowpicker_enabled then
+		binds.disable(EDITOR, "V") -- Replaced by window quick select
+	end
 	binds.disable(EDITOR, "v") -- Remove default for subcommands instead
-	-- TODO: `V` for window selection popup (plugin)
 	binds.set(NORMAL, "vh", "<C-w>h") -- Window navigation
 	binds.set(NORMAL, "vj", "<C-w>j")
 	binds.set(NORMAL, "vk", "<C-w>k")
