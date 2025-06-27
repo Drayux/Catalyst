@@ -148,7 +148,7 @@ end
 -- Return a picker for use with telescope
 -- TODO: Move this to the plugin spec file instead
 function module.extension(args)
-	local lightmode = args.light and true
+	local lightmode = args.light
 	local themes, current = module.list(lightmode)
 	local opts = {
 		prompt_title = "Themes",
@@ -191,10 +191,11 @@ function module.extension(args)
 	-- As the theme is global, it can be "set" by taking no action on close
 	prompt.refresh_previewer = function(picker)
 		local entry = picker._selection_entry
+		local suffix = lightmode and "_light" or ""
 		if entry then
 			local theme_name = entry[1]
 			if theme_name then
-				module.retheme(theme_name)
+				module.retheme(theme_name .. suffix)
 			end
 		end
 	end
