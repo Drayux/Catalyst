@@ -168,8 +168,8 @@ function module.wrap(func, _opts)
 		-- Usage: module.set(module.NORMAL, "<C-d>", module.wrap(function() print("hello world") end))
 
 		-- TODO: I might be able to fix the leak by a complicated proxy table system
-		-- In short, main table uses the function as the key (which should match the
-		-- address) and the second table tracks its name index. When wrapping, use
+		-- Here, the main table would use the function as the key (which should match
+		-- the address) and the second table tracks its name index. When wrapping, use
 		-- the address of the function as the key with the index the corresponding
 		-- value. The proxy table maps the opposite, so that each function can be
 		-- called via an index, which is the name saved to the closure table.

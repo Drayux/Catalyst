@@ -40,22 +40,6 @@ local spec = {
 				trim_scope = "outer", -- "inner"
 			}
 		},
-		{ "folke/twilight.nvim",
-			cond = condGUI, -- Only enable in terminal emulator
-			cmd = { "Twilight", "TwilightEnable", "TwilightDisable" },
-			opts = {
-				-- TODO: Only enable dimming in insert mode
-				dimming = {
-					alpha = 0.25,
-					color = { "Normal", "#ffffff" },
-					term_bg = "#2c2c34", -- Fallback terminal emulator color
-					inactive = true, -- Whether to dim the contents of other windows when active
-				},
-				context = 99, -- Amount of lines to show around the current line (99 for max)
-				treesitter = true, -- Use treesitter when available
-				-- exclude = {}, -- Exclude these filetypes
-			}
-		},
 		{ "OXY2DEV/foldtext.nvim",
 			cond = false and condGUI, -- Just a "pretty" plugin so disable it for now
 			opts = {

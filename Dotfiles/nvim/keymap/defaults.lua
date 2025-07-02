@@ -212,6 +212,7 @@ local rowBottom = function()
 			vim.wo.colorcolumn = (width > 0) and "0" or "80"
 			vim.cmd.redraw() -- Trigger neovim to redraw the window so the column shows immediately
 		end)
+	binds.set(ACTIVE, "<C-v>", "<insert>") -- TODO: Experimenting with this, not sure if I like it (also doesn't really work, either)
 	-- > B: Buffer Navigation
 	-- TODO: b<any> for treesitter-textobjects jumping
 	-- binds.set(EDITOR, "b", "g")

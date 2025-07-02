@@ -9,6 +9,7 @@ vim.cmd("cnorea bd bp<bar>sp<bar>bn<bar>bd")
 vim.cmd("cnorea bdel bp<bar>sp<bar>bn<bar>bd")
 vim.cmd("cnorea bdelete bp<bar>sp<bar>bn<bar>bd")
 -- <<<
+vim.cmd("cnorea w!! w !sudo tee \"%\"") -- Try writing with sudo tee
 
 -- >> COMMANDS <<
 -- (none....yet)
