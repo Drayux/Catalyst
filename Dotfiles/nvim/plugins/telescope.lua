@@ -21,8 +21,8 @@ local toggle_find = function(picker_fn, opts, _show)
 				title = picker and picker.prompt_title or "<unknown>"
 			end
 
-			-- TODO: Try skipping this
-			require("telescope.actions").close(prompt_bufnr)
+			-- TODO: I don't think we need this line - it should be handled by picker:find()
+			-- require("telescope.actions").close(prompt_bufnr)
 		end
 
 		opts.default_text = state.get_current_line()

@@ -157,13 +157,13 @@ local extractLineContents = function(line, prefix, suffix)
 	local prefixStart, prefixEnd = line:find(_prefix, offset)
 	if prefixStart then
 		info.prefix = prefixStart
-		if prefixStart == offset then
+		offset = prefixEnd + 1
+		if prefixStart == info.start then
 			-- Comment was found at the start of the line
 			-- > NOTE: Don't match against ^<prefix> for reuse with textobjects
 			info.commented = true -- To be reverted if suffix is defined but not matched
+			info.start = offset
 		end
-		offset = prefixEnd + 1
-		info.start = offset
 	end
 
 	-- Find the comment suffix

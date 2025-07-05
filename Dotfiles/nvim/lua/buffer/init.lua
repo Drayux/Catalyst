@@ -102,7 +102,7 @@ local commentLine = function(mode)
 		empty = empty and line.empty
 
 		-- Check for uncommented lines (empty lines count!)
-		if (mode == TOGGLE) and (not line.commented) then
+		if (mode == TOGGLE) and not (line.commented or line.empty) then
 			mode = COMMENT
 		end
 	end
@@ -113,7 +113,7 @@ local commentLine = function(mode)
 			vim.notify("Nothing to uncomment!", vim.log.levels.WARN)
 			return
 		elseif startLine > 1 then
-			-- Fixup the empty line whitespace
+			-- Use the whitespace of the line above for the empty comment
 			-- NOTE: *Don't* recurse this search -- consider using this on a python script...
 			local aboveText = vim.api.nvim_buf_get_lines(0, startLine - 2, startLine - 1, false)
 			local aboveInfo = commentUtils.process(aboveText[1], pattern.prefix, pattern.suffix)
