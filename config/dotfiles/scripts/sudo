@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# System-agnostic alias--map sudo to doas only when sudo is not installed on the system
+if [ -f /bin/sudo ] ; then
+	exec /bin/sudo $@
+else
+	exec /bin/doas $@
+fi

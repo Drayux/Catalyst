@@ -1,0 +1,136 @@
+#!/bin/sh
+
+# The intended installation location for this script is: /usr/local/bin
+
+# WARNING: This script assumes being run inside XDG compliant session,
+# which means D-Bus session instance is expected to be correctly set up
+# prior to this script starting. If that is not true, things may break!
+
+# TODO: Add optional support for dedicated logging system
+
+# Gnome desktop entry: /usr/bin/gnome-session 2> $HOME/.var/log/desktop/gnome.log
+# Hyprland desktop entry: dbus-run-session Hyprland
+
+shopt -s expand_aliases
+alias timestamp="/bin/date '+[ %Y-%m-%d / %H:%M:%S ]'"
+
+LOG_DIR="${HOME}/.local/audio"
+
+PIPEWIRE_LOG="${LOG_DIR}/pipewire.log"
+PULSE_LOG="${LOG_DIR}/pipewire-pulse.log"
+WIREPLUMBER_LOG="${LOG_DIR}/wireplumber.log"
+CARLA_LOG="${LOG_DIR}/carla.log"
+
+RESTART=false
+USE_CARLA=false
+
+init() {
+	# Create the log directory if it does not already exist
+	mkdir -p ${LOG_DIR}
+
+	# Clear the logs if not restarting
+	cmd="echo -n '' >"
+	if [ "${1}" = 'preserve' ]; then
+		cmd="touch"
+	fi
+	
+	for path in \
+		"${PIPEWIRE_LOG}" \
+		"${PULSE_LOG}" \
+		"${WIREPLUMBER_LOG}" \
+		"${CARLA_LOG}"; do
+		eval "${cmd} ${path}"
+	done
+}
+
+shutdown() {
+	# Restore default signal so we can't "double CTRL-C"
+	trap - SIGINT SIGTERM
+
+	echo -e "\n$(timestamp) Killing audio processes..." | tee -a ${PIPEWIRE_LOG} ${PULSE_LOG} ${WIREPLUMBER_LOG}
+	for jpid in $(jobs -p); do
+		if [[ "${jpid}" == "${CARLA_PID}" ]]; then
+			# Carla doesn't always exit gracefully
+			kill -KILL $jpid 2> /dev/null
+		else
+			kill $jpid 2> /dev/null
+		fi
+	done
+	
+	wait
+	echo "$(timestamp) Done." | tee -a ${PIPEWIRE_LOG} ${PULSE_LOG} ${WIREPLUMBER_LOG}
+}
+
+## Check arguments
+# TODO: Check for carla argument and set to true if successful $(which carla)
+if [ "${#}" -gt 0 ]; then
+	if [ "${1}" = 'restart' ]; then
+		RESTART=true
+		init preserve
+	else
+		echo "Unrecognized argument." >&2
+		echo "Usage: $0 [restart]" >&2
+		exit 1
+	fi
+else
+	# If handling more arguments, this can always be moved to seperate check routine
+	init
+fi
+
+## Check if an instance is already running
+for pid in $(pidof -x $(basename $0)); do
+	if [ $pid != $$ ]; then
+		if [ "${RESTART}" = 'true' ]; then
+			echo "Restarting audio subsystem..."
+			kill $pid
+
+			# Don't start launching the new processes until the old ones have finished exiting
+			pidwait $pid
+		else
+			echo "Audio subsystem is already running" >&2
+			echo "Use '$0 restart' to force" >&2
+			exit 1
+		fi
+	fi
+done
+
+## Launch audio subsystem processes
+# Allows us to SIGTERM the script to kill its child processes
+trap shutdown SIGINT SIGTERM
+
+# The audio core daemon
+echo "$(timestamp) Starting pipewire" | tee -a ${PIPEWIRE_LOG}
+/usr/bin/pipewire 1>>"${PIPEWIRE_LOG}" 2>&1 &
+
+# Pulseaudio interoperability (replaces pulseaudio entirely)
+echo "$(timestamp) Starting pipewire-pulse" | tee -a ${PULSE_LOG}
+/usr/bin/pipewire-pulse 1>>"${PULSE_LOG}" 2>&1 &
+
+# Hack for bug #822498
+sleep 1
+
+# Session manager (handles devices and linking of stream nodes)
+# TODO: Moving the base config dir should keep all the others
+echo "$(timestamp) Starting wireplumber" | tee -a ${WIREPLUMBER_LOG}
+WIREPLUMBER_CONFIG_DIR="${HOME}/.config/pipewire:/etc/wireplumber:/usr/share/wireplumber" WIREPLUMBER_DATA_DIR="${WIREPLUMBER_CONFIG_DIR}" /usr/bin/wireplumber 1>>"${WIREPLUMBER_LOG}" 2>&1 &
+
+# Plugin host
+# TODO: Carla-rack does not seem to respect the TERM signal and leaves instances of the project running
+# TODO: The project path should be easily configurable
+# XDG_SESSION_ID is a way to make this Carla process unique from others that may be launched
+# PIPEWIRE_PROPS only appears to work on native clients, of course >.>
+if [ "${CARLA}" = 'true' ]; then
+	echo "$(timestamp) Starting carla" | tee -a ${CARLA_LOG}
+	XDG_SESSION_ID="carla-pw" /usr/bin/carla-rack --nogui "${HOME}/.config/pipewire/filters/sterling.carxp" 1>>"${CARLA_LOG}" 2>&1 &
+	CARLA_PID=$!
+fi
+
+# Happy happy loud music time
+echo "$(timestamp) Audio subsystem initalized!"
+
+## Wait for the subsystem to exit (else we won't be able to destroy the children)
+# TODO: Consider adding some form of check for if any job dies, kill the rest
+#		Would be something like `wait -n` I believe
+wait < <(jobs -p)
+echo "$(timestamp) Audio subsystem terminated"
+trap - SIGINT SIGTERM

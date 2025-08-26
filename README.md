@@ -1,3 +1,16 @@
+### **WIP:** Reorganization general idea
+I'm working to split my Linux notes and my Linux configuration. This repo will now be a dedicated project for ensuring a consistent configuration across all of my systems.
+
+That said, some systems feature unique hardware or use cases from others, most notably, my work PC has many unique "overrides" that must be in place. For configuration that does not support conditional logic, committing those to the same files as my personal computer only causes issues. Furthermore, when setting up a new system, many "system-level" configuration files must be updated as well. This can be annoying to do manually, as well as easy to miss certain files. Symlinking system files to this repository raises any number of security concerns as well.
+
+Thus, this project is being reformatted to a set of scripts that I can use to "install" my configuration.
+
+Big ol todo list:
+- I need to determine if I want to link files or copy and spot differences
+- Some configuration has dependencies, and I want to provide checks if those seem to be met (i.e. ZSH config and starship)
+- System-specific overrides
+- The final solution will likely be a mix of Bash and Lua
+
 # About
 This repository is my attempt at a creating a comprehensive collection of everything major I've learned about linux since I dove down the rabbit hole a year ago as well as all of my configuration files, scripts, and the like.
 

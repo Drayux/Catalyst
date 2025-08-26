@@ -1,0 +1,4 @@
+#!/bin/bash
+
+# Handy helper for git
+exec git log --graph --oneline --all
