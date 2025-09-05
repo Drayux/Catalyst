@@ -15,7 +15,6 @@ local transform_EnumOption = function(option, input)
 end
 
 -- Available script options
-local _pargs = {} -- Proxy table
 local options = setmetatable({
 	-- <OPTION (proper name)>
 		-- range: Acceptable values (checked by valid function)
@@ -26,7 +25,7 @@ local options = setmetatable({
 		-- desc.summary: Usage info - brief summary of option
 	mode = {
 		range = { USAGE = 0, INSTALL = 1, COMPARE = 2 },
-		default = "USAGE",
+		default = 0,
 		transform = transform_EnumOption,
 		count = 1,
 		desc = {
@@ -37,7 +36,7 @@ local options = setmetatable({
 	},
 	features = {
 		range = { ALL = 0, SELECT = 1, USER = 2, SYSTEM = 3 },
-		default = "ALL",
+		default = 0,
 		transform = transform_EnumOption,
 		count = 1,
 		desc = {
@@ -50,7 +49,7 @@ local options = setmetatable({
 		-- Auto means try to detect the system, none means select no
 		-- system-specific config
 		range = { AUTO = 0, CATALYST = 1, CHITIN = 2, WORK = 3, NONE = 4 },
-		default = "AUTO",
+		default = 0,
 		transform = transform_EnumOption,
 		count = 1,
 		desc = {
@@ -58,120 +57,148 @@ local options = setmetatable({
 			summary = "Target system for unagnostic configuration entries.",
 		}
 	},
+	pretend = {
+		default = false,
+		count = 0,
+		desc = {
+			name = "pretend",
+			summary = "Instead of taking any action, dump what would be done to stdout.",
+		}
+	},
 
 	__data = {},
+	__flags = {},
 }, {
 	__index = function(self, key)
-		-- Old code, may not be needed
-		if type(key) == "string" then
-			key = self[key]
-		end
-
-		return self.__data[key] or key.default
-	end,
+			if type(key) == "table" then
+				return self.__data[key] or key.default
+			end
+		end,
 	__newindex = function(self, key, rawvalue)
-		-- Old code, may not be needed
-		if type(key) == "string" then
-			key = self[key]
-		end
-		if not key then return end
+			-- Force table writes to nested proxy
+			if type(key) ~= "table" then
+				error("Options table is read only (requires option as key)")
+			end
 
-		-- Range check input (if necessary)
-		local value
-		if key.transform then
-			value = key:transform(rawvalue)
-		else
-			value = rawvalue
-		end
+			-- Range check the argument if necessary
+			local value
+			if key.transform then
+				value = key:transform(rawvalue)
+			else
+				value = rawvalue
+			end
 
-		if value == nil then
-			error("Invalid option value: " .. (rawvalue or "<nil>"))
-		else
-			-- Duplicate args will be overwritten
-			rawset(self.__data, key, value)
-		end
-	end,
-})
+			if value == nil then
+				error("Invalid option value: " .. (rawvalue or "<nil>"))
+			else
+				-- Duplicate args will be overwritten
+				rawset(self.__data, key, value)
+			end
+		end,
 
--- Option flag indexing
-local flags = {
-	short = {
-		f = options.features,
-		s = options.system,
-	},
-	long = { }
-}
+	-- Pairs can be used to dump all options
+	-- Will not work in lua < 5.2! (does nothing)
+	__pairs = function(self)
+			local k, v
+			return function(self)
+				-- Keep looping until we find the next valid key and return it (or quit)
+				-- aka: A table member that is not preceeded with an underscore
+				repeat k, v = next(self, k)
+				until (k == nil)
+					or (type(k) == "string" and k:match("^[^_]+"))
 
--- Parsed script arguments (defaults)
-local args = setmetatable({}, {
-	__call = function(self, input)
-		local intbl = input or rawget(_G, "arg") -- Script arguments
-
-		local optqueue = {}
-		local optidx = 1
-		local modeset = false
-
-		for _, a in ipairs(intbl) do
-			local isopt, islong, key = a:match("(-?)(-?)(%w+)")
-			if #isopt > 0 then
-				if #islong > 0 then
-					local optmeta = flags.long[key]
-					if not optmeta then
-						error("Unrecognized option: " .. (a or "<nil>"))
-					end
-
-					-- Check if this is a boolean argument
-					if not optmeta.valid then
-						self[optmeta] = true
-					else
-						table.insert(optqueue, optmeta)
-					end
+				if k then
+					return v.desc.name, self[self[k]]
 				else
-					for charidx = 1, #key do
-						local keychar = string.char(key:byte(charidx))
-						local optmeta = flags.short[keychar]
-						if not optmeta then
+					return nil
+				end
+			end, self, nil
+		end,
+
+	-- Call responsible for parsing arguments
+	__call = function(self, input)
+			local intbl = input or rawget(_G, "arg") -- Script arguments
+
+			local optqueue = {}
+			local optidx = 1
+			local modeset = false
+
+			for _, a in ipairs(intbl) do
+				local isopt, islong, key = a:match("(-?)(-?)(%w+)")
+				if #isopt > 0 then
+					if #islong > 0 then
+						local option = self.__flags.long[key]
+						if not option then
 							error("Unrecognized option: " .. (a or "<nil>"))
 						end
 
 						-- Check if this is a boolean argument
-						if (not optmeta.count) or (optmeta.count == 0) then
-							self[optmeta] = true
+						if not option.valid then
+							self[option] = true -- Writes to self.__data
 						else
-							table.insert(optqueue, optmeta)
+							table.insert(optqueue, option)
+						end
+					else
+						for charidx = 1, #key do
+							local keychar = string.char(key:byte(charidx))
+							local option = self.__flags.short[keychar]
+							if not option then
+								error("Unrecognized option: " .. (a or "<nil>"))
+							end
+
+							-- Check if this is a boolean argument
+							if (not option.count) or (option.count == 0) then
+								self[option] = true -- Writes to self.__data
+							else
+								table.insert(optqueue, option)
+							end
 						end
 					end
-				end
-			else
-				-- Pluck option value from whatever we're parsing
-				local optmeta = optqueue[optidx]
-				if not optmeta then -- No more user options, fallback to mode
-					if modeset then
-						error("Unrecognized option: " .. (a or "<nil>"))
-					else
-						-- We will always set mode with the first "floating" argument
-						self[options.mode] = key
-						modeset = true
-					end
-
 				else
-					self[optmeta] = key
+					-- Pluck option value from whatever we're parsing
+					local option = optqueue[optidx]
+					if not option then -- No more user options, fallback to mode
+						if modeset then
+							error("Unrecognized option: " .. (a or "<nil>"))
+						else
+							-- We will always set mode with the first "floating" argument
+							-- TODO: Probably should make this more general-form and configurable
+							self[self.mode] = key
+							modeset = true
+						end
 
-					-- NOTE: Multi-value options currently unsupported,
-					--   but the skeleton is halfway in place
-					optidx = optidx + 1
+					else
+						self[option] = key -- Writes to self.__data
+
+						-- NOTE: Multi-value options currently unsupported,
+						--   but the skeleton is halfway in place
+						optidx = optidx + 1
+					end
 				end
 			end
-		end
 
-		if #optqueue >= optidx then
-			error("Not enough arguments")
+			if #optqueue >= optidx then
+				error("Not enough arguments")
+			end
 		end
-	end
 })
 
--- Parse arguments fed to the script `config arg1 arg2 ...`
-args()
-for k, v in pairs(_pargs) do
+-- Option flag indexing
+options.__flags.short = {
+	f = options.features,
+	s = options.system,
+	p = options.pretend,
+}
+options.__flags.long = { }
+
+options() -- Parse arguments fed to the script `config arg1 arg2 ...`
+
+-- OPTIONS USAGE NOTE
+-- This isn't an ideal solution. At first it was a couple different tables,
+-- when I merged them, I didn't handle the metatable API very intuitively.
+-- Thus, the way to actually get a script argument is options[options.<option>]
+-- where <option> refers to the actual name of the option (mode, system, etc.)
+
+for k, v in pairs(options) do
 	print(k, v)
 end
