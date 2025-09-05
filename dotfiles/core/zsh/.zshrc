@@ -1,0 +1,36 @@
+# CONFIG --> .zshrc
+# Scripted loaded after environment for interactive shells (aka prompt mode, not `zsh -c`)
+
+# >>> ZSH options <<<
+setopt autocd extendedglob
+setopt hist_ignore_all_dups
+unsetopt beep nomatch notify
+
+bindkey -e
+bindkey 	"^[[1;5C"	forward-word
+bindkey 	"^[[1;5D"	backward-word
+bindkey 	"^[[H"		beginning-of-line
+bindkey 	"^[[F"		end-of-line
+bindkey 	"^[[3~"		delete-char
+
+# >>> System-local <<<
+[ -r "${XDG_DATA_HOME}/zsh/overrides" ] && source "${XDG_DATA_HOME}/zsh/overrides"
+
+# >>> Plugins <<<
+# Not a ZSH plugin, but this overloads libc so that output to stderr is red
+# TODO: Consider adding in the support for multilib (detailed on the git repo page)
+# > Package: `stderred-git` (pacman AUR) [gentoo may need to install from source]
+# source /usr/share/stderred/stderred.sh 2> /dev/null || true
+
+# zsh-syntax-highlighting should be loaded last (must also be installed!)
+# > Package: `zsh-syntax-highlighting` (both pacman and portage)
+if ! source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh 2> /dev/null \
+	&& ! source /usr/share/zsh/site-functions/zsh-syntax-highlighting.zsh 2> /dev/null; then
+	echo "Failed to load ZSH syntax highlighting plugin - Is the package installed?" 1>&2
+fi
+
+# >>> Startup MOTD <<<
+fastfetch 2> /dev/null || true
+
+# >>> Starship prompt <<<
+eval "$(starship init zsh)"

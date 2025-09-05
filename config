@@ -1,0 +1,177 @@
+#!/bin/lua
+
+-- NOTE: So far thinking dotfiles and system-specific overrides will be
+-- sym-linked, relevant system config will be copied.
+
+-- The big question: What to do when system config changes or has
+-- system-specific options? Should I copy anyway?
+
+-- Options helpers
+local transform_EnumOption = function(option, input)
+	if (type(option.range) == "table") then
+		return option.range[tostring(input):upper()]
+	end
+	error("Bad use of transform_EnumOption; option.range is not an enum table")
+end
+
+-- Available script options
+local _pargs = {} -- Proxy table
+local options = setmetatable({
+	-- <OPTION (proper name)>
+		-- range: Acceptable values (checked by valid function)
+		-- default: Default value if none specified
+		-- transform: Closure to convert raw input before validation
+		-- count: Expected number of values
+		-- desc.name: Usage info - name of option
+		-- desc.summary: Usage info - brief summary of option
+	mode = {
+		range = { USAGE = 0, INSTALL = 1, COMPARE = 2 },
+		default = "USAGE",
+		transform = transform_EnumOption,
+		count = 1,
+		desc = {
+			name = "mode",
+			summary = "Script run mode.",
+			-- error = "",
+		}
+	},
+	features = {
+		range = { ALL = 0, SELECT = 1, USER = 2, SYSTEM = 3 },
+		default = "ALL",
+		transform = transform_EnumOption,
+		count = 1,
+		desc = {
+			name = "features",
+			summary = "Which features to install or compare (select is WIP.)",
+		}
+	},
+	system = {
+		-- TODO: Consider reading these from a file
+		-- Auto means try to detect the system, none means select no
+		-- system-specific config
+		range = { AUTO = 0, CATALYST = 1, CHITIN = 2, WORK = 3, NONE = 4 },
+		default = "AUTO",
+		transform = transform_EnumOption,
+		count = 1,
+		desc = {
+			name = "system",
+			summary = "Target system for unagnostic configuration entries.",
+		}
+	},
+
+	__data = {},
+}, {
+	__index = function(self, key)
+		-- Old code, may not be needed
+		if type(key) == "string" then
+			key = self[key]
+		end
+
+		return self.__data[key] or key.default
+	end,
+	__newindex = function(self, key, rawvalue)
+		-- Old code, may not be needed
+		if type(key) == "string" then
+			key = self[key]
+		end
+		if not key then return end
+
+		-- Range check input (if necessary)
+		local value
+		if key.transform then
+			value = key:transform(rawvalue)
+		else
+			value = rawvalue
+		end
+
+		if value == nil then
+			error("Invalid option value: " .. (rawvalue or "<nil>"))
+		else
+			-- Duplicate args will be overwritten
+			rawset(self.__data, key, value)
+		end
+	end,
+})
+
+-- Option flag indexing
+local flags = {
+	short = {
+		f = options.features,
+		s = options.system,
+	},
+	long = { }
+}
+
+-- Parsed script arguments (defaults)
+local args = setmetatable({}, {
+	__call = function(self, input)
+		local intbl = input or rawget(_G, "arg") -- Script arguments
+
+		local optqueue = {}
+		local optidx = 1
+		local modeset = false
+
+		for _, a in ipairs(intbl) do
+			local isopt, islong, key = a:match("(-?)(-?)(%w+)")
+			if #isopt > 0 then
+				if #islong > 0 then
+					local optmeta = flags.long[key]
+					if not optmeta then
+						error("Unrecognized option: " .. (a or "<nil>"))
+					end
+
+					-- Check if this is a boolean argument
+					if not optmeta.valid then
+						self[optmeta] = true
+					else
+						table.insert(optqueue, optmeta)
+					end
+				else
+					for charidx = 1, #key do
+						local keychar = string.char(key:byte(charidx))
+						local optmeta = flags.short[keychar]
+						if not optmeta then
+							error("Unrecognized option: " .. (a or "<nil>"))
+						end
+
+						-- Check if this is a boolean argument
+						if (not optmeta.count) or (optmeta.count == 0) then
+							self[optmeta] = true
+						else
+							table.insert(optqueue, optmeta)
+						end
+					end
+				end
+			else
+				-- Pluck option value from whatever we're parsing
+				local optmeta = optqueue[optidx]
+				if not optmeta then -- No more user options, fallback to mode
+					if modeset then
+						error("Unrecognized option: " .. (a or "<nil>"))
+					else
+						-- We will always set mode with the first "floating" argument
+						self[options.mode] = key
+						modeset = true
+					end
+
+				else
+					self[optmeta] = key
+
+					-- NOTE: Multi-value options currently unsupported,
+					--   but the skeleton is halfway in place
+					optidx = optidx + 1
+				end
+			end
+		end
+
+		if #optqueue >= optidx then
+			error("Not enough arguments")
+		end
+	end
+})
+
+-- Parse arguments fed to the script `config arg1 arg2 ...`
+args()
+for k, v in pairs(_pargs) do
+	print(k, v)
+end
