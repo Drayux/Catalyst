@@ -1,0 +1,55 @@
+#!/bin/lua
+
+-- 
+
+local options = require("lua.options")
+
+function output_Usage()
+	print("USAGE: catalyst <mode> [-s system] [-f features] [-d]")
+	for k, v in pairs(options) do
+		print("\n     > ", k .. " -- (default: " .. tostring(v.default) .. ")")
+		print("", v.desc.summary)
+	end
+end
+
+-- Exit early if bad script input
+if options.__error then
+	print(options.__error)
+	output_Usage()
+	return
+end
+
+--
+
+print("-----------------------------------")
+print(">>> CATALYST CONFIG FILE HELPER <<<")
+print("-----------------------------------")
+
+print("\nSelected options:")
+for k, o in pairs(options) do
+	local val = options[o]
+	if val ~= false then
+		val = (type(val) == "string") and val:lower() or val
+		k = k:sub(1, 7):upper() -- Prettier formatting
+		print("     > ", k, val)
+	end
+end
+print("\n-----------------------------------")
+
+-- OPTIONS USAGE NOTE
+-- This isn't an perfect design. At first it was a couple different tables;
+-- when I merged them, I didn't handle the metatable API very intuitively.
+-- Thus, the way to actually get a script argument is options[options.<option>]
+-- where <option> refers to the actual name of the option (mode, system, etc.)
+
+local _mode = options.mode
+local _feat = options.features
+local _system = options.system
+local _debug = options.debug
+
+if options[_mode] == "USAGE" then
+	output_Usage()
+else
+	-- Current use case means that any other option will at least build a
+	-- feature list and check the setup of those features
+end

@@ -1,16 +1,11 @@
-#!/bin/lua
-
--- NOTE: So far thinking dotfiles and system-specific overrides will be
--- sym-linked, relevant system config will be copied.
-
--- The big question: What to do when system config changes or has
--- system-specific options? Should I copy anyway?
-
 -- Options helpers
 local transform_EnumOption = function(option, input)
 	if (type(option.range) == "table") then
-		return option.range[tostring(input):upper()]
+		-- return option.range[tostring(input):upper()]
+		local key = tostring(input):upper()
+		return option.range[key] and key or nil
 	end
+	-- Developer error, raise exception
 	error("Bad use of transform_EnumOption; option.range is not an enum table")
 end
 
@@ -24,19 +19,19 @@ local options = setmetatable({
 		-- desc.name: Usage info - name of option
 		-- desc.summary: Usage info - brief summary of option
 	mode = {
-		range = { USAGE = 0, INSTALL = 1, COMPARE = 2 },
-		default = 0,
+		range = { USAGE = 0, INSTALL = 1, CHECK = 2 },
+		default = "USAGE", -- 0
 		transform = transform_EnumOption,
 		count = 1,
 		desc = {
 			name = "mode",
-			summary = "Script run mode.",
+			summary = "Script operation mode.",
 			-- error = "",
 		}
 	},
 	features = {
 		range = { ALL = 0, SELECT = 1, USER = 2, SYSTEM = 3 },
-		default = 0,
+		default = "ALL", -- 0
 		transform = transform_EnumOption,
 		count = 1,
 		desc = {
@@ -49,7 +44,7 @@ local options = setmetatable({
 		-- Auto means try to detect the system, none means select no
 		-- system-specific config
 		range = { AUTO = 0, CATALYST = 1, CHITIN = 2, WORK = 3, NONE = 4 },
-		default = 0,
+		default = "AUTO", -- 0
 		transform = transform_EnumOption,
 		count = 1,
 		desc = {
@@ -57,17 +52,18 @@ local options = setmetatable({
 			summary = "Target system for unagnostic configuration entries.",
 		}
 	},
-	pretend = {
-		default = false,
+	debug = {
+		default = true, -- false (force true for development)
 		count = 0,
 		desc = {
-			name = "pretend",
+			name = "debug",
 			summary = "Instead of taking any action, dump what would be done to stdout.",
 		}
 	},
 
 	__data = {},
 	__flags = {},
+	__error = false,
 }, {
 	__index = function(self, key)
 			if type(key) == "table" then
@@ -77,6 +73,7 @@ local options = setmetatable({
 	__newindex = function(self, key, rawvalue)
 			-- Force table writes to nested proxy
 			if type(key) ~= "table" then
+				-- Developer error, raise exception
 				error("Options table is read only (requires option as key)")
 			end
 
@@ -89,7 +86,7 @@ local options = setmetatable({
 			end
 
 			if value == nil then
-				error("Invalid option value: " .. (rawvalue or "<nil>"))
+				self.__error = "Invalid option value: " .. (rawvalue or "<nil>")
 			else
 				-- Duplicate args will be overwritten
 				rawset(self.__data, key, value)
@@ -108,14 +105,14 @@ local options = setmetatable({
 					or (type(k) == "string" and k:match("^[^_]+"))
 
 				if k then
-					return v.desc.name, self[self[k]]
+					return v.desc.name, self[k]
 				else
 					return nil
 				end
 			end, self, nil
 		end,
 
-	-- Call responsible for parsing arguments
+	-- Call is responsible for parsing arguments
 	__call = function(self, input)
 			local intbl = input or rawget(_G, "arg") -- Script arguments
 
@@ -125,11 +122,14 @@ local options = setmetatable({
 
 			for _, a in ipairs(intbl) do
 				local isopt, islong, key = a:match("(-?)(-?)(%w+)")
+
+				-- User specified an option (-option)
 				if #isopt > 0 then
 					if #islong > 0 then
 						local option = self.__flags.long[key]
 						if not option then
-							error("Unrecognized option: " .. (a or "<nil>"))
+							self.__error = "Unrecognized option: " .. (a or "<nil>")
+							goto error
 						end
 
 						-- Check if this is a boolean argument
@@ -143,7 +143,8 @@ local options = setmetatable({
 							local keychar = string.char(key:byte(charidx))
 							local option = self.__flags.short[keychar]
 							if not option then
-								error("Unrecognized option: " .. (a or "<nil>"))
+								self.__error = "Unrecognized option: " .. (a or "<nil>")
+								goto error
 							end
 
 							-- Check if this is a boolean argument
@@ -154,12 +155,15 @@ local options = setmetatable({
 							end
 						end
 					end
+
+				-- User specified a value (value)
 				else
 					-- Pluck option value from whatever we're parsing
 					local option = optqueue[optidx]
 					if not option then -- No more user options, fallback to mode
 						if modeset then
-							error("Unrecognized option: " .. (a or "<nil>"))
+							self.__error = "Unrecognized argument: " .. (a or "<nil>")
+							goto error
 						else
 							-- We will always set mode with the first "floating" argument
 							-- TODO: Probably should make this more general-form and configurable
@@ -168,7 +172,10 @@ local options = setmetatable({
 						end
 
 					else
-						self[option] = key -- Writes to self.__data
+						self[option] = key -- Writes to self.__data, may set self.__error
+						if self.__error then
+							goto error
+						end
 
 						-- NOTE: Multi-value options currently unsupported,
 						--   but the skeleton is halfway in place
@@ -178,27 +185,22 @@ local options = setmetatable({
 			end
 
 			if #optqueue >= optidx then
-				error("Not enough arguments")
+				self.__error = "Not enough arguments"
 			end
+
+			::error::
+			return self
 		end
 })
 
 -- Option flag indexing
+-- NOTE: If improving this, it would be prudent to save these in the option
+-- itself, and then generate the __flags table once
 options.__flags.short = {
 	f = options.features,
 	s = options.system,
-	p = options.pretend,
+	d = options.debug,
 }
 options.__flags.long = { }
 
-options() -- Parse arguments fed to the script `config arg1 arg2 ...`
-
--- OPTIONS USAGE NOTE
--- This isn't an ideal solution. At first it was a couple different tables,
--- when I merged them, I didn't handle the metatable API very intuitively.
--- Thus, the way to actually get a script argument is options[options.<option>]
--- where <option> refers to the actual name of the option (mode, system, etc.)
-
-for k, v in pairs(options) do
-	print(k, v)
-end
+return options() -- Parse the arguments fed to the script `config arg1 arg2 ...`
