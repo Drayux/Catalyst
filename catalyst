@@ -3,6 +3,12 @@
 -- 
 
 local options = require("lua.options")
+local dirload = require("lua.dirload")
+
+local contents = dirload("spec/feature")
+for k, v in pairs(contents) do
+	print(k, v)
+end
 
 function output_Usage()
 	print("USAGE: catalyst <mode> [-s system] [-f features] [-d]")

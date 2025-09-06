@@ -18,6 +18,9 @@ local spec = {
 	--	[".zshrc"] = ["~/.config/zsh/.zshrc"],
 	--  ...
 	-- }
+
+	-- Third-party soft depedencies
+	depends = { },
 	
 	-- Config editing scripts instead of files
 	edits = {
