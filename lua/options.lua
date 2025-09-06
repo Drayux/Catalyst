@@ -31,12 +31,12 @@ local options = setmetatable({
 	},
 	features = {
 		range = { ALL = 0, SELECT = 1, USER = 2, SYSTEM = 3 },
-		default = "ALL", -- 0
+		default = "ALL", -- TODO: Consider changing to USER once kinks are worked out
 		transform = transform_EnumOption,
 		count = 1,
 		desc = {
 			name = "features",
-			summary = "Which features to install or compare (select is WIP.)",
+			summary = "Which features to install or compare (user/system WIP.)",
 		}
 	},
 	system = {
@@ -50,6 +50,14 @@ local options = setmetatable({
 		desc = {
 			name = "system",
 			summary = "Target system for unagnostic configuration entries.",
+		}
+	},
+	script = {
+		default = false,
+		count = 0,
+		desc = {
+			name = "script",
+			summary = "Skip interactive prompts.",
 		}
 	},
 	debug = {
@@ -198,8 +206,9 @@ local options = setmetatable({
 -- itself, and then generate the __flags table once
 options.__flags.short = {
 	f = options.features,
-	s = options.system,
+	t = options.system,
 	d = options.debug,
+	s = options.script,
 }
 options.__flags.long = { }
 

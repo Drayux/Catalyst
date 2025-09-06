@@ -5,13 +5,8 @@
 local options = require("lua.options")
 local dirload = require("lua.dirload")
 
-local contents = dirload("spec/feature")
-for k, v in pairs(contents) do
-	print(k, v)
-end
-
-function output_Usage()
-	print("USAGE: catalyst <mode> [-s system] [-f features] [-d]")
+local function output_Usage()
+	print("USAGE: catalyst <mode> [-s system] [-f features] [-d] [-s]")
 	for k, v in pairs(options) do
 		print("\n     > ", k .. " -- (default: " .. tostring(v.default) .. ")")
 		print("", v.desc.summary)
@@ -27,9 +22,8 @@ end
 
 --
 
-print("-----------------------------------")
-print(">>> CATALYST CONFIG FILE HELPER <<<")
-print("-----------------------------------")
+print("└── >>> CATALYST CONFIG HELPER")
+-- print("-----------------------------------")
 
 print("\nSelected options:")
 for k, o in pairs(options) do
@@ -37,10 +31,9 @@ for k, o in pairs(options) do
 	if val ~= false then
 		val = (type(val) == "string") and val:lower() or val
 		k = k:sub(1, 7):upper() -- Prettier formatting
-		print("     > ", k, val)
+		print(" |    >", k, val)
 	end
 end
-print("\n-----------------------------------")
 
 -- OPTIONS USAGE NOTE
 -- This isn't an perfect design. At first it was a couple different tables;
@@ -52,10 +45,96 @@ local _mode = options.mode
 local _feat = options.features
 local _system = options.system
 local _debug = options.debug
+local _script = options.script
 
 if options[_mode] == "USAGE" then
+	print("\n-----------------------------------")
 	output_Usage()
+	return
+end
+
+-- Current use case means that any other option will at least build a
+-- feature list and check the setup of those features
+
+local function features_GenerateList(spec_list)
+	local selected = {}
+	for feat, spec in pairs(spec_list) do
+		selected[feat] = false
+	end
+	return selected
+end
+
+local function features_ModifyList(selected, input_str)
+	if (not input_str) or (#input_str == 0) then
+		return true -- User is done making modifications
+	end
+
+	-- Parse the input string
+	for minus, feature in input_str:gmatch("(%-?)([%w]+)") do
+		-- TODO: Special rules for USER, SYSTEM, etc.
+		-- (not sure how exactly I want these to behave just yet)
+		if feature == "ALL" then
+			for _feature, _ in pairs(selected) do
+				selected[_feature] = true
+			end
+
+		-- NOTE: May not be intuitive, this is here mostly for symmetry
+		elseif feature == "SELECT" then
+			for _feature, _ in pairs(selected) do
+				selected[_feature] = false
+			end
+
+		else
+			if selected[feature] == nil then
+				print("Unrecognized feature: " .. feature)
+			else
+				selected[feature] = (#minus == 0)
+			end
+		end
+	end
+end
+
+local function features_ShowList(selected)
+	local _esc = string.char(27, 91)
+	local enabled_text = _esc .. "32mINSTALL" .. _esc .. "0m"
+	local disabled_text = _esc .. "31mSKIP" .. _esc .. "0m"
+
+	-- TODO: Investigate why this doesn't work
+	-- if (not selected) or (#selected == 0) then
+		-- spec/feature dir is empty (or something else broke lmao)
+		-- print("No features available to select")
+		-- return
+	-- end
+
+	print("Selected features:")
+	for feat, en in pairs(selected) do
+		print(" |    >", feat, en and enabled_text or disabled_text)
+	end
+end
+
+local spec_list = dirload("spec/feature")
+local selected = features_GenerateList(spec_list)
+
+-- Perform the initial list modification (per script argument)
+features_ModifyList(selected, options[_feat])
+
+if not options[_script] then
+	local user_response = ""
+	local first_time = true
+	repeat
+		print() -- Useless formatting
+
+		-- Prompt the user for input
+		features_ShowList(selected)
+		if first_time then -- Show extra helper prompt
+			first_time = false
+			print("Select or deselect via space-seperated list, press ENTER to accept")
+			print("(ex. SYSTEM -zsh hyprland)")
+		end
+		io.write(" └ ")
+		user_response = io.read("*l")
+	until features_ModifyList(selected, user_response)
 else
-	-- Current use case means that any other option will at least build a
-	-- feature list and check the setup of those features
+	print() -- Useless formatting
+	features_ShowList(selected)
 end
