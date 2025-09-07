@@ -2,18 +2,26 @@
 
 -- 
 
+local system = require("lua.system")
+local features = require("lua.feature")
 local options = require("lua.options")
-local dirload = require("lua.dirload")
 
+-- Exit early if bad script env
+if features.error() then
+	print(features.error())
+	return
+end
+
+-- TODO: This should move but I don't know of the best place to put it yet
 local function output_Usage()
-	print("USAGE: catalyst <mode> [-s system] [-f features] [-d] [-s]")
+	print("USAGE: catalyst <mode> [-t system] [-f features] [-d] [-s]")
 	for k, v in pairs(options) do
 		print("\n     > ", k .. " -- (default: " .. tostring(v.default) .. ")")
 		print("", v.desc.summary)
 	end
 end
 
--- Exit early if bad script input
+-- Exit early if bad script params
 if options.__error then
 	print(options.__error)
 	output_Usage()
@@ -22,10 +30,10 @@ end
 
 --
 
-print("└── >>> CATALYST CONFIG HELPER")
+print("└── >>> CATALYST CONFIG HELPER\n")
 -- print("-----------------------------------")
 
-print("\nSelected options:")
+print("Script options:")
 for k, o in pairs(options) do
 	local val = options[o]
 	if val ~= false then
@@ -34,6 +42,7 @@ for k, o in pairs(options) do
 		print(" |    >", k, val)
 	end
 end
+print() -- Useless formatting
 
 -- OPTIONS USAGE NOTE
 -- This isn't an perfect design. At first it was a couple different tables;
@@ -48,93 +57,37 @@ local _debug = options.debug
 local _script = options.script
 
 if options[_mode] == "USAGE" then
-	print("\n-----------------------------------")
+	print("-----------------------------------")
 	output_Usage()
 	return
 end
 
+-- A config target should be known for a full check/install
+-- Specifying only common config is possible by setting the target to NONE
+
+local system, system_spec = system(options[_system])
+
 -- Current use case means that any other option will at least build a
 -- feature list and check the setup of those features
 
-local function features_GenerateList(spec_list)
-	local selected = {}
-	for feat, spec in pairs(spec_list) do
-		selected[feat] = false
-	end
-	return selected
-end
-
-local function features_ModifyList(selected, input_str)
-	if (not input_str) or (#input_str == 0) then
-		return true -- User is done making modifications
-	end
-
-	-- Parse the input string
-	for minus, feature in input_str:gmatch("(%-?)([%w]+)") do
-		-- TODO: Special rules for USER, SYSTEM, etc.
-		-- (not sure how exactly I want these to behave just yet)
-		if feature == "ALL" then
-			for _feature, _ in pairs(selected) do
-				selected[_feature] = true
-			end
-
-		-- NOTE: May not be intuitive, this is here mostly for symmetry
-		elseif feature == "SELECT" then
-			for _feature, _ in pairs(selected) do
-				selected[_feature] = false
-			end
-
-		else
-			if selected[feature] == nil then
-				print("Unrecognized feature: " .. feature)
-			else
-				selected[feature] = (#minus == 0)
-			end
-		end
-	end
-end
-
-local function features_ShowList(selected)
-	local _esc = string.char(27, 91)
-	local enabled_text = _esc .. "32mINSTALL" .. _esc .. "0m"
-	local disabled_text = _esc .. "31mSKIP" .. _esc .. "0m"
-
-	-- TODO: Investigate why this doesn't work
-	-- if (not selected) or (#selected == 0) then
-		-- spec/feature dir is empty (or something else broke lmao)
-		-- print("No features available to select")
-		-- return
-	-- end
-
-	print("Selected features:")
-	for feat, en in pairs(selected) do
-		print(" |    >", feat, en and enabled_text or disabled_text)
-	end
-end
-
-local spec_list = dirload("spec/feature")
-local selected = features_GenerateList(spec_list)
-
--- Perform the initial list modification (per script argument)
-features_ModifyList(selected, options[_feat])
-
-if not options[_script] then
-	local user_response = ""
-	local first_time = true
-	repeat
-		print() -- Useless formatting
-
-		-- Prompt the user for input
-		features_ShowList(selected)
-		if first_time then -- Show extra helper prompt
-			first_time = false
-			print("Select or deselect via space-seperated list, press ENTER to accept")
-			print("(ex. SYSTEM -zsh hyprland)")
-		end
-		io.write(" └ ")
-		user_response = io.read("*l")
-	until features_ModifyList(selected, user_response)
-else
+features(options[_feat]) -- Perform the initial list modification (per script argument)
+if options[_script] then
+	features.print()
 	print() -- Useless formatting
-	features_ShowList(selected)
+else
+	-- Prompt user for modifications
+	features.interactive()
+end
+
+-- CORE "ACTUALLY DOES THE THING" LOOP
+local did_something = false -- Useless output text check
+for feat, spec in pairs(features) do
+	print("installing", feat)
+	print(spec)
+	did_something = true
+end
+
+if not did_something then
+	print("No features were selected :(")
+	return
 end

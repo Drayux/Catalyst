@@ -30,7 +30,10 @@ local options = setmetatable({
 		}
 	},
 	features = {
-		range = { ALL = 0, SELECT = 1, USER = 2, SYSTEM = 3 },
+		-- TODO: To make SYSTEM work, feature selection should go after target
+		-- system selection...there are other considerations like default to
+		-- SELECT if no system was specified.
+		range = { ALL = 0, SELECT = 1, USER = 2, ROOT = 3, SYSTEM = 4 },
 		default = "ALL", -- TODO: Consider changing to USER once kinks are worked out
 		transform = transform_EnumOption,
 		count = 1,
@@ -40,10 +43,12 @@ local options = setmetatable({
 		}
 	},
 	system = {
-		-- TODO: Consider reading these from a file
+		-- TODO: Instead of checking an enum, build possible options from the
+		-- spec/system directory (systems would become case-sensitive, would
+		-- feel more like feature selection)
 		-- Auto means try to detect the system, none means select no
 		-- system-specific config
-		range = { AUTO = 0, CATALYST = 1, CHITIN = 2, WORK = 3, NONE = 4 },
+		range = { AUTO = 0, NONE = 1, CATALYST = 2, CHITIN = 3, WORK = 4 },
 		default = "AUTO", -- 0
 		transform = transform_EnumOption,
 		count = 1,
