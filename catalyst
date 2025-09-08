@@ -30,7 +30,6 @@ end
 
 -- It is necessary to obtain the directory of the repo
 local repo_dir = os.getenv("PWD")
-assert(repo_dir, "Failed to get repo directory path")
 
 -- TODO: Consider matching os.getenv("HOME") to see if the relative path can be
 -- used instead of the absolute (i.e. replace /home/ with ~/)
@@ -38,9 +37,14 @@ assert(repo_dir, "Failed to get repo directory path")
 -- Assert that this is really the right directory
 -- TODO: No idea without testing if this works across machines
 do
-	local git_desc = io.open(repo_dir .. "/.git/description")
-	assert(git_desc:read():match("^(catalyst)$"))
-	git_desc:close()
+	local errmsg = "Failed to get repo directory path"
+	assert(repo_dir, errmsg)
+
+	local gitignore_file = io.open(repo_dir .. "/.gitignore")
+	assert(gitignore_file, errmsg)
+	assert(gitignore_file:read():match("^(#catalyst_repo_assertion)$"), errmsg)
+
+	gitignore_file:close()
 end
 
 --
@@ -97,15 +101,16 @@ end
 -- 
 
 -- CORE "ACTUALLY DOES THE THING" LOOP
+
+-- NOTE: Not the best place for this, but with regarding to implemeting copy
+-- Uninstall should assume links or sys edits always. The presence of a link
+-- makes cleanup easy. The only use case for copy is a system where I want
+-- to edit the config crazy style anyway.
+
 local did_something = false -- Useless output text check
 for feat, spec in pairs(features) do
 	print("── INSTALLING", feat)
 	local feature_dir = repo_dir .. "/" .. feat
-
-	-- NOTE: Not the best place for this, but with regarding to implemeting copy
-	-- Uninstall should assume links or sys edits always. The presence of a link
-	-- makes cleanup easy. The only use case for copy is a system where I want
-	-- to edit the config crazy style anyway.
 
 	-- Copy/link common files (copy is TODO)
 	local common_files = spec.location

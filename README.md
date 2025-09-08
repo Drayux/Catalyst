@@ -11,6 +11,11 @@ Big ol todo list:
 - System-specific overrides
 - The final solution will likely be a mix of Bash and Lua
 
+Some extra notes for the new README:
+- The "installation" works by generating a bash script: ./install (gitignored)
+ - This is so that the install command can be manually inspected first because it might use scary commands
+- Refer to spec/features/zsh as the verbose, reference spec file--the ZSH config contains a little bit of everything
+
 # About
 This repository is my attempt at a creating a comprehensive collection of everything major I've learned about linux since I dove down the rabbit hole a year ago as well as all of my configuration files, scripts, and the like.
 

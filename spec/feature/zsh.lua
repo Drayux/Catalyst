@@ -9,10 +9,11 @@ local spec = {
 		local_needs_root = false,
 	},
 
-	-- Copy/link the entire directory to this location
+	-- Copy/link the entire directory to this location (preferred for most config)
+	-- NOTE: This may be dubious if a config directory already exists
 	location = "~/.config/zsh",
 
-	-- Alternatively, copy/link selected files to these locations
+	-- Alternatively, copy/link selected entries to these locations
 	-- location = {
 		-- ["config"] = "~/.config/zsh/config",
 		-- ["profile"] = "~/.config/zsh/profile",
@@ -22,9 +23,9 @@ local spec = {
 	-- Extra helper symlinks for annoying hidden dotfiles
 	links = {
 		-- ["link_name"] = ["link_target"] (aka links and tables are one to many)
-		["~/.config/zsh/.zshrc"] = "config",
-		["~/.config/zsh/.zprofile"] = "profile",
-		["~/.config/zsh/.zlogout"] = "logout",
+		[".zshrc"] = "config",
+		[".zprofile"] = "profile",
+		[".zlogout"] = "logout",
 	},
 
 	-- Third-party soft depedencies
