@@ -14,17 +14,25 @@ local spec = {
 
 	-- Alternatively, copy/link selected files to these locations
 	-- location = {
-	--	["config"] = ["~/.config/zsh/config"],
-	--	[".zshrc"] = ["~/.config/zsh/.zshrc"],
-	--  ...
-	-- }
+		-- ["config"] = "~/.config/zsh/config",
+		-- ["profile"] = "~/.config/zsh/profile",
+		-- ...
+	-- },
+
+	-- Extra helper symlinks for annoying hidden dotfiles
+	links = {
+		-- ["link_name"] = ["link_target"] (aka links and tables are one to many)
+		["~/.config/zsh/.zshrc"] = "config",
+		["~/.config/zsh/.zprofile"] = "profile",
+		["~/.config/zsh/.zlogout"] = "logout",
+	},
 
 	-- Third-party soft depedencies
 	depends = { },
 	
 	-- Config editing scripts instead of files
 	edits = {
-		["zprofile"] = "/etc/zprofile",
+		["zprofile"] = { "/etc/zprofile", syntax = "bash" }
 	},
 
 	-- Static override files

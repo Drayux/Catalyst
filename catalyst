@@ -28,10 +28,25 @@ if options.__error then
 	return
 end
 
+-- It is necessary to obtain the directory of the repo
+local repo_dir = os.getenv("PWD")
+assert(repo_dir, "Failed to get repo directory path")
+
+-- TODO: Consider matching os.getenv("HOME") to see if the relative path can be
+-- used instead of the absolute (i.e. replace /home/ with ~/)
+
+-- Assert that this is really the right directory
+-- TODO: No idea without testing if this works across machines
+do
+	local git_desc = io.open(repo_dir .. "/.git/description")
+	assert(git_desc:read():match("^(catalyst)$"))
+	git_desc:close()
+end
+
 --
 
 print("└── >>> CATALYST CONFIG HELPER\n")
--- print("-----------------------------------")
+-- print("───────────────────────────────────")
 
 print("Script options:")
 for k, o in pairs(options) do
@@ -57,7 +72,7 @@ local _debug = options.debug
 local _script = options.script
 
 if options[_mode] == "USAGE" then
-	print("-----------------------------------")
+	print("───────────────────────────────────")
 	output_Usage()
 	return
 end
@@ -79,11 +94,39 @@ else
 	features.interactive()
 end
 
+-- 
+
 -- CORE "ACTUALLY DOES THE THING" LOOP
 local did_something = false -- Useless output text check
 for feat, spec in pairs(features) do
-	print("installing", feat)
-	print(spec)
+	print("── INSTALLING", feat)
+	local feature_dir = repo_dir .. "/" .. feat
+
+	-- NOTE: Not the best place for this, but with regarding to implemeting copy
+	-- Uninstall should assume links or sys edits always. The presence of a link
+	-- makes cleanup easy. The only use case for copy is a system where I want
+	-- to edit the config crazy style anyway.
+
+	-- Copy/link common files (copy is TODO)
+	local common_files = spec.location
+	if type(common_files) == "string" then
+		common_files = { ["."] = common_files }
+	end
+	if type(common_files) == "table" then
+		for file, install_location in pairs(common_files) do
+			local link_target = feature_dir .. "/common/" .. file
+
+			-- While this would be a valid path, it means that a string was
+			-- empty when it should not have been
+			assert(not link_target:match("//"))
+
+			local cmd = string.format("ln -s %s %s", link_target, install_location)
+			print(cmd)
+		end
+
+
+	end
+
 	did_something = true
 end
 

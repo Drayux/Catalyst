@@ -1,3 +1,5 @@
+local dirload = require("lua.dirload")
+
 return function(initial_target)
 	local systems = dirload("spec/system")
 	local target_system = nil
