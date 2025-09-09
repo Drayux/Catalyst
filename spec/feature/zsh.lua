@@ -13,8 +13,8 @@ local spec = {
 	-- NOTE: This may be dubious if a config directory already exists
 	location = "~/.config/zsh",
 
-	-- Alternatively, copy/link selected entries to these locations
-	-- location = {
+	-- If specified, copy/link only the entries listed
+	-- files = {
 		-- ["config"] = "~/.config/zsh/config",
 		-- ["profile"] = "~/.config/zsh/profile",
 		-- ...
@@ -29,6 +29,7 @@ local spec = {
 	},
 
 	-- Third-party soft depedencies
+	-- (reqs folder because I hate when multiple directories begin with the same letter)
 	depends = { },
 	
 	-- Config editing scripts instead of files

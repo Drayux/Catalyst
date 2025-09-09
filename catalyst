@@ -1,5 +1,8 @@
 #!/bin/lua
 
+-- This is cursed but it (probably) guarantees the correct path--not sure if I want to use it
+-- #!/usr/bin/env -S sh -c 'RP="$(realpath "$0")"; cd "$(dirname "$RP")"; exec /bin/lua "$RP"'
+
 -- 
 
 local system = require("lua.system")
@@ -16,7 +19,7 @@ end
 local function output_Usage()
 	print("USAGE: catalyst <mode> [-t system] [-f features] [-d] [-s]")
 	for k, v in pairs(options) do
-		print("\n     > ", k .. " -- (default: " .. tostring(v.default) .. ")")
+		print("\n     * ", k .. " -- (default: " .. tostring(v.default) .. ")")
 		print("", v.desc.summary)
 	end
 end
@@ -35,7 +38,6 @@ local repo_dir = os.getenv("PWD")
 -- used instead of the absolute (i.e. replace /home/ with ~/)
 
 -- Assert that this is really the right directory
--- TODO: No idea without testing if this works across machines
 do
 	local errmsg = "Failed to get repo directory path"
 	assert(repo_dir, errmsg)
@@ -102,7 +104,7 @@ end
 
 -- CORE "ACTUALLY DOES THE THING" LOOP
 
--- NOTE: Not the best place for this, but with regarding to implemeting copy
+-- NOTE: Not the best place for this, but with regarding to implementing copy
 -- Uninstall should assume links or sys edits always. The presence of a link
 -- makes cleanup easy. The only use case for copy is a system where I want
 -- to edit the config crazy style anyway.
