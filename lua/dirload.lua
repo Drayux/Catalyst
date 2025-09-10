@@ -4,6 +4,8 @@
 -- Require all .lua files from a given directory.
 -- Does not traverse directories inside of directories.
 
+-- TODO: This is quite similar to the API of filesystem.lua...
+-- It might be worth replacing this call with one from that module?
 local function get_directory_items(path)
 	-- Original dirload used love2d/luafilesystem, neither of which we would
 	-- expect to have installed this early. Thus, we use bash instead.

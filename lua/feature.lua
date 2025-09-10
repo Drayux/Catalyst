@@ -55,14 +55,14 @@ local function features_ModifyList(self, input_str)
 end
 
 -- Pretty formats the selected feature list for CLI output
-local function features_ShowList(self)
+local function features_OutputList(self)
 	local _esc = string.char(27, 91)
 	local enabled_text = _esc .. "32mINSTALL" .. _esc .. "0m"
 	local disabled_text = _esc .. "31mSKIP" .. _esc .. "0m"
 
 	print("Selected features:")
 	for feat, en in pairs(self.selected) do
-		print(" |    >", feat, en and enabled_text or disabled_text)
+		print(" │    >", feat, en and enabled_text or disabled_text)
 	end
 end
 
@@ -79,7 +79,7 @@ local features = {
 
 	GenerateList = features_GenerateList,
 	ModifyList = features_ModifyList,
-	ShowList = features_ShowList,
+	OutputList = features_OutputList,
 }
 -- Do some work when the module is first loaded
 features:GenerateList()
@@ -95,11 +95,11 @@ local module = setmetatable({
 		local first_time = true
 		repeat
 			-- Prompt the user for input
-			features:ShowList(selected)
+			features:OutputList(selected)
 			if first_time then -- Show extra helper prompt
 				first_time = false
-				print(" | Select or deselect via space-seperated list, press ENTER to accept")
-				print(" | (ex. SYSTEM -zsh hyprland)")
+				print(" │ Select or deselect via space-seperated list, press ENTER to accept")
+				print(" │ (ex. SYSTEM -zsh hyprland)")
 			end
 			io.write(" └ ")
 			user_response = io.read("*l")
@@ -107,7 +107,7 @@ local module = setmetatable({
 		until features:ModifyList(user_response)
 	end,
 	print = function()
-		features:ShowList()
+		features:OutputList()
 	end,
 	error = function()
 		return errormsg
