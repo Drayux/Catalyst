@@ -5,75 +5,37 @@
 -- per invocation of this script. That known, this logic would otherwise be
 -- well-suited for repurpose in an object-oriented architecture.
 
+local module = {}
+
 local user_home = os.getenv("HOME")
 -- Ensure $HOME is defined; Home path will always be at least `/home` on any of
 -- my systems, hence I assert at least that many characters
 assert((type(user_home) == "string") and (#user_home >= 5))
 
-local _filetree = {} -- Filesystem data ref
--- Some test "filesystems"
--- local _filetree = {
-	-- cupcakes = {
-		-- dog_toes = "tasty.txt",
-		-- socks_in_mouth = "also_tasty.txt",
-		-- waterfall = {
-			-- riverbed = "double_tree.tar.gz"
-		-- },
-		-- hamburger = {
-			-- mouth = "goated",
-			-- ass = "silly",
-		-- }
-	-- },
-	-- eggplant = {},
-	-- headphone = {
-		-- big_headphone = {
-			-- sennheiser = "expensive",
-			-- beyerdynamic = "bad_build_quality",
-		-- }
-	-- },
-	-- sausage = "egg_mcmuffin.exe",
--- }
--- local _filetree = {
-	-- recipes = {
-		-- rice_and_beans = true,
-		-- banana_bread = true,
-		-- bacon_and_eggs = true,
-	-- },
-	-- furry_art = {
-		-- ["dog1.png"] = true,
-		-- ["dog2.png"] = true,
-		-- ["dog3.png"] = true,
-		-- ["dog4.png"] = true,
-		-- ["dog5.png"] = true,
-	-- }
--- }
-local _api = {
-	-- TODO: These functions are specifically for the tree but we might want
-	-- to include some generic "utils" functions as well (like path_IsAbsolute)
-	-- TODO (also): Improve the closure on _filetree with these functions
-	print = function() tree_OutputTree(_filetree) end,
-	link = function(l, t) tree_InsertLink(_filetree, l, t) end,
-}
+local _api = {}
+local _data = {} -- Filesystem raw data
 
-local function tree_InsertLink(link, target)
-end
-
-local function path_IsAbsolute(path)
+function _api.IsAbsolute(path)
 	if type(path) ~= "string" then
 		return false
 	end
 	return path:match("^[/~]") and true or false
 end
 
-local function tree_OutputTree(ft)
+-- FILESYSTEM API --
+
+function _api.addLink(self, link, target)
+	assert(self == module, "Improper use of filesystem API (invoke as object with `:`)")
+end
+
+function _api.printTree(self)
+	assert(self == module, "Improper use of filesystem API (invoke as object with `:`)")
+
 	local output = {}
 	local indent_inc = " │ "
 	local indent_fin = " └ "
 	local indent_alt = "   "
 
-	-- Worker subroutine
-	-- Called for each directory - each directory responsible for outputting itself,
-	--   queuing its subdirectories, and outputting the files it contains
 	-- > out: reference to the output table (will be merged with table.concat)
 	-- > dirname: Name of directory being called (else it would only know its children)
 	-- > contents: List of directory children (aka files/links per actual use case)
@@ -107,6 +69,7 @@ local function tree_OutputTree(ft)
 		-- local end_str = (num_items > 0) and "/\n" or "/ <empty>\n"
 		local end_str = "/\n"
 
+		-- Each directory responsible for outputting self
 		table.insert(_out, indent .. _dirname .. end_str)
 		local new_indent = (alt or indent) .. indent_inc
 
@@ -146,18 +109,14 @@ local function tree_OutputTree(ft)
 		end
 	end
 
-	_worker(output, "(root) ", ft, "", nil)
+	_worker(output, "(root) ", _data, "", nil)
 	print(table.concat(output))
 end
 
-local module = setmetatable({}, {
+return setmetatable(module, {
 	__index = _api,
 	-- Trivial read-only
 	__newindex = function()
 		error("Filetree module is read-only")
 	end
 })
-
-module:print()
-
-return module
