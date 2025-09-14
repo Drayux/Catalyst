@@ -10,6 +10,11 @@ Big ol todo list:
 - Some configuration has dependencies, and I want to provide checks if those seem to be met (i.e. ZSH config and starship)
 - System-specific overrides
 - The final solution will likely be a mix of Bash and Lua
+---
+Had a thought regarding the system spec:
+- Allow system names to be specified as a feature selection keyword (i.e. KOKORO (itg pc) -> nvim, weston (+login scripts))
+- Specify overrides via selecting a system via the options; this will also preset the selected features
+- Thus the selected features option becomes an override to this behavior
 
 Some extra notes for the new README:
 - The "installation" works by generating a bash script: ./install (gitignored)

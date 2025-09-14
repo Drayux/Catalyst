@@ -4,8 +4,10 @@ local spec = {
 	-- hate when multiple directories begin with the same letter)
 	depends = { },
 	opts = {
+		install_target = "~/.config/zsh", -- Root of target install location
+		-- feature_config = "dotfiles/zsh/config", -- Override if defined (should be rare)
+
 		prefer_link = true,
-		config_root = "~/.config/zsh", -- Root of target install location
 
 		-- TODO: Considering something about needing privilege escallation?
 		-- Something like this though, we'll likely only need it once per system
@@ -14,16 +16,16 @@ local spec = {
 	},
 
 	-- If specified, copy/link only files here for higher granularity
-	files = { "config", "profile", "logout", --[[ ... ]] }
+	files = { "config", "profile", "logout", --[[ ... ]] },
 	-- files = {
-		-- ["alt_zsh_config"] = "", -- Target: $config_root/alt_zsh_config
-		-- ["alt_zsh_config_2"] = "$config_root", -- Target: $config_root/alt_zsh_config_2
+		-- ["alt_zsh_config"] = "", -- Target: $install_target/alt_zsh_config
+		-- ["alt_zsh_config_2"] = "$install_target", -- Target: $install_target/alt_zsh_config_2
 		-- ["crazy_zsh_config"] = "~/.config/zsh_crazy_style",
 		-- ... },
 	-- TODO: The above is not yet implemented, still working out the details
 	-- I think I am mostly content with putting in some hard rules:
 	-- * If files tbl is present, then config_root will be generated as a folder ALWAYS
-	-- * Any ipairs values have install targets: $config_root/$value (source assumed $feature/config/$value)
+	-- * Any ipairs values have install targets: $install_target/$value (source assumed $feature/config/$value)
 	-- * Directories will have contents globbed - therefore setting the target to "" will glob files into the config root (good thing!)
 	-- > Therefore 'simulating' the target directory not existing; consider `mv foo/ baz/; mv bar/ baz/`
 	-- > This results in baz/foo-a.txt, baz/foo-b.txt, baz/bar/bar-a.txt, ... (bad thing!)

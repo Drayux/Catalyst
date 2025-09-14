@@ -1,11 +1,31 @@
 -- Represent an arbitrary filesystem with lua tables
 -- This can be used to track directory merges and file conflicts
 
+-- NOTE: This is not meant to be a recreation of the global filesystem. This
+-- structure is used to prepare the selected feature configs for installation;
+-- used to check for conflicts and determine what directories to create.
+
 -- NOTE: Currently defined as a singleton since only one instance will be used
 -- per invocation of this script. That known, this logic would otherwise be
 -- well-suited for repurpose in an object-oriented architecture.
 
-local module = {}
+-- It is necessary to obtain the directory of the repo
+local repo_dir = os.getenv("PWD")
+
+-- Assert that this is really the right directory
+do
+	local errmsg = "Failed to get repo directory path"
+	assert(repo_dir, errmsg)
+
+	local gitignore_file = io.open(repo_dir .. "/.gitignore")
+	assert(gitignore_file, errmsg)
+	assert(gitignore_file:read():match("^(#catalyst_repo_assertion)$"), errmsg)
+
+	gitignore_file:close()
+end
+
+-- TODO: Consider matching os.getenv("HOME") to see if the relative path can be
+-- used instead of the absolute (i.e. replace /home/ with ~/)
 
 local user_home = os.getenv("HOME")
 -- Ensure $HOME is defined; Home path will always be at least `/home` on any of
@@ -15,21 +35,108 @@ assert((type(user_home) == "string") and (#user_home >= 5))
 local _api = {}
 local _data = {} -- Filesystem raw data
 
-function _api.IsAbsolute(path)
-	if type(path) ~= "string" then
-		return false
+function _api.path_GetScriptDir()
+	return repo_dir
+end
+
+function _api.path_GetHomeDir()
+	return user_home
+end
+
+-- Convert a relative path to an absolute one
+function _api.path_ConvertAbsolute(path)
+	-- TODO maybe delete?
+end
+
+-- TODO: What if spec leaves config_root empty or with a rel path?
+-- I think I got some names swapped at some point...
+-- Config files should rel path to the repo dotfiles location
+-- Only symlinks care about the config_root path, which is handled by OS
+local rel_path_lut = setmetatable({
+	["~"] = user_home,
+	["."] = "$feature_config",
+}, {
+	__index = function(_, path)
+		return "$feature_config/" .. (path or "")
 	end
-	return path:match("^[/~]") and true or false
+})
+function _api.path_Split(path, lut)
+	path = path or "."
+
+	local splits = {}
+	local accept_index = 0
+
+	local splitter; splitter = function(_path, start, depth)
+		if (depth > 5) then
+			error("Path split maximum varpath recursion depth reached")
+		end
+
+		-- Start is true whenever the beginning of a path is used as input
+		-- This allows for relative path lookup
+		if start then
+			local path_start, path_end = _path:match("^([^/]+)(.-)$")
+			if path_start then
+				local varpath = path_start:match("^%$(.*)$")
+				if varpath and not lut then
+					-- Edge case handling: don't resolve relative varpath
+					_path = "/" .. _path
+				else
+					if varpath then
+						path_start = lut[varpath]()
+					else
+						path_start = rel_path_lut[path_start]
+					end
+
+					splitter(path_start, true, depth + 1)
+					_path = path_end
+				end
+			end
+		end
+
+		-- By this point, we assert that any path segment is absolute
+		if _path then
+			for segment in _path:gmatch("/+([^/]+)") do
+				local varpath = segment:match("^%$(.*)$")
+				if varpath and lut then
+					segment = lut[varpath]()
+					-- TODO: Might be a "prettier" solution, but TLDR we want
+					-- to restore the slash that was plucked off just earlier
+					splitter("/" .. segment, false, depth + 1)
+				elseif segment == "." then
+					-- Ignore
+				elseif segment == ".." then
+					accept_index = accept_index - 1
+					assert(accept_index >= 0, "Unable to specify parent of root directory")
+
+					print("Warning: It is advisable to avoid ../ in spec install paths")
+				else
+					accept_index = accept_index + 1
+					splits[accept_index] = segment
+					-- print(segment)
+				end
+			end
+		end
+	end
+
+	splitter(path, true, 1)
+	-- Ensure that ipairs will stop when expected (if ../ was used)
+	splits[accept_index + 1] = nil
+
+	return splits
 end
 
 -- FILESYSTEM API --
+local filesystem = {}
 
-function _api.addLink(self, link, target)
-	assert(self == module, "Improper use of filesystem API (invoke as object with `:`)")
+function _api.AddLink(self, link, target)
+	assert(self == filesystem, "Improper use of filesystem API (invoke as object with `:`)")
+
+	local path, name = self.path_Split(link)
 end
 
-function _api.printTree(self)
-	assert(self == module, "Improper use of filesystem API (invoke as object with `:`)")
+-- Pretty output of the target filesystem
+function _api.Print(self)
+	assert(self == filesystem, "Improper use of filesystem API (invoke as object with `:`)")
 
 	local output = {}
 	local indent_inc = " │ "
@@ -109,11 +216,11 @@ function _api.printTree(self)
 		end
 	end
 
-	_worker(output, "(root) ", _data, "", nil)
+	_worker(output, "<<<root>>>", _data, "", nil)
 	print(table.concat(output))
 end
 
-return setmetatable(module, {
+return setmetatable(filesystem, {
 	__index = _api,
 	-- Trivial read-only
 	__newindex = function()

@@ -19,7 +19,7 @@ local options = setmetatable({
 		-- desc.name: Usage info - name of option
 		-- desc.summary: Usage info - brief summary of option
 	mode = {
-		range = { USAGE = 0, INSTALL = 1, CHECK = 2 },
+		range = { USAGE = 0, INSTALL = 1, CHECK = 2, TEST = 3 },
 		default = "USAGE", -- 0
 		transform = transform_EnumOption,
 		count = 1,

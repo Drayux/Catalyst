@@ -31,24 +31,6 @@ if options.__error then
 	return
 end
 
--- It is necessary to obtain the directory of the repo
-local repo_dir = os.getenv("PWD")
-
--- TODO: Consider matching os.getenv("HOME") to see if the relative path can be
--- used instead of the absolute (i.e. replace /home/ with ~/)
-
--- Assert that this is really the right directory
-do
-	local errmsg = "Failed to get repo directory path"
-	assert(repo_dir, errmsg)
-
-	local gitignore_file = io.open(repo_dir .. "/.gitignore")
-	assert(gitignore_file, errmsg)
-	assert(gitignore_file:read():match("^(#catalyst_repo_assertion)$"), errmsg)
-
-	gitignore_file:close()
-end
-
 --
 
 print("└── >>> CATALYST CONFIG HELPER\n")
@@ -60,7 +42,7 @@ for k, o in pairs(options) do
 	if val ~= false then
 		val = (type(val) == "string") and val:lower() or val
 		k = k:sub(1, 7):upper() -- Prettier formatting
-		print(" |    >", k, val)
+		print(" │    >", k, val)
 	end
 end
 print() -- Useless formatting
@@ -80,6 +62,9 @@ local _script = options.script
 if options[_mode] == "USAGE" then
 	print("───────────────────────────────────")
 	output_Usage()
+	return
+elseif options[_mode] == "TEST" then
+	require("lua.test")
 	return
 end
 

@@ -75,11 +75,14 @@ local function dirload(path, opts)
 			end
 
 			if err then
-				print(string.format("Error loading \"%s\": %s", module, err))
 				if opts.on_error then
-					opts.on_error(module, path)
+					content = opts.on_error(module, path, err)
+				else
+					print(string.format("Error loading \"%s\": %s", module, err))
 				end
-			else
+			end
+
+			if content ~= nil then
 				index[module] = content
 			end
 		end
