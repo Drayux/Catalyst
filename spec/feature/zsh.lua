@@ -5,7 +5,7 @@ local spec = {
 	depends = { },
 	opts = {
 		install_target = "~/.config/zsh", -- Root of target install location
-		-- feature_config = "$feature_root/config", -- Override if defined (should be rare, must be abs path)
+		-- feature_config = "$feature_root/config", -- Override if defined (should be rare; must be abs path)
 
 		prefer_link = true,
 
@@ -15,29 +15,39 @@ local spec = {
 		local_needs_su = false,
 	},
 
-	-- If specified, copy/link only files here for higher granularity
-	files = { "config", "profile", "logout", --[[ ... ]] },
+	-- FILES TABLE RULES:
+	-- * If present, install target always assumed to be a directory
+	-- ** Thus $install_target will be generated as a dir;
+	-- ** Else a symlink to $feature_config will be installed with the name $install_target
+	-- * If $feature_config/$file is actually a directory
+	-- ** Its contents will be (globbed and) installed to the install target (still a directory)
+	-- ** > The reason for this design is to eliminate a race condition/config order conflict
+	-- ** > Consider `mv foo/ baz/; mv bar/ baz/`;
+	-- ** > This results in baz/foo-a.txt, baz/foo-b.txt, baz/bar/bar-a.txt, ...
+
+	-- * 'ipairs $values' will install to: $install_target/$value (link target: $feature_config/$value)
+	-- ** I.E. for profile below: ~/.config/zsh/profile --> $feature_config/profile
+	files = { "profile", "config", "logout", --[[ ... ]] },
+
+	-- * $key:$value pairs mapped as: $value/$key (link) targets [$feature_config/]$key
+	-- ** > Essentially for any key, the value is necessarily a directory
 	-- files = {
-		-- All (link) would install to: $install_target/alt_zsh_config_X (same name)
-		-- ["alt_zsh_config_1"] = "", 
-		-- ["alt_zsh_config_2"] = true,
-		-- ["alt_zsh_config_3"] = "$install_target",
+		-- All (links) would install to: $install_target/alt_zsh_config_X (same name)
+		-- ["alt_zsh_config_1"] = "$install_target",
+		-- ["alt_zsh_config_2"] = ".", 
+		-- ["alt_zsh_config_3"] = true,
 		--
-		-- ["path_overrides"] = "~/.config/crazy_style",  -- ~/.config/crazy_style/path_overrides
+		-- ["explicit_path"] = "~/.config/crazy_style",  -- ~/.config/crazy_style/explicit_path
 		-- ["folder_config"] = "~/.config/",              -- ~/.config/entry_1, ~/.config/entry_2, ...
-		-- 
+		-- ["bad_target"] = "", -- (Throws error)
+		--
+		-- One can specify a rename with the following value format
 		-- ["rename_me"] = { "$xdg_config", "new_name" }, -- ~/.config/new_name
+		-- ["bad_rename"] = { "$xdg_config", "" }, -- (Throws error)
 		-- ... },
-	-- TODO: The above is not yet implemented, still working out the details
-	-- I think I am mostly content with putting in some hard rules:
-	-- * If files tbl is present, then config_root will be generated as a folder ALWAYS
-	-- * Any ipairs values have install targets: $install_target/$value (source assumed $feature/config/$value)
-	-- * Directories will have contents globbed - therefore setting the target to "" will glob files into the config root (good thing!)
-	-- > Therefore 'simulating' the target directory not existing; consider `mv foo/ baz/; mv bar/ baz/`
-	-- > This results in baz/foo-a.txt, baz/foo-b.txt, baz/bar/bar-a.txt, ... (bad thing!)
-	-- > This also makes reusing the same implementation for overrides inherently work intuitively!
-	-- * (Skipping recreating the thing gpkg does with specific files from directories, config should be organized better instead)
-	-- * (Considering hard-linking since we're globbing directories, else consider globbing only one layer deep -- thinking NO on the hard-links: if git does the "delete most a file, original file is a new file" thing with its diff, the entire config will break.)
+
+	-- TODO: Considering hard-linking since we're globbing directories, else consider globbing only one layer deep
+	-- ^^thinking NO on the hard-links: if git does the "delete most a file, original file is a new file" thing with its diff, the entire config will break.
 
 	-- Extra helper symlinks for annoying hidden dotfiles
 	links = {

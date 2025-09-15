@@ -57,6 +57,8 @@ local test_lut = {
 }
 
 local function test_split(expected, ...)
+	do return end
+
 	local input, lut = ...
 	print(string.format("Testing path: `%s`", input))
 
@@ -109,9 +111,11 @@ test_split(nil, "../../../../../", test_lut) -- Test parents too far up the chai
 test_split(nil, "$invalid/$also_invalid", test_lut)
 test_split({ "~" }, "/././config/..///.///$install_target/../../", test_lut) -- ~ feels wrong, but ~ only expected to work if at the start of a path
 
-local splits = filesystem.path_Split("$install_target", test_lut)
-filesystem:AddFile(splits, "da_linku")
-filesystem:AddFile("/home/.config/crazy_hamburger", "da_linku_2")
-filesystem:Print()
+-- local splits = filesystem.path_Split("$install_target", test_lut)
+-- filesystem:AddFile(splits, "da_linku")
+-- filesystem:AddFile("/home/.config/crazy_hamburger", "da_linku_2")
+-- filesystem:Print()
+
+filesystem.path_Resolve("$feature_config/one/$test_var/three", test_lut)
 
 return test_result

@@ -1,5 +1,124 @@
 local filesystem = require("lua.filesystem")
 
+--- FEATURE SPEC API ---
+-- NOTE: There are lots of ways to handle these function closures as the
+-- feature list loads a table of spec tables. This could be defined where all
+-- functionality is handled by the features object which just passes the spec
+-- as the 'self' parameter, the specs have all of the functionality, or a mix
+-- of both. Thus, the easiest line in the sand to draw is at "getters" where
+-- processing a value that might want to be saved to the spec is part of the
+-- spec API, and everything else should be handled by the feature list API.
+local spec = {}
+
+-- Varpath getters; Probably a clever way to do this general form but there's
+-- not too many of them to really worry about that yet
+function spec.GetInstallTarget(self)
+	local target = self.opts.install_target
+	if not target then
+		target = "~/.config/" .. self.feature
+		print(string.format("No install target specified for %s; assuming `%s`", self.feature, target))
+
+		-- Save the new value so we only warn once per feature
+		self.opts.install_target = target
+	end
+	return target
+end
+
+function spec.GetFeatureRoot(self)
+	local feature = self.opts.feature_root
+	if not feature then
+		feature = string.format("%s/%s", filesystem.path_GetDotfileRoot(), self.feature)
+		self.opts.feature = feature
+	end
+	return feature
+end
+
+function spec.GetFeatureConfig(self)
+	local config = self.opts.feature_config
+	if not config then
+		config = self:GetFeatureRoot() .. "/config"
+		self.opts.feature_config = config
+	end
+	return config
+end
+
+function spec.GetFeatureEdits(self)
+	local edits = self.opts.feature_edits
+	if not edits then
+		edits = self:GetFeatureRoot() .. "/edits"
+		self.opts.feature_edits = edits
+	end
+	return edits
+end
+
+function spec.GetFeatureOverrides(self)
+	local overrides = self.opts.feature_overrides
+	if not overrides then
+		overrides = self:GetFeatureRoot() .. "/overrides"
+		self.opts.feature_overrides = overrides
+	end
+	return overrides
+end
+
+-- Not my best design, so a note to my future self:
+-- I wanted to specify the values that would be returned via the object API,
+-- thus requiring the following complicated procedure to apply closures and
+-- store the generated table with the instantiated spec object.
+--
+-- The mistake I made in the initial design was not knowing what all I'd use
+-- variable paths for. Ultimately, almost every use case intends to resolve
+-- to an absolute path (aka any path will always start with / . or $)
+-- With this assumption, this design could become far simpler. While this is
+-- fully functional as defined, the definition itself is relatively unintuitive.
+local _varpath_fn_lut = {
+	install_target = spec.GetInstallTarget,
+	feature_root = spec.GetFeatureRoot,
+	feature_config = spec.GetFeatureConfig,
+	feature_edits = spec.GetFeatureEdits,
+	feature_overrides = spec.GetFeatureOverrides,
+}
+function spec.GetVarpathTable(self)
+	local lut = self.varpath_lut
+	if not lut then
+		-- TLDR: we convert $variable values to actual path entries via a lookup table.
+		-- These table values will change depending on the current spec, thus we pass a
+		-- closure to the filesystem API to get the appropriate value.
+		self.varpath_lut = setmetatable({
+			user_home = filesystem.path_GetHomeDir,
+			catalyst_root = filesystem.path_GetScriptDir,
+		}, {
+			__index = function(tbl, key)
+				local getter = _varpath_fn_lut[key]
+				if getter then
+					local _f = function()
+						return getter(self)
+					end
+					tbl[key] = _f -- Only generate a new closure once per value
+					return _f
+				else
+					error(string.format("No varpath set for $%s (feature: %s)", key, self.feature))
+				end
+			end,
+		})
+	end
+
+	return lut
+end
+
+-- Processes the config files specified by the spec
+-- (aka. each file is placed into the staging filetree)
+local function process_Files(spec)
+	local varpath_lut = spec:GetVarpathTable()
+end
+
+-- Processes spec config (call only once)
+function spec.Process(self)
+	assert(not self._processed, string.format("Feature %s has already been processed", self.feature))
+	self._processed = true
+
+	process_Files(self)
+end
+
 --- FEATURES LIST API ---
 local features = {
 	selected = nil,
@@ -74,113 +193,7 @@ function features.OutputSelectionList(self)
 end
 
 
---- FEATURE SPEC API ---
-local spec_api = {}
-
--- Varpath getters; Probably a clever way to do this general form but there's
--- not too many of them to really worry about that yet
-function spec_api.GetInstallTarget(self)
-	local target = self.opts.install_target
-	if not target then
-		target = "~/.config/" .. self.feature
-		print(string.format("No install target specified for %s; assuming `%s`", self.feature, target))
-
-		-- Save the new value so we only warn once per feature
-		self.opts.install_target = target
-	end
-	return target
-end
-
-function spec_api.GetFeatureRoot(self)
-	local feature = self.opts.feature_root
-	if not feature then
-		feature = string.format("%s/%s", filesystem.path_GetDotfileRoot(), self.feature)
-		self.opts.feature = feature
-	end
-	return feature
-end
-
-function spec_api.GetFeatureConfig(self)
-	local config = self.opts.feature_config
-	if not config then
-		config = self:GetFeatureRoot() .. "/config"
-		self.opts.feature_config = config
-	end
-	return config
-end
-
-function spec_api.GetFeatureEdits(self)
-	local edits = self.opts.feature_edits
-	if not edits then
-		edits = self:GetFeatureRoot() .. "/edits"
-		self.opts.feature_edits = edits
-	end
-	return edits
-end
-
-function spec_api.GetFeatureOverrides(self)
-	local overrides = self.opts.feature_overrides
-	if not overrides then
-		overrides = self:GetFeatureRoot() .. "/overrides"
-		self.opts.feature_overrides = overrides
-	end
-	return overrides
-end
-
--- Varpath table is perhaps more complicated than necessary
---
--- TLDR: we convert $variable values to actual path entries via a lookup table.
--- These table values will change depending on the current spec, thus we pass a
--- closure to the filesystem API to get the appropriate value.
---
--- I wanted to specify the values that would be returned via the object API,
--- thus requiring the following complicated procedure to apply closures and
--- store the generated table with the instantiated spec object.
---
--- A note to my future self:
--- The mistake I made in the initial design was not knowing what all I'd use
--- variable paths for. Ultimately, almost every use case intends to resolve
--- to an absolute path (aka any path will always start with / . or $)
--- With this assumption, this design could become far simpler. While this is
--- fully functional as defined, the defined use is relatively unintuitive.
-local _varpath_fn_lut = {
-	install_target = spec_api.GetInstallTarget,
-	feature_root = spec_api.GetFeatureRoot,
-	feature_config = spec_api.GetFeatureConfig,
-	feature_edits = spec_api.GetFeatureEdits,
-	feature_overrides = spec_api.GetFeatureOverrides,
-}
-function spec_api.GetVarpathTable(self)
-	local lut = self.varpath_lut
-	if not lut then
-		self.varpath_lut = setmetatable({
-			user_home = filesystem.path_GetHomeDir,
-			catalyst_root = filesystem.path_GetScriptDir,
-		}, {
-			__index = function(tbl, key)
-				local getter = _varpath_fn_lut[key]
-				if getter then
-					local _f = function()
-						return getter(self)
-					end
-					tbl[key] = _f -- Only generate a new closure once per value
-					return _f
-				else
-					error(string.format("No varpath set for $%s (feature: %s)", key, self.feature))
-				end
-			end,
-		})
-	end
-
-	return lut
-end
-
--- function spec_api.LinkFile(self, file, target)
--- end
-
-
---- MODULE INITIALIZATION
-
+--- MODULE API (initialization) ---
 -- Spec list is a basic map of setmetatable(spec_entry, spec_api)
 features.spec_list = (function(t, f, ...)
 	local ret = {}
@@ -188,10 +201,10 @@ features.spec_list = (function(t, f, ...)
 		ret[k] = f(v, ...)
 	end
 	return ret
-end)(require("lua.dirload")("spec/feature"), function(spec, api)
-	assert(type(spec.feature) == "string") -- Feature name must be defined
-	return setmetatable(spec, api)
-end, spec_api)
+end)(require("lua.dirload")("spec/feature"), function(_spec, _api)
+	assert(type(_spec.feature) == "string") -- Feature name must be defined
+	return setmetatable(_spec, _api)
+end, spec)
 
 -- TODO: Consider tweaking dirload such that the error message can be saved
 -- here and then output can be deferred later (doesn't really matter, just a
@@ -200,9 +213,6 @@ features:GenerateSelectionList()
 if features.feat_count == 0 then
 	features.errormsg = "No features available (is /spec/feature empty?)"
 end
-
-
---- MODULE API
 
 local module = setmetatable({
 	interactive = function()

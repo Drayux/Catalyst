@@ -131,6 +131,70 @@ function _api.path_Split(path, lut)
 	return splits
 end
 
+-- TODO: The current implementation of path_Split() both resolves and splits
+-- It does this recursively and it's really cool! But I hadn't considered that
+-- would be much more versitle to resolve and then split.
+-- Thus, this function does not translate any relative/parent paths!
+function _api.path_Resolve(path_str, lut)
+	local join_tbl = {}
+	local resolver; resolver = function(segment, depth)
+		if (depth > 5) then
+			error("Variable path resolution maximum recursion depth reached")
+		end
+
+		local pre, var, post = segment:match("^(.-)$([^/]*)(.*)$")
+
+		if not pre then
+			-- Base case (no $var matched)
+			-- NOTE: This is where I would resolve relative paths if necessary
+			-- if (#join_tbl == 0) and is_relative_path(segment) then
+			--     resolver("$feature_config", depth + 1)
+			-- end
+			table.insert(join_tbl, segment)
+			return
+		elseif #pre > 0 then
+			table.insert(join_tbl, pre)
+		end
+
+		-- Lookup varpath
+		local f_varpath = lut[var]
+		if not f_varpath then
+			-- Fallback if LUT does not raise an exception
+			print(string.format("No value for var `%s`", var))
+		else
+			local varpath = f_varpath()
+			if (#join_tbl > 0) and varpath:match("^[/~]") then
+				-- Don't stop running, but warn for a possible config mistake
+				print("Warning: absolute varpath used in middle of path")
+			end
+			resolver(varpath, depth + 1)
+		end
+
+		resolver(post, depth + 1)
+	end
+
+	resolver(path_str, 1)
+	print(table.concat(join_tbl))
+	-- return table.concat(join_tbl)
+end
+
+function _api.path_Join(path, lut)
+	if type(path) == "string" then
+		return path
+
+	elseif type(path) == "table" then
+		local join_tbl = {}
+		for _, segment in ipairs(path) do
+			table.insert(join_tbl, "/")
+			table.insert(join_tbl, segment)
+		end
+
+		assert(#join_tbl > 1, "Cannot join empty path")
+		return table.concat(join_tbl)
+	end
+	error("Cannot join nil path")
+end
+
 --
 
 
