@@ -61,7 +61,7 @@ local function test_split(expected, ...)
 	print(string.format("Testing path: `%s`", input))
 
 	local test_pass = true
-	local entry_count = 0
+	-- local entry_count = 0
 	local status, result = pcall(filesystem.path_Split, input, lut)
 	if status then
 		if not expected then
@@ -71,11 +71,12 @@ local function test_split(expected, ...)
 		else
 			for i, v in ipairs(result) do
 				print("", v)
-				entry_count = entry_count + 1
+				-- entry_count = entry_count + 1
 				test_pass = test_pass and (v == expected[i])
 			end
 
-			if #expected ~= entry_count then
+			-- if #expected ~= entry_count then
+			if #expected ~= #result then
 				test_pass = false
 			end
 		end
@@ -98,6 +99,7 @@ test_split(nil, "$test_var") -- Test relative varpath lookup with no LUT
 test_split({}, "/", test_lut) -- Test root
 test_split({ "ooga_booga" }, "/$test_var", test_lut) -- Test absolute varpath lookup
 test_split({ "test", "catalyst", "test_feature", "config", "ooga_booga" }, "$test_var", test_lut) -- Test relative varpath lookup
+test_split({ "home", ".config", "test_feature" }, "$install_target", test_lut) -- Test parent path
 
 test_split({ "ooga_booga", "ooga_booga" }, "///$test_var///$test_var", test_lut) -- Test weird path
 test_split({ "home", ".config" }, "$install_target/..", test_lut) -- Test parent path
@@ -106,5 +108,9 @@ test_split(nil, "../../../../../", test_lut) -- Test parents too far up the chai
 
 test_split(nil, "$invalid/$also_invalid", test_lut)
 test_split({ "~" }, "/././config/..///.///$install_target/../../", test_lut) -- ~ feels wrong, but ~ only expected to work if at the start of a path
+
+-- local splits = filesystem.path_Split("$install_target", test_lut)
+-- filesystem:AddFile(splits, "da_linku")
+filesystem:AddFile("/home", "da_linku")
 
 return test_result

@@ -31,7 +31,7 @@ local spec = {
 	-- > This results in baz/foo-a.txt, baz/foo-b.txt, baz/bar/bar-a.txt, ... (bad thing!)
 	-- > This also makes reusing the same implementation for overrides inherently work intuitively!
 	-- * (Skipping recreating the thing gpkg does with specific files from directories, config should be organized better instead)
-	-- * (Considering hard-linking since we're globbing directories)
+	-- * (Considering hard-linking since we're globbing directories, else consider globbing only one layer deep)
 
 	-- Extra helper symlinks for annoying hidden dotfiles
 	links = {

@@ -2,6 +2,7 @@
 
 # Artifacts
 install
+backup/
 
 # OS-level garbo
 .DS_Store

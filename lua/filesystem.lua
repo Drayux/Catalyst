@@ -24,17 +24,18 @@ do
 	gitignore_file:close()
 end
 
--- TODO: Consider matching os.getenv("HOME") to see if the relative path can be
--- used instead of the absolute (i.e. replace /home/ with ~/)
-
 local user_home = os.getenv("HOME")
 -- Ensure $HOME is defined; Home path will always be at least `/home` on any of
 -- my systems, hence I assert at least that many characters
 assert((type(user_home) == "string") and (#user_home >= 5))
 
-local _api = {}
+--
+
+
+local _api = {} -- Filesystem function interface
 local _data = {} -- Filesystem raw data
 
+-- FILESYSTEM UTILTY METHODS --
 function _api.path_GetScriptDir()
 	return repo_dir
 end
@@ -47,14 +48,6 @@ function _api.path_GetHomeDir()
 	return user_home
 end
 
--- Convert a relative path to an absolute one
-function _api.path_ConvertAbsolute(path)
-	-- TODO maybe delete?
-end
-
--- NOTE: An oversight of the current design is that (for now) feature_config
--- MUST be defined in order for relative paths to work; If not, we fallback
--- to the dotfile root directory (which makes the name somewhat misleading)
 local rel_path_lut = setmetatable({
 	["~"] = user_home,
 	["."] = "$feature_config",
@@ -66,6 +59,9 @@ local rel_path_lut = setmetatable({
 function _api.path_Split(path, lut)
 	path = path or "."
 	lut = lut or setmetatable({
+		-- NOTE: An oversight of the current design is that (for now) feature_config
+		-- MUST be defined in order for relative paths to work; If not, we fallback
+		-- to the dotfile root directory (which makes the name somewhat misleading)
 		feature_config = _api.path_GetDotfileRoot,
 	}, { __index = function(_, key)
 			error(string.format("No varpath set for $%s (fallback)", key))
@@ -109,6 +105,8 @@ function _api.path_Split(path, lut)
 				elseif segment == "." then
 					-- Ignore
 				elseif segment == ".." then
+					-- Ensure that ipairs will stop when expected (if ../ was used)
+					splits[accept_index] = nil
 					accept_index = accept_index - 1
 					assert(accept_index >= 0, "Unable to specify parent of root directory")
 
@@ -119,31 +117,57 @@ function _api.path_Split(path, lut)
 				else
 					accept_index = accept_index + 1
 					splits[accept_index] = segment
-					-- print(segment)
 				end
 			end
 		end
 	end
 
 	splitter(path, true, 1)
-	-- Ensure that ipairs will stop when expected (if ../ was used)
-	splits[accept_index + 1] = nil
-
 	return splits
 end
 
--- FILESYSTEM API --
-local filesystem = {}
+--
 
-function _api.AddLink(self, link, target)
-	assert(self == filesystem, "Improper use of filesystem API (invoke as object with `:`)")
 
-	local path, name = self.path_Split(link)
+local filesystem = {} -- Module proxy table
+
+-- FILESYSTEM INSTANCE METHODS --
+function _api.AddFile(self, install_path, target)
+	assert(self == filesystem, "Improper use of filesystem API (must invoke as object with `:`)")
+
+	local path = (type(install_path) == "table") and install_path
+		or self.path_Split(install_path)
+	local install_ptr = _data
+
+	-- Traverse the install tree or create directories as we go
+	local segment
+	local max_depth = #path
+	for depth, _segment in ipairs(path) do
+		segment = _segment
+		if depth == max_depth then
+			break
+		end
+
+		-- Create new directory if necessary, traverse filetree
+		print(segment)
+		if not install_ptr[segment] then
+			install_ptr[segment] = {}
+		end
+		install_ptr = install_ptr[segment]
+		assert(type(install_ptr) == "table", string.format("Spec conflict; `%s` already exists", install_path)))
+	end
+	assert(final_segment, string.format("Attempted to add invalid install path `%s`", install_path))
+	print("final segment", segment)
+
+	-- This is a deliberate deviation from classical unix CLI
+	-- Do not make files a child of an existing directory at that path if one exists
+	assert(not install_ptr[segment], string.format("Spec conflict; `%s` already exists", install_path))
+	install_ptr[segment] = target
 end
 
 -- Pretty output of the target filesystem
 function _api.Print(self)
-	assert(self == filesystem, "Improper use of filesystem API (invoke as object with `:`)")
+	assert(self == filesystem, "Improper use of filesystem API (must invoke as object with `:`)")
 
 	local output = {}
 	local indent_inc = " │ "
