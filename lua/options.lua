@@ -9,12 +9,53 @@ local transform_EnumOption = function(option, input)
 	error("Bad use of transform_EnumOption; option.range is not an enum table")
 end
 
+-- Some options may require additional processing (i.e. system "AUTO")
+local function process_System(initial_target)
+	local systems = require("lua.dirload")("spec/system")
+	local target_system = nil
+
+	if initial_target == "AUTO" then
+		-- Figure out what system we're installing to
+		-- NOTE: Relatively lazy heuristic, score better than a 4 for a system to
+		-- be a valid candidate
+		local best_score = 4
+		for sys, spec in pairs(systems) do
+			if type(spec.score) == "function" then
+				local score = spec.score()
+				if score > best_score then
+					best_score = score
+					target_system = sys
+				end
+			end
+		end
+
+		if target_system then
+			print("Detected " .. target_system:upper() .. " as the target system")
+		else
+			print("Target system could not be determined")
+			-- TODO: Consider prompting the user if they want to quit
+		end
+		print() -- Useless formatting
+
+	elseif initial_target ~= "NONE" then
+		-- TODO: This lower() is a side effect of the current options parsing
+		target_system = initial_target:lower()
+	end
+
+	if target_system then
+		-- return target_system, systems[target_system]
+		return systems[target_system]
+	end
+end
+
 -- Available script options
+local _data = {}
 local options = setmetatable({
 	-- <OPTION (proper name)>
 		-- range: Acceptable values (checked by valid function)
 		-- default: Default value if none specified
 		-- transform: Closure to convert raw input before validation
+		-- process: Closure to be ran when option value is requested
 		-- count: Expected number of values
 		-- desc.name: Usage info - name of option
 		-- desc.summary: Usage info - brief summary of option
@@ -51,6 +92,7 @@ local options = setmetatable({
 		range = { AUTO = 0, NONE = 1, CATALYST = 2, CHITIN = 3, WORK = 4 },
 		default = "AUTO", -- 0
 		transform = transform_EnumOption,
+		process = process_System,
 		count = 1,
 		desc = {
 			name = "system",
@@ -74,13 +116,38 @@ local options = setmetatable({
 		}
 	},
 
-	__data = {},
 	__flags = {},
 	__error = false,
+
+	-- Used exclusively at the top of a script; Don't process values yet, just
+	-- show what was parsed from the command line
+	print = function(self)
+		print("Script options:")
+		for opt_name, opt_meta in pairs(self) do
+			opt_val = _data[opt_meta] or opt_meta.default
+			if opt_val ~= false then
+				opt_name = opt_name:sub(1, 7):upper() -- Prettier formatting
+				opt_val = (type(opt_val) == "string") and opt_val:lower() or opt_val
+				print(" │    >", opt_name, opt_val)
+			end
+		end
+		print() -- Useless formatting
+	end
 }, {
 	__index = function(self, key)
 			if type(key) == "table" then
-				return self.__data[key] or key.default
+				local option_value = _data[key] or key.default
+
+				if key.process then
+					option_value = key.process(option_value)
+					_data[key] = option_value
+
+					-- NOTE: This could be changed here if I needed to run the key
+					-- process more than once
+					key.process = nil
+				end
+
+				return option_value
 			end
 		end,
 	__newindex = function(self, key, rawvalue)
@@ -102,7 +169,8 @@ local options = setmetatable({
 				self.__error = "Invalid option value: " .. (rawvalue or "<nil>")
 			else
 				-- Duplicate args will be overwritten
-				rawset(self.__data, key, value)
+				-- rawset(_data, key, value)
+				_data[key] = value
 			end
 		end,
 
@@ -111,11 +179,12 @@ local options = setmetatable({
 	__pairs = function(self)
 			local k, v
 			return function(self)
-				-- Keep looping until we find the next valid key and return it (or quit)
-				-- aka: A table member that is not preceeded with an underscore
+				-- Skip all items except for option values
+				-- aka. Tables whose names do not begin with _ and whose values are tables
 				repeat k, v = next(self, k)
-				until (k == nil)
-					or (type(k) == "string" and k:match("^[^_]+"))
+				until (k == nil) or (type(k) == "string"
+					and k:match("^[^_]+")
+					and type(v) == "table")
 
 				if k then
 					return v.desc.name, self[k]
@@ -147,7 +216,7 @@ local options = setmetatable({
 
 						-- Check if this is a boolean argument
 						if not option.valid then
-							self[option] = true -- Writes to self.__data
+							self[option] = true -- Writes to _data
 						else
 							table.insert(optqueue, option)
 						end
@@ -162,7 +231,7 @@ local options = setmetatable({
 
 							-- Check if this is a boolean argument
 							if (not option.count) or (option.count == 0) then
-								self[option] = true -- Writes to self.__data
+								self[option] = true -- Writes to _data
 							else
 								table.insert(optqueue, option)
 							end
@@ -185,7 +254,7 @@ local options = setmetatable({
 						end
 
 					else
-						self[option] = key -- Writes to self.__data, may set self.__error
+						self[option] = key -- Writes to _data, may set self.__error
 						if self.__error then
 							goto error
 						end

@@ -18,9 +18,15 @@ local spec = {
 	-- If specified, copy/link only files here for higher granularity
 	files = { "config", "profile", "logout", --[[ ... ]] },
 	-- files = {
-		-- ["alt_zsh_config"] = "", -- Target: $install_target/alt_zsh_config
-		-- ["alt_zsh_config_2"] = "$install_target", -- Target: $install_target/alt_zsh_config_2
-		-- ["crazy_zsh_config"] = "~/.config/zsh_crazy_style",
+		-- All (link) would install to: $install_target/alt_zsh_config_X (same name)
+		-- ["alt_zsh_config_1"] = "", 
+		-- ["alt_zsh_config_2"] = true,
+		-- ["alt_zsh_config_3"] = "$install_target",
+		--
+		-- ["path_overrides"] = "~/.config/crazy_style",  -- ~/.config/crazy_style/path_overrides
+		-- ["folder_config"] = "~/.config/",              -- ~/.config/entry_1, ~/.config/entry_2, ...
+		-- 
+		-- ["rename_me"] = { "$xdg_config", "new_name" }, -- ~/.config/new_name
 		-- ... },
 	-- TODO: The above is not yet implemented, still working out the details
 	-- I think I am mostly content with putting in some hard rules:
@@ -31,7 +37,7 @@ local spec = {
 	-- > This results in baz/foo-a.txt, baz/foo-b.txt, baz/bar/bar-a.txt, ... (bad thing!)
 	-- > This also makes reusing the same implementation for overrides inherently work intuitively!
 	-- * (Skipping recreating the thing gpkg does with specific files from directories, config should be organized better instead)
-	-- * (Considering hard-linking since we're globbing directories, else consider globbing only one layer deep)
+	-- * (Considering hard-linking since we're globbing directories, else consider globbing only one layer deep -- thinking NO on the hard-links: if git does the "delete most a file, original file is a new file" thing with its diff, the entire config will break.)
 
 	-- Extra helper symlinks for annoying hidden dotfiles
 	links = {

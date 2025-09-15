@@ -48,6 +48,11 @@ function _api.path_GetHomeDir()
 	return user_home
 end
 
+-- TODO: Considering a refactor of this
+-- I don't love that the relative paths defined here depend on varpath variables
+-- defined elsewhere. The primary fix idea is to move the relative path LUT to
+-- its own subtable in the LUT that would be provided by the feature when calling
+-- path_Split()
 local rel_path_lut = setmetatable({
 	["~"] = user_home,
 	["."] = "$feature_config",
@@ -132,11 +137,12 @@ end
 local filesystem = {} -- Module proxy table
 
 -- FILESYSTEM INSTANCE METHODS --
-function _api.AddFile(self, install_path, target)
+-- TODO: Consider asserting that install_path is already split (removing the lut function param)
+function _api.AddFile(self, install_path, link_target, lut)
 	assert(self == filesystem, "Improper use of filesystem API (must invoke as object with `:`)")
 
 	local path = (type(install_path) == "table") and install_path
-		or self.path_Split(install_path)
+		or self.path_Split(install_path, lut)
 	local install_ptr = _data
 
 	-- Traverse the install tree or create directories as we go
@@ -154,15 +160,15 @@ function _api.AddFile(self, install_path, target)
 			install_ptr[segment] = {}
 		end
 		install_ptr = install_ptr[segment]
-		assert(type(install_ptr) == "table", string.format("Spec conflict; `%s` already exists", install_path)))
+		assert(type(install_ptr) == "table", string.format("Spec conflict; `%s` already exists", install_path))
 	end
-	assert(final_segment, string.format("Attempted to add invalid install path `%s`", install_path))
+	assert(segment, string.format("Attempted to add invalid install path `%s`", install_path))
 	print("final segment", segment)
 
 	-- This is a deliberate deviation from classical unix CLI
 	-- Do not make files a child of an existing directory at that path if one exists
 	assert(not install_ptr[segment], string.format("Spec conflict; `%s` already exists", install_path))
-	install_ptr[segment] = target
+	install_ptr[segment] = link_target
 end
 
 -- Pretty output of the target filesystem
@@ -233,7 +239,7 @@ function _api.Print(self)
 			end
 		end
 
-		-- Third pass, output files -->
+		-- Third pass, output links --> targets
 		if files then
 			for _, _file in ipairs(files) do
 				if num_items == 1 then
@@ -247,7 +253,7 @@ function _api.Print(self)
 		end
 	end
 
-	_worker(output, "<<<root>>>", _data, "", nil)
+	_worker(output, "<< root >>", _data, "", nil)
 	print(table.concat(output))
 end
 

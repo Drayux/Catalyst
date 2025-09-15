@@ -5,7 +5,6 @@
 
 -- 
 
-local system = require("lua.system")
 local features = require("lua.feature")
 local options = require("lua.options")
 
@@ -35,17 +34,7 @@ end
 
 print("└── >>> CATALYST CONFIG HELPER\n")
 -- print("───────────────────────────────────")
-
-print("Script options:")
-for k, o in pairs(options) do
-	local val = options[o]
-	if val ~= false then
-		val = (type(val) == "string") and val:lower() or val
-		k = k:sub(1, 7):upper() -- Prettier formatting
-		print(" │    >", k, val)
-	end
-end
-print() -- Useless formatting
+options:print()
 
 -- OPTIONS USAGE NOTE
 -- This isn't an perfect design. At first it was a couple different tables;
@@ -54,11 +43,12 @@ print() -- Useless formatting
 -- where <option> refers to the actual name of the option (mode, system, etc.)
 
 local _mode = options.mode
-local _feat = options.features
+local _features = options.features
 local _system = options.system
 local _debug = options.debug
 local _script = options.script
 
+-- Check for early-exit modes
 if options[_mode] == "USAGE" then
 	print("───────────────────────────────────")
 	output_Usage()
@@ -70,13 +60,14 @@ end
 
 -- A config target should be known for a full check/install
 -- Specifying only common config is possible by setting the target to NONE
-
-local system, system_spec = system(options[_system])
+local system_spec = options[_system]
 
 -- Current use case means that any other option will at least build a
 -- feature list and check the setup of those features
+-- TODO: Move this to option.process (like system; line becomes the following)
+-- > local features = options[_features]
+features(options[_features]) -- Perform the initial list modification (per script argument)
 
-features(options[_feat]) -- Perform the initial list modification (per script argument)
 if options[_script] then
 	features.print()
 	print() -- Useless formatting

@@ -94,7 +94,7 @@ end
 function spec_api.GetFeatureRoot(self)
 	local feature = self.opts.feature_root
 	if not feature then
-		feature = string.format("%s/dofiles/%s", filesystem.path_GetScriptDir(), self.feature)
+		feature = string.format("%s/%s", filesystem.path_GetDotfileRoot(), self.feature)
 		self.opts.feature = feature
 	end
 	return feature
