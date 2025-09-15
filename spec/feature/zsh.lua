@@ -5,7 +5,7 @@ local spec = {
 	depends = { },
 	opts = {
 		install_target = "~/.config/zsh", -- Root of target install location
-		-- feature_config = "dotfiles/zsh/config", -- Override if defined (should be rare)
+		-- feature_config = "$feature_root/config", -- Override if defined (should be rare, must be abs path)
 
 		prefer_link = true,
 

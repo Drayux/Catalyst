@@ -43,7 +43,10 @@ assert(filesystem.path_GetHomeDir() == "/home", "Test expected home directory")
 
 local test_lut = {
 	feature_config = function()
-		return "dotfiles/test_feature/config"
+		return "$catalyst_root/test_feature/config"
+	end,
+	catalyst_root = function()
+		return "/test/catalyst"
 	end,
 	install_target = function()
 		return "~/.config/test_feature"
@@ -58,16 +61,22 @@ local function test_split(expected, ...)
 	print(string.format("Testing path: `%s`", input))
 
 	local test_pass = true
+	local entry_count = 0
 	local status, result = pcall(filesystem.path_Split, input, lut)
 	if status then
-		for i, v in ipairs(result) do
-			print("", v)
-			if expected then
+		if not expected then
+			-- Test should have reached an error
+			test_pass = false
+
+		else
+			for i, v in ipairs(result) do
+				print("", v)
+				entry_count = entry_count + 1
 				test_pass = test_pass and (v == expected[i])
-			else
-				-- Test should have reached an error
+			end
+
+			if #expected ~= entry_count then
 				test_pass = false
-				break
 			end
 		end
 	else
@@ -81,13 +90,21 @@ local function test_split(expected, ...)
 	end
 end
 
-test_split({ "$feature_config" }) -- Test nil path
+test_split({ "home", "Catalyst", "dotfiles" }) -- Test nil path (will probably fail on your computer)
 test_split({ "home", "scripts", "pancakes" }, "~/scripts/pancakes") -- Test homedir lookup (will probably fail on your computer)
-test_split(nil, "/$testvar") -- Test absolute varpath lookup with no LUT
-test_split({ "$feature_config", "$testvar" }, "$testvar") -- Test relative varpath lookup with no LUT
--- filesystem.path_Split(, test_lut)
--- filesystem.path_Split("./scripts/$test/waffles", test_lut)
--- filesystem.path_Split("/rootdir/more_pancakes", test_lut)
--- filesystem.path_Split("/$invalid/$also_invalid", test_lut)
+test_split(nil, "/$test_var") -- Test absolute varpath lookup with no LUT
+test_split(nil, "$test_var") -- Test relative varpath lookup with no LUT
+
+test_split({}, "/", test_lut) -- Test root
+test_split({ "ooga_booga" }, "/$test_var", test_lut) -- Test absolute varpath lookup
+test_split({ "test", "catalyst", "test_feature", "config", "ooga_booga" }, "$test_var", test_lut) -- Test relative varpath lookup
+
+test_split({ "ooga_booga", "ooga_booga" }, "///$test_var///$test_var", test_lut) -- Test weird path
+test_split({ "home", ".config" }, "$install_target/..", test_lut) -- Test parent path
+test_split({ "home" }, "$install_target/../..", test_lut) -- Test parent path even more
+test_split(nil, "../../../../../", test_lut) -- Test parents too far up the chain
+
+test_split(nil, "$invalid/$also_invalid", test_lut)
+test_split({ "~" }, "/././config/..///.///$install_target/../../", test_lut) -- ~ feels wrong, but ~ only expected to work if at the start of a path
 
 return test_result

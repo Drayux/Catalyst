@@ -39,6 +39,10 @@ function _api.path_GetScriptDir()
 	return repo_dir
 end
 
+function _api.path_GetDotfileRoot()
+	return repo_dir .. "/dotfiles"
+end
+
 function _api.path_GetHomeDir()
 	return user_home
 end
@@ -48,10 +52,9 @@ function _api.path_ConvertAbsolute(path)
 	-- TODO maybe delete?
 end
 
--- TODO: What if spec leaves config_root empty or with a rel path?
--- I think I got some names swapped at some point...
--- Config files should rel path to the repo dotfiles location
--- Only symlinks care about the config_root path, which is handled by OS
+-- NOTE: An oversight of the current design is that (for now) feature_config
+-- MUST be defined in order for relative paths to work; If not, we fallback
+-- to the dotfile root directory (which makes the name somewhat misleading)
 local rel_path_lut = setmetatable({
 	["~"] = user_home,
 	["."] = "$feature_config",
@@ -62,13 +65,19 @@ local rel_path_lut = setmetatable({
 })
 function _api.path_Split(path, lut)
 	path = path or "."
+	lut = lut or setmetatable({
+		feature_config = _api.path_GetDotfileRoot,
+	}, { __index = function(_, key)
+			error(string.format("No varpath set for $%s (fallback)", key))
+		end })
 
 	local splits = {}
 	local accept_index = 0
+	local parent_warning = false
 
 	local splitter; splitter = function(_path, start, depth)
 		if (depth > 5) then
-			error("Path split maximum varpath recursion depth reached")
+			error("Variable path split maximum recursion depth reached")
 		end
 
 		-- Start is true whenever the beginning of a path is used as input
@@ -77,19 +86,14 @@ function _api.path_Split(path, lut)
 			local path_start, path_end = _path:match("^([^/]+)(.-)$")
 			if path_start then
 				local varpath = path_start:match("^%$(.*)$")
-				if varpath and not lut then
-					-- Edge case handling: don't resolve relative varpath
-					_path = "/" .. _path
+				if varpath then
+					path_start = lut[varpath]()
 				else
-					if varpath then
-						path_start = lut[varpath]()
-					else
-						path_start = rel_path_lut[path_start]
-					end
-
-					splitter(path_start, true, depth + 1)
-					_path = path_end
+					path_start = rel_path_lut[path_start]
 				end
+
+				splitter(path_start, true, depth + 1)
+				_path = path_end
 			end
 		end
 
@@ -97,7 +101,7 @@ function _api.path_Split(path, lut)
 		if _path then
 			for segment in _path:gmatch("/+([^/]+)") do
 				local varpath = segment:match("^%$(.*)$")
-				if varpath and lut then
+				if varpath then
 					segment = lut[varpath]()
 					-- TODO: Might be a "prettier" solution, but TLDR we want
 					-- to restore the slash that was plucked off just earlier
@@ -108,7 +112,10 @@ function _api.path_Split(path, lut)
 					accept_index = accept_index - 1
 					assert(accept_index >= 0, "Unable to specify parent of root directory")
 
-					print("Warning: It is advisable to avoid ../ in spec install paths")
+					if not parent_warning then
+						print("Warning: It is advisable to avoid ../ in spec install paths")
+						parent_warning = true
+					end
 				else
 					accept_index = accept_index + 1
 					splits[accept_index] = segment

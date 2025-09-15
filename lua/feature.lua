@@ -128,12 +128,21 @@ function spec_api.GetFeatureOverrides(self)
 end
 
 -- Varpath table is perhaps more complicated than necessary
+--
 -- TLDR: we convert $variable values to actual path entries via a lookup table.
 -- These table values will change depending on the current spec, thus we pass a
 -- closure to the filesystem API to get the appropriate value.
+--
 -- I wanted to specify the values that would be returned via the object API,
 -- thus requiring the following complicated procedure to apply closures and
 -- store the generated table with the instantiated spec object.
+--
+-- A note to my future self:
+-- The mistake I made in the initial design was not knowing what all I'd use
+-- variable paths for. Ultimately, almost every use case intends to resolve
+-- to an absolute path (aka any path will always start with / . or $)
+-- With this assumption, this design could become far simpler. While this is
+-- fully functional as defined, the defined use is relatively unintuitive.
 local _varpath_fn_lut = {
 	install_target = spec_api.GetInstallTarget,
 	feature_root = spec_api.GetFeatureRoot,
@@ -157,9 +166,7 @@ function spec_api.GetVarpathTable(self)
 					tbl[key] = _f -- Only generate a new closure once per value
 					return _f
 				else
-					-- NOTE: An oversight of the current design in filesystem.lua is that (for
-					-- now) feature_config MUST be defined in order for relative paths to work
-					error(string.format("No varpath set for %s (feature: %s)", key, self.feature))
+					error(string.format("No varpath set for $%s (feature: %s)", key, self.feature))
 				end
 			end,
 		})
