@@ -195,6 +195,69 @@ function _api.path_Join(path, lut)
 	error("Cannot join nil path")
 end
 
+-- feature_config (path) needs to be absolute and resolved (I could add a more
+-- rigid API but I have no reason for one right now)
+-- TLDR we want to index all the entries within a feature config dir;
+-- specifically using the same relpath so the spec is trivial to index
+function _api.path_IndexFeature(feature_config)
+	assert(type(feature_config) == "string", "Feature config path must be a string")
+	assert(feature_config:match("^[/~]"), "Feature config path must be absolute")
+	assert(not feature_config:match("%$"), "Feature config path must have varpaths resolved")
+
+	local index = {}
+	local shell_handle
+
+	shell_handle = io.popen(string.format("find \"%s\" -mindepth 1 -type f", feature_config))
+	local output = shell_handle:read("*a")
+	for entry in output:gmatch(feature_config .. "/(.-)\n") do
+		-- Setting this up as an array means we loop multiple times;
+		-- but we save on memory space with big key names.
+		-- Honestly no clue which is better and I don't have the time to test it rn
+		table.insert(index, entry)
+	end
+	shell_handle:close()
+
+	return index
+end
+
+-- search for path_str in index
+-- anything that shows up after matching the start is a subpath
+-- if an exact match shows up, it's just a file
+-- boom. done. easy.
+function _api.path_GlobDir(index, path_str)
+	assert(type(index) == "table", "File index must be generated")
+	assert(type(path_str) == "string", "Path to glob must be a string")
+	assert(not path_str:match("%$"), "Path to glob must have varpaths resolved")
+
+	local result
+	local pattern = "^" .. path_str .. "/?(.-)$"
+	for _, path in ipairs(index) do
+		local subpath = path:match(pattern)
+		if subpath then
+			-- Check for exact match
+			if #subpath == 0 then
+				return path_str
+			end
+
+			result = result or {}
+			table.insert(result, subpath)
+		end
+	end
+	return result
+end
+
+-- Extract the file name from a path; used for the location of the "file" that
+-- gets "installed" (aka link that gets generated)
+-- If index is provided, assert that it really is a file and it really does exist
+function _api.path_FileName(index, path_str)
+	-- Bit of a silly reuse, but path_GlobDir does the heavy lifting
+	if index then
+		local result = _api.path_GlobDir(index, path_str)
+		assert(type(result) == "string", "No file exists at the specified path")
+	end
+	return path_str:match("^.*/(.-)$") or path_str
+end
+
 --
 
 

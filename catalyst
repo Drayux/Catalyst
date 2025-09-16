@@ -62,11 +62,12 @@ end
 -- Specifying only common config is possible by setting the target to NONE
 local system_spec = options[_system]
 
--- Current use case means that any other option will at least build a
--- feature list and check the setup of those features
+-- Current use case means that any other option will at least build a feature
+-- list and check the setup of those features
 -- TODO: Move this to option.process (like system; line becomes the following)
 -- > local features = options[_features]
 features(options[_features]) -- Perform the initial list modification (per script argument)
+features.system(system_spec) -- (see TODO above function def in feature.lua)
 
 if options[_script] then
 	features.print()

@@ -1,10 +1,10 @@
 local spec = {
-	feature = "zsh", -- Look for files in dotfiles/zsh, overrides/zsh, or scripts/zsh
+	feature = "zsh", -- Look for files in dotfiles/zsh, overrides/zsh, or scripts/zsh (TODO: Consider removing this here and setting it when the api is attached; same as we do for system spec)
 	-- Third-party soft depedencies (located in the reqs directory because I
 	-- hate when multiple directories begin with the same letter)
 	depends = { },
 	opts = {
-		install_target = "~/.config/zsh", -- Root of target install location
+		install_root = "~/.config/zsh", -- Root of target install location
 		-- feature_config = "$feature_root/config", -- Override if defined (should be rare; must be abs path)
 
 		prefer_link = true,
@@ -13,27 +13,29 @@ local spec = {
 		-- Something like this though, we'll likely only need it once per system
 		system_needs_su = true,
 		local_needs_su = false,
+		-- Also TODO: When true, feature will not be set to install with the ALL keyword
+		ignore_select_all = false,
 	},
 
 	-- FILES TABLE RULES:
 	-- * If present, install target always assumed to be a directory
 	-- ** Thus $install_target will be generated as a dir;
-	-- ** Else a symlink to $feature_config will be installed with the name $install_target
+	-- ** Else a symlink to $feature_config will be installed with the name $install_root
 	-- * If $feature_config/$file is actually a directory
 	-- ** Its contents will be (globbed and) installed to the install target (still a directory)
 	-- ** > The reason for this design is to eliminate a race condition/config order conflict
 	-- ** > Consider `mv foo/ baz/; mv bar/ baz/`;
 	-- ** > This results in baz/foo-a.txt, baz/foo-b.txt, baz/bar/bar-a.txt, ...
 
-	-- * 'ipairs $values' will install to: $install_target/$value (link target: $feature_config/$value)
+	-- * 'ipairs $values' will install to: $install_root/$value (link target: $feature_config/$value)
 	-- ** I.E. for profile below: ~/.config/zsh/profile --> $feature_config/profile
 	files = { "profile", "config", "logout", --[[ ... ]] },
 
 	-- * $key:$value pairs mapped as: $value/$key (link) targets [$feature_config/]$key
 	-- ** > Essentially for any key, the value is necessarily a directory
 	-- files = {
-		-- All (links) would install to: $install_target/alt_zsh_config_X (same name)
-		-- ["alt_zsh_config_1"] = "$install_target",
+		-- All (links) would install to: $install_root/alt_zsh_config_X (same name)
+		-- ["alt_zsh_config_1"] = "$install_root",
 		-- ["alt_zsh_config_2"] = ".", 
 		-- ["alt_zsh_config_3"] = true,
 		--
@@ -73,10 +75,10 @@ local spec = {
 		-- (Same map rules as dotfiles above)
 		work = {
 			-- files = {}, -- Overrides spec.files if defined (does not merge)
+			-- edits = {} -- Merges with spec.edits (overwrites conflicting entires)
 			overrides = { -- Merges with spec.files (overwrites conflicting entries)
 				["work"] = "~/.local/zsh/overrides",
 			}
-			-- edits = {} -- Merges with spec.edits (overwrites conflicting entires)
 		},
 	},
 }

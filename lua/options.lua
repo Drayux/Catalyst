@@ -44,7 +44,13 @@ local function process_System(initial_target)
 
 	if target_system then
 		-- return target_system, systems[target_system]
-		return systems[target_system]
+		local spec = systems[target_system]
+		spec.name = target_system
+		return spec
+	else
+		-- Don't like this; Needed to return a non-string non-nil value so that
+		-- the processed option does not fallback to "AUTO"
+		return true
 	end
 end
 

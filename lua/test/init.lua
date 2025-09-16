@@ -1,5 +1,14 @@
 local dirload = require("lua.dirload")
 
+-- Global test utility functions
+local _print = print
+function print(...)
+	-- show_output will be scoped to the test
+	if TEST_OUTPUT then
+		_print(...)
+	end
+end
+
 -- Keep track of test stats for pretty output
 local pass_count = 0
 local failure_count = 0
@@ -7,12 +16,14 @@ local total_count = 0 -- May not equal pass + fail if a test fails to run
 
 -- NOTE: This must only return one value or we may double-count a failed test
 local function test_Runner(chunk, module, path)
-	print(">>> Running test: " .. module .. " <<<")
+	TEST_OUTPUT = false -- Reset global test options
+
+	_print(">>> Running test: " .. module .. " <<<")
 
 	-- Support testing with both asserts and global return values
 	local status, ret = pcall(chunk)
 	if not status then
-		print(ret)
+		_print(ret)
 		ret = false
 	end
 
@@ -23,19 +34,19 @@ local function test_Runner(chunk, module, path)
 		pass_count = pass_count + 1
 
 	else
-		print("Test did not return boolean, assuming no failures")
+		_print("Test did not return a boolean")
 		ret = true
 	end
 
 	total_count = total_count + 1
-	print()
+	print() -- Intentional use of remapped print
 	return ret
 end
 
 local function test_Error(module, path, err)
-	print(">>> Running test: " .. module .. " <<<")
-	print("Error: " .. err)
-	print()
+	_print(">>> Running test: " .. module .. " <<<")
+	_print("Error: " .. err)
+	print() -- Intentional use of remapped print
 	failure_count = failure_count + 1
 	total_count = total_count + 1
 	return false
@@ -58,8 +69,8 @@ do
 
 	local count_str = string.format("%d / %d", pass_count, total_count)
 	local not_ran_count = total_count - pass_count - failure_count
-	print("───────────────────────────────────")
-	print("Test results: "
+	_print("───────────────────────────────────")
+	_print("Test results: "
 		.. ((failure_count > 0) and fail_text(count_str) or pass_text(count_str))
 		.. ((not_ran_count == 0) and "" or (" (not ran: " .. tostring(not_ran_count) .. ")")))
 
@@ -68,9 +79,9 @@ do
 	local fail = fail_text("FAIL")
 	for test, result in pairs(test_results) do
 		test_output = true
-		print(" │    >", test, result and pass or fail)
+		_print(" │    >", test, result and pass or fail)
 	end
 	if not test_output then
-		print("No tests ran :(")
+		_print("No tests ran :(")
 	end
 end

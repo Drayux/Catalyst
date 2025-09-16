@@ -12,14 +12,14 @@ local spec = {}
 
 -- Varpath getters; Probably a clever way to do this general form but there's
 -- not too many of them to really worry about that yet
-function spec.GetInstallTarget(self)
-	local target = self.opts.install_target
+function spec.GetInstallRoot(self)
+	local target = self.opts.install_root
 	if not target then
 		target = "~/.config/" .. self.feature
-		print(string.format("No install target specified for %s; assuming `%s`", self.feature, target))
+		print(string.format("No install location specified for %s; assuming `%s`", self.feature, target))
 
 		-- Save the new value so we only warn once per feature
-		self.opts.install_target = target
+		self.opts.install_root = target
 	end
 	return target
 end
@@ -71,7 +71,7 @@ end
 -- With this assumption, this design could become far simpler. While this is
 -- fully functional as defined, the definition itself is relatively unintuitive.
 local _varpath_fn_lut = {
-	install_target = spec.GetInstallTarget,
+	install_root = spec.GetInstallRoot,
 	feature_root = spec.GetFeatureRoot,
 	feature_config = spec.GetFeatureConfig,
 	feature_edits = spec.GetFeatureEdits,
@@ -112,11 +112,50 @@ local function process_Files(spec)
 end
 
 -- Processes spec config (call only once)
-function spec.Process(self)
+function spec.Process(self, system_name)
 	assert(not self._processed, string.format("Feature %s has already been processed", self.feature))
 	self._processed = true
 
-	process_Files(self)
+	local files = self.files
+	local links = self.links
+	local edits = self.edits
+
+	local system_ovr = system_name and self.system
+		and self.system[system_name]
+	if system_ovr then
+		-- Override spec files system_ovr.files if defined
+		files = system_ovr.files or files
+
+		-- "Merge" spec files if system_ovr.overrides if defined
+		if system_ovr.overrides then
+			files = files or {}
+			files = setmetatable(system_ovr.overrides, files)
+		end
+
+		-- "Merge" edit files if system_ovr.edits if defined
+		if system_ovr.edits then
+			edits = setmetatable(system_ovr.edits, edits)
+		end
+	end
+
+	local varpath_lut = self:GetVarpathTable()
+	local feature_config = self:GetFeatureConfig()
+	if not (files or links) then
+		-- Simple install
+		filesystem:AddFile("$install_root", feature_config, varpath_lut)
+	else
+		-- Create an index of the feature dotfiles so it is known what to glob
+		local index = filesystem.path_IndexFeature(feature_config)
+		-- TODO here: fixup ipairs entries in files
+		-- > for each entry, search for it below
+		-- > if file (string), then install
+		-- > if directory (table), then install children
+		-- > ^^Need to use path_FileName but I am too tired to think of where exactly rn
+
+		local search = filesystem.path_GlobDir(index, "test")
+	end
+
+	-- process_Files(self) -- Might not need this?
 end
 
 --- FEATURES LIST API ---
@@ -237,6 +276,17 @@ local module = setmetatable({
 	error = function()
 		return features.errormsg
 	end,
+	-- Unfortuante clash of feature/options APIs, we want to set this only
+	-- after the system_spec is ready to be retrieved from options
+	-- TODO: This should be fixable by moving the initialization call to the
+	-- option.process function (see system_spec = options[_system] in main file)
+	system = function(system_spec)
+		if features.system then
+			-- Developer error
+			error("Bad use of features_SetSystem; system spec already set")
+		end
+		features.system = system_spec
+	end
 }, {
 	__newindex = function()
 		error("Bad write to features module; module is read-only")

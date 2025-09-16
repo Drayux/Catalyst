@@ -1,6 +1,9 @@
-local filesystem = require("lua.filesystem")
+--- TEST GLOBALS ---
+TEST_OUTPUT = true
+---
 
 local test_result = true
+local filesystem = require("lua.filesystem")
 
 -- Some test "filesystems"
 -- local _data = {
@@ -57,8 +60,6 @@ local test_lut = {
 }
 
 local function test_split(expected, ...)
-	do return end
-
 	local input, lut = ...
 	print(string.format("Testing path: `%s`", input))
 
@@ -116,6 +117,21 @@ test_split({ "~" }, "/././config/..///.///$install_target/../../", test_lut) -- 
 -- filesystem:AddFile("/home/.config/crazy_hamburger", "da_linku_2")
 -- filesystem:Print()
 
-filesystem.path_Resolve("$feature_config/one/$test_var/three", test_lut)
+-- filesystem.path_Resolve("$feature_config/one/$test_var/three", test_lut)
+
+local index = filesystem.path_IndexFeature("/home/Catalyst/lua")
+print("index:")
+for _, v in ipairs(index) do
+	print(" ", v)
+end
+-- local search = filesystem.path_GlobDir(index, "test")
+-- print("search results:")
+-- for _, v in ipairs(search) do
+	-- print(" ", v)
+-- end
+-- local search = filesystem.path_GlobDir(index, "options.lua")
+local search = filesystem.path_GlobDir(index, "test/dummy/file")
+print("search result:", search)
+print(filesystem.path_FileName(index, search))
 
 return test_result

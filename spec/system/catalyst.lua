@@ -1,6 +1,7 @@
 -- >>> CATALYST SYSTEM SPEC
 
 local spec = {
+	-- name = "catalyst", -- Set by options parser
 	score = function()
 		local shell_handle = io.popen("hostname")
 		local output = shell_handle:read("*a"):match("^(catalyst)")
