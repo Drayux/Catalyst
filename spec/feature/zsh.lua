@@ -21,11 +21,12 @@ local spec = {
 	-- * If present, install target always assumed to be a directory
 	-- ** Thus $install_target will be generated as a dir;
 	-- ** Else a symlink to $feature_config will be installed with the name $install_root
-	-- * If $feature_config/$file is actually a directory
+	-- * If $feature_config/$dotfile specifies a directory
 	-- ** Its contents will be (globbed and) installed to the install target (still a directory)
 	-- ** > The reason for this design is to eliminate a race condition/config order conflict
 	-- ** > Consider `mv foo/ baz/; mv bar/ baz/`;
 	-- ** > This results in baz/foo-a.txt, baz/foo-b.txt, baz/bar/bar-a.txt, ...
+	-- ** > This also allows us to specify a directory for overrides, improving maintainability
 
 	-- * 'ipairs $values' will install to: $install_root/$value (link target: $feature_config/$value)
 	-- ** I.E. for profile below: ~/.config/zsh/profile --> $feature_config/profile
@@ -45,6 +46,7 @@ local spec = {
 		--
 		-- One can specify a rename with the following value format
 		-- ["rename_me"] = { "$xdg_config", "new_name" }, -- ~/.config/new_name
+		-- ["folder_rename"] = { "$xdg_config", "the_folder" }, -- ~/.config/the_folder/entry_X*
 		-- ["bad_rename"] = { "$xdg_config", "" }, -- (Throws error)
 		-- ... },
 

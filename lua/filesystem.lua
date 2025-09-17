@@ -48,6 +48,16 @@ function _api.path_GetHomeDir()
 	return user_home
 end
 
+function _api.path_GetXDGConfigDir()
+	print("TODO: XDG config dir")
+	return user_home .. "/.config"
+end
+
+function _api.path_GetXDGDataDir()
+	print("TODO: XDG data dir (.local)")
+	return user_home .. "/.local"
+end
+
 -- TODO: Considering a refactor of this
 -- I don't love that the relative paths defined here depend on varpath variables
 -- defined elsewhere. The primary fix idea is to move the relative path LUT to
@@ -220,11 +230,10 @@ function _api.path_IndexFeature(feature_config)
 	return index
 end
 
--- search for path_str in index
--- anything that shows up after matching the start is a subpath
--- if an exact match shows up, it's just a file
--- boom. done. easy.
-function _api.path_GlobDir(index, path_str)
+-- Search for path_str in files index
+-- returns string on exact match (path is a file)
+-- returns table of files on partial match (path is a directory)
+function _api.path_GlobPath(index, path_str)
 	assert(type(index) == "table", "File index must be generated")
 	assert(type(path_str) == "string", "Path to glob must be a string")
 	assert(not path_str:match("%$"), "Path to glob must have varpaths resolved")
@@ -232,11 +241,13 @@ function _api.path_GlobDir(index, path_str)
 	local result
 	local pattern = "^" .. path_str .. "/?(.-)$"
 	for _, path in ipairs(index) do
+		-- Anything that shows up after matching the start is a subpath;
+		-- If an exact match shows up, it's just a file
 		local subpath = path:match(pattern)
 		if subpath then
-			-- Check for exact match
+			-- The capture resolves to "" on exact path match
 			if #subpath == 0 then
-				return path_str
+				return path_str:match("^.*/(.-)$") or path_str
 			end
 
 			result = result or {}
@@ -244,18 +255,6 @@ function _api.path_GlobDir(index, path_str)
 		end
 	end
 	return result
-end
-
--- Extract the file name from a path; used for the location of the "file" that
--- gets "installed" (aka link that gets generated)
--- If index is provided, assert that it really is a file and it really does exist
-function _api.path_FileName(index, path_str)
-	-- Bit of a silly reuse, but path_GlobDir does the heavy lifting
-	if index then
-		local result = _api.path_GlobDir(index, path_str)
-		assert(type(result) == "string", "No file exists at the specified path")
-	end
-	return path_str:match("^.*/(.-)$") or path_str
 end
 
 --
@@ -268,6 +267,7 @@ local filesystem = {} -- Module proxy table
 function _api.AddFile(self, install_path, link_target, lut)
 	assert(self == filesystem, "Improper use of filesystem API (must invoke as object with `:`)")
 
+	print("adding file:", install_path, "-->", link_target)
 	local path = (type(install_path) == "table") and install_path
 		or self.path_Split(install_path, lut)
 	local install_ptr = _data
@@ -282,7 +282,6 @@ function _api.AddFile(self, install_path, link_target, lut)
 		end
 
 		-- Create new directory if necessary, traverse filetree
-		print(segment)
 		if not install_ptr[segment] then
 			install_ptr[segment] = {}
 		end
@@ -290,7 +289,6 @@ function _api.AddFile(self, install_path, link_target, lut)
 		assert(type(install_ptr) == "table", string.format("Spec conflict; `%s` already exists", install_path))
 	end
 	assert(segment, string.format("Attempted to add invalid install path `%s`", install_path))
-	print("final segment", segment)
 
 	-- This is a deliberate deviation from classical unix CLI
 	-- Do not make files a child of an existing directory at that path if one exists

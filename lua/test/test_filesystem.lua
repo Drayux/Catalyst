@@ -1,5 +1,5 @@
 --- TEST GLOBALS ---
-TEST_OUTPUT = true
+TEST_OUTPUT = false
 ---
 
 local test_result = true
@@ -119,7 +119,7 @@ test_split({ "~" }, "/././config/..///.///$install_target/../../", test_lut) -- 
 
 -- filesystem.path_Resolve("$feature_config/one/$test_var/three", test_lut)
 
-local index = filesystem.path_IndexFeature("/home/Catalyst/lua")
+local index = filesystem.path_IndexFeature(filesystem.path_GetScriptDir() .. "/lua")
 print("index:")
 for _, v in ipairs(index) do
 	print(" ", v)
@@ -130,8 +130,7 @@ end
 	-- print(" ", v)
 -- end
 -- local search = filesystem.path_GlobDir(index, "options.lua")
-local search = filesystem.path_GlobDir(index, "test/dummy/file")
+local search = filesystem.path_GlobPath(index, "test/dummy/file")
 print("search result:", search)
-print(filesystem.path_FileName(index, search))
 
 return test_result

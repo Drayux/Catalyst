@@ -86,6 +86,8 @@ function spec.GetVarpathTable(self)
 		self.varpath_lut = setmetatable({
 			user_home = filesystem.path_GetHomeDir,
 			catalyst_root = filesystem.path_GetScriptDir,
+			xdg_config = filesystem.path_GetXDGConfigDir,
+			xdg_data = filesystem.path_GetXDGDataDir,
 		}, {
 			__index = function(tbl, key)
 				local getter = _varpath_fn_lut[key]
@@ -107,14 +109,66 @@ end
 
 -- Processes the config files specified by the spec
 -- (aka. each file is placed into the staging filetree)
-local function process_Files(spec)
+local function process_Files(spec, files_list, files_index)
+	if not files_list then
+		return
+	end
+
 	local varpath_lut = spec:GetVarpathTable()
+
+	-- Fixup ipairs values to simplify later logic
+	setmetatable(files_list, {
+		__pairs = function(self)
+			local key, value
+			return function(tbl)
+				key, value = next(tbl, key)
+				if type(key) == "number" then
+					return value, "$install_root"
+				end
+				return key, value
+			end, self, nil
+		end
+	})
+
+	-- For each entry, search for it below
+	-- > if file (string), then install
+	-- > if directory (table), then install children
+	for dotfile, location in pairs(files_list) do
+		local search = filesystem.path_GlobPath(files_index, dotfile)
+		local path
+
+		if type(search) == "string" then
+			if type(location) == "table" then
+				-- TODO: Make sure that this going through AddFile
+				-- throws an error if location[2] == "" (or nil)
+				assert(#location == 2, "Rename spec must specify exactly 2 entries")
+				path = string.format("%s/%s", location[1], location[2])
+			else
+				path = string.format("%s/%s", location, dotfile)
+			end
+			filesystem:AddFile(path, feature_config, varpath_lut)
+		else
+			for _, _file in ipairs(search) do
+				if type(location) == "table" then
+					-- TODO: Make sure that this going through AddFile
+					-- throws an error if location[2] == "" (or nil)
+					assert(#location == 2, "Rename spec must specify exactly 2 entries")
+					path = string.format("%s/%s/%s", location[1], location[2], _file)
+				else
+					path = string.format("%s/%s", location, _file)
+				end
+				filesystem:AddFile(path, feature_config, varpath_lut)
+			end
+		end
+	end
 end
 
 -- Processes spec config (call only once)
 function spec.Process(self, system_name)
 	assert(not self._processed, string.format("Feature %s has already been processed", self.feature))
 	self._processed = true
+
+	local feature_config = self:GetFeatureConfig() -- Path of dotfile dir within repo
 
 	local files = self.files
 	local links = self.links
@@ -129,33 +183,31 @@ function spec.Process(self, system_name)
 		-- "Merge" spec files if system_ovr.overrides if defined
 		if system_ovr.overrides then
 			files = files or {}
-			files = setmetatable(system_ovr.overrides, files)
+			for k, v in pairs(system_ovr.overrides) do
+				files[k] = v -- Overrides table values stomp original table values
+			end
 		end
 
 		-- "Merge" edit files if system_ovr.edits if defined
 		if system_ovr.edits then
-			edits = setmetatable(system_ovr.edits, edits)
+			edits = edits or {}
+			for k, v in pairs(system_ovr.edits) do
+				files[k] = v -- Overrides table values stomp original table values
+			end
 		end
 	end
 
-	local varpath_lut = self:GetVarpathTable()
-	local feature_config = self:GetFeatureConfig()
 	if not (files or links) then
 		-- Simple install
+		local varpath_lut = self:GetVarpathTable()
 		filesystem:AddFile("$install_root", feature_config, varpath_lut)
 	else
 		-- Create an index of the feature dotfiles so it is known what to glob
 		local index = filesystem.path_IndexFeature(feature_config)
-		-- TODO here: fixup ipairs entries in files
-		-- > for each entry, search for it below
-		-- > if file (string), then install
-		-- > if directory (table), then install children
-		-- > ^^Need to use path_FileName but I am too tired to think of where exactly rn
-
-		local search = filesystem.path_GlobDir(index, "test")
+		process_Files(self, files, index)
 	end
 
-	-- process_Files(self) -- Might not need this?
+	filesystem:Print()
 end
 
 --- FEATURES LIST API ---
@@ -242,7 +294,8 @@ features.spec_list = (function(t, f, ...)
 	return ret
 end)(require("lua.dirload")("spec/feature"), function(_spec, _api)
 	assert(type(_spec.feature) == "string") -- Feature name must be defined
-	return setmetatable(_spec, _api)
+	local mt = { __index = _api }
+	return setmetatable(_spec, mt)
 end, spec)
 
 -- TODO: Consider tweaking dirload such that the error message can be saved
