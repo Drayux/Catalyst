@@ -3,46 +3,11 @@ TEST_OUTPUT = false
 ---
 
 local test_result = true
-local filesystem = require("lua.filesystem")
+local path_utils = require("lua.path")
 
--- Some test "filesystems"
--- local _data = {
-	-- cupcakes = {
-		-- dog_toes = "tasty.txt",
-		-- socks_in_mouth = "also_tasty.txt",
-		-- waterfall = {
-			-- riverbed = "double_tree.tar.gz"
-		-- },
-		-- hamburger = {
-			-- mouth = "goated",
-			-- ass = "silly",
-		-- }
-	-- },
-	-- eggplant = {},
-	-- headphone = {
-		-- big_headphone = {
-			-- sennheiser = "expensive",
-			-- beyerdynamic = "bad_build_quality",
-		-- }
-	-- },
-	-- sausage = "egg_mcmuffin.exe",
--- }
--- local _data = {
-	-- recipes = {
-		-- rice_and_beans = true,
-		-- banana_bread = true,
-		-- bacon_and_eggs = true,
-	-- },
-	-- furry_art = {
-		-- ["dog1.png"] = true,
-		-- ["dog2.png"] = true,
-		-- ["dog3.png"] = true,
-		-- ["dog4.png"] = true,
-		-- ["dog5.png"] = true,
-	-- }
--- }
+---
 
-assert(filesystem.path_GetHomeDir() == "/home", "Test expected home directory")
+assert(path_utils.path_GetHomeDir() == "/home", "Test expected home directory")
 
 local test_lut = {
 	feature_config = function()
@@ -65,7 +30,7 @@ local function test_split(expected, ...)
 
 	local test_pass = true
 	-- local entry_count = 0
-	local status, result = pcall(filesystem.path_Split, input, lut)
+	local status, result = pcall(path_utils.path_Split, input, lut)
 	if status then
 		if not expected then
 			-- Test should have reached an error
@@ -94,6 +59,9 @@ local function test_split(expected, ...)
 	end
 end
 
+
+-- Test path splitting
+
 test_split({ "home", "Catalyst", "dotfiles" }) -- Test nil path (will probably fail on your computer)
 test_split({ "home", "scripts", "pancakes" }, "~/scripts/pancakes") -- Test homedir lookup (will probably fail on your computer)
 test_split(nil, "/$test_var") -- Test absolute varpath lookup with no LUT
@@ -112,25 +80,19 @@ test_split(nil, "../../../../../", test_lut) -- Test parents too far up the chai
 test_split(nil, "$invalid/$also_invalid", test_lut)
 test_split({ "~" }, "/././config/..///.///$install_target/../../", test_lut) -- ~ feels wrong, but ~ only expected to work if at the start of a path
 
--- local splits = filesystem.path_Split("$install_target", test_lut)
--- filesystem:AddFile(splits, "da_linku")
--- filesystem:AddFile("/home/.config/crazy_hamburger", "da_linku_2")
--- filesystem:Print()
 
--- filesystem.path_Resolve("$feature_config/one/$test_var/three", test_lut)
+-- Development shenanigans
 
-local index = filesystem.path_IndexFeature(filesystem.path_GetScriptDir() .. "/lua")
+path_utils.path_Resolve("$feature_config/one/$test_var/three", test_lut)
+
+local index = path_utils.path_IndexFeature(path_utils.path_GetScriptDir() .. "/lua")
 print("index:")
 for _, v in ipairs(index) do
 	print(" ", v)
 end
--- local search = filesystem.path_GlobDir(index, "test")
--- print("search results:")
--- for _, v in ipairs(search) do
-	-- print(" ", v)
--- end
--- local search = filesystem.path_GlobDir(index, "options.lua")
-local search = filesystem.path_GlobPath(index, "test/dummy/file")
+local search = path_utils.path_GlobPath(index, "test/dummy/file")
 print("search result:", search)
+
+---
 
 return test_result

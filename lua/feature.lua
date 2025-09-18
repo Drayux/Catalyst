@@ -1,4 +1,5 @@
-local filesystem = require("lua.filesystem")
+local path_utils = require("lua.path")
+local staging = require("lua.staging")
 
 --- FEATURE SPEC API ---
 -- NOTE: There are lots of ways to handle these function closures as the
@@ -27,7 +28,7 @@ end
 function spec.GetFeatureRoot(self)
 	local feature = self.opts.feature_root
 	if not feature then
-		feature = string.format("%s/%s", filesystem.path_GetDotfileRoot(), self.feature)
+		feature = string.format("%s/%s", path_utils.path_GetDotfileRoot(), self.feature)
 		self.opts.feature = feature
 	end
 	return feature
@@ -83,10 +84,10 @@ function spec.GetVarpathTable(self)
 		-- These table values will change depending on the current spec, thus we pass a
 		-- closure to the filesystem API to get the appropriate value.
 		self.varpath_lut = setmetatable({
-			user_home = filesystem.path_GetHomeDir,
-			catalyst_root = filesystem.path_GetScriptDir,
-			xdg_config = filesystem.path_GetXDGConfigDir,
-			xdg_data = filesystem.path_GetXDGDataDir,
+			user_home = path_utils.path_GetHomeDir,
+			catalyst_root = path_utils.path_GetScriptDir,
+			xdg_config = path_utils.path_GetXDGConfigDir,
+			xdg_data = path_utils.path_GetXDGDataDir,
 		}, {
 			__index = function(tbl, key)
 				local getter = _varpath_fn_lut[key]
@@ -134,14 +135,14 @@ local function spec_ProcessFiles(spec, files)
 	local feature_config = spec:GetFeatureConfig() -- Path of dotfile dir within repo
 
 	-- Index the feature dotfiles for globbing
-	local index = filesystem.path_IndexFeature(feature_config)
+	local index = path_utils.path_IndexFeature(feature_config)
 
 	-- For each entry, search for it below
 	-- > if file (string), then install
 	-- > if directory (table), then install children
 	for dotfile, location in pairs(files) do
 		print("adding file:", location, "-->", dotfile)
-		local search = filesystem.path_GlobPath(index, dotfile)
+		local search = path_utils.path_GlobPath(index, dotfile)
 		local install_path
 
 		if type(search) == "string" then
@@ -157,7 +158,7 @@ local function spec_ProcessFiles(spec, files)
 
 			-- Resolve dotfile (link) path
 			local source_path = string.format("%s/%s", feature_config, dotfile)
-			filesystem:AddFile(install_path, source_path, varpath_lut)
+			staging:AddFile(install_path, source_path, varpath_lut)
 		else
 			for _, _file in ipairs(search) do
 				-- Resolve install path
@@ -172,7 +173,7 @@ local function spec_ProcessFiles(spec, files)
 
 				-- Resolve dotfile (link) path
 				local source_path = string.format("%s/%s", feature_config, dotfile)
-				filesystem:AddFile(install_path, source_path, varpath_lut)
+				staging:AddFile(install_path, source_path, varpath_lut)
 			end
 		end
 	end
@@ -212,13 +213,13 @@ function spec.Process(self, system_name)
 
 	if not (files or links) then
 		-- Simple install; symlink to root
-		filesystem:AddFile("$install_root", self:GetFeatureConfig(), self:GetVarpathTable())
+		staging:AddFile("$install_root", self:GetFeatureConfig(), self:GetVarpathTable())
 	else
 		spec_ProcessFiles(self, files)
 		-- spec_ProcessLinks(self, links)
 	end
 
-	filesystem:Print()
+	staging:Print()
 end
 
 --- FEATURES LIST API ---
