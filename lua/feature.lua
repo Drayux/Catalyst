@@ -78,8 +78,7 @@ local _varpath_fn_lut = {
 	feature_overrides = spec.GetFeatureOverrides,
 }
 function spec.GetVarpathTable(self)
-	local lut = self.varpath_lut
-	if not lut then
+	if not self.varpath_lut then
 		-- TLDR: we convert $variable values to actual path entries via a lookup table.
 		-- These table values will change depending on the current spec, thus we pass a
 		-- closure to the filesystem API to get the appropriate value.
@@ -104,60 +103,76 @@ function spec.GetVarpathTable(self)
 		})
 	end
 
-	return lut
+	return self.varpath_lut
 end
 
 -- Processes the config files specified by the spec
 -- (aka. each file is placed into the staging filetree)
-local function process_Files(spec, files_list, files_index)
-	if not files_list then
+local function spec_ProcessFiles(spec, files)
+	if not files then
 		return
+	elseif type(files) == "table" then
+		-- Fixup ipairs values to simplify later logic
+		setmetatable(files, {
+			__pairs = function(self)
+				local key, value
+				return function(tbl)
+					key, value = next(tbl, key)
+					if type(key) == "number" then
+						return value, "$install_root"
+					end
+					return key, value
+				end, self, nil
+			end
+		})
+	else
+		-- Developer error
+		error("Bad call to spec_ProcessTables, files is not a table")
 	end
 
-	local varpath_lut = spec:GetVarpathTable()
+	local varpath_lut = spec:GetVarpathTable() -- Needed for filesystem:AddFile()
+	local feature_config = spec:GetFeatureConfig() -- Path of dotfile dir within repo
 
-	-- Fixup ipairs values to simplify later logic
-	setmetatable(files_list, {
-		__pairs = function(self)
-			local key, value
-			return function(tbl)
-				key, value = next(tbl, key)
-				if type(key) == "number" then
-					return value, "$install_root"
-				end
-				return key, value
-			end, self, nil
-		end
-	})
+	-- Index the feature dotfiles for globbing
+	local index = filesystem.path_IndexFeature(feature_config)
 
 	-- For each entry, search for it below
 	-- > if file (string), then install
 	-- > if directory (table), then install children
-	for dotfile, location in pairs(files_list) do
-		local search = filesystem.path_GlobPath(files_index, dotfile)
-		local path
+	for dotfile, location in pairs(files) do
+		print("adding file:", location, "-->", dotfile)
+		local search = filesystem.path_GlobPath(index, dotfile)
+		local install_path
 
 		if type(search) == "string" then
+			-- Resolve install path
 			if type(location) == "table" then
-				-- TODO: Make sure that this going through AddFile
+				-- TODO: Make sure that when calling AddFile(path) that it
 				-- throws an error if location[2] == "" (or nil)
 				assert(#location == 2, "Rename spec must specify exactly 2 entries")
-				path = string.format("%s/%s", location[1], location[2])
+				install_path = string.format("%s/%s", location[1], location[2])
 			else
-				path = string.format("%s/%s", location, dotfile)
+				install_path = string.format("%s/%s", location, search)
 			end
-			filesystem:AddFile(path, feature_config, varpath_lut)
+
+			-- Resolve dotfile (link) path
+			local source_path = string.format("%s/%s", feature_config, dotfile)
+			filesystem:AddFile(install_path, source_path, varpath_lut)
 		else
 			for _, _file in ipairs(search) do
+				-- Resolve install path
 				if type(location) == "table" then
 					-- TODO: Make sure that this going through AddFile
 					-- throws an error if location[2] == "" (or nil)
 					assert(#location == 2, "Rename spec must specify exactly 2 entries")
-					path = string.format("%s/%s/%s", location[1], location[2], _file)
+					install_path = string.format("%s/%s/%s", location[1], location[2], _file)
 				else
-					path = string.format("%s/%s", location, _file)
+					install_path = string.format("%s/%s", location, _file)
 				end
-				filesystem:AddFile(path, feature_config, varpath_lut)
+
+				-- Resolve dotfile (link) path
+				local source_path = string.format("%s/%s", feature_config, dotfile)
+				filesystem:AddFile(install_path, source_path, varpath_lut)
 			end
 		end
 	end
@@ -167,8 +182,6 @@ end
 function spec.Process(self, system_name)
 	assert(not self._processed, string.format("Feature %s has already been processed", self.feature))
 	self._processed = true
-
-	local feature_config = self:GetFeatureConfig() -- Path of dotfile dir within repo
 
 	local files = self.files
 	local links = self.links
@@ -198,13 +211,11 @@ function spec.Process(self, system_name)
 	end
 
 	if not (files or links) then
-		-- Simple install
-		local varpath_lut = self:GetVarpathTable()
-		filesystem:AddFile("$install_root", feature_config, varpath_lut)
+		-- Simple install; symlink to root
+		filesystem:AddFile("$install_root", self:GetFeatureConfig(), self:GetVarpathTable())
 	else
-		-- Create an index of the feature dotfiles so it is known what to glob
-		local index = filesystem.path_IndexFeature(feature_config)
-		process_Files(self, files, index)
+		spec_ProcessFiles(self, files)
+		-- spec_ProcessLinks(self, links)
 	end
 
 	filesystem:Print()

@@ -65,7 +65,7 @@ end
 -- path_Split()
 local rel_path_lut = setmetatable({
 	["~"] = user_home,
-	["."] = "$feature_config",
+	["."] = "$install_root",
 }, {
 	__index = function(_, path)
 		return "$feature_config/" .. (path or "")
@@ -74,10 +74,9 @@ local rel_path_lut = setmetatable({
 function _api.path_Split(path, lut)
 	path = path or "."
 	lut = lut or setmetatable({
-		-- NOTE: An oversight of the current design is that (for now) feature_config
-		-- MUST be defined in order for relative paths to work; If not, we fallback
-		-- to the dotfile root directory (which makes the name somewhat misleading)
-		feature_config = _api.path_GetDotfileRoot,
+		-- NOTE: An oversight of the current design is that (for now)
+		-- feature_config MUST be defined in order for relative paths to work
+		install_root = _api.path_GetDotfileRoot,
 	}, { __index = function(_, key)
 			error(string.format("No varpath set for $%s (fallback)", key))
 		end })
@@ -260,14 +259,14 @@ end
 --
 
 
-local filesystem = {} -- Module proxy table
+local module = {} -- Module proxy table
 
 -- FILESYSTEM INSTANCE METHODS --
--- TODO: Consider asserting that install_path is already split (removing the lut function param)
 function _api.AddFile(self, install_path, link_target, lut)
-	assert(self == filesystem, "Improper use of filesystem API (must invoke as object with `:`)")
+	assert(self == module, "Improper use of filesystem API (must invoke as object with `:`)")
 
-	print("adding file:", install_path, "-->", link_target)
+	-- TODO: Consider asserting that install_path is a string (aka split every time)
+	-- Further, link_target will not need to be split, but resolved
 	local path = (type(install_path) == "table") and install_path
 		or self.path_Split(install_path, lut)
 	local install_ptr = _data
@@ -298,7 +297,7 @@ end
 
 -- Pretty output of the target filesystem
 function _api.Print(self)
-	assert(self == filesystem, "Improper use of filesystem API (must invoke as object with `:`)")
+	assert(self == module, "Improper use of filesystem API (must invoke as object with `:`)")
 
 	local output = {}
 	local indent_inc = " │ "
@@ -382,7 +381,7 @@ function _api.Print(self)
 	print(table.concat(output))
 end
 
-return setmetatable(filesystem, {
+return setmetatable(module, {
 	__index = _api,
 	-- Trivial read-only
 	__newindex = function()
