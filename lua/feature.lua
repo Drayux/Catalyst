@@ -271,6 +271,9 @@ local function spec_Init(_spec, api)
 			if fn then
 				return fn(_spec)
 			end
+
+			-- Fallback to script env vars
+			return environment[key]
 		end,
 		__newindex = function()
 			-- No reason we couldn't support this; only right now if this

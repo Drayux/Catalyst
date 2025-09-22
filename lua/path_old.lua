@@ -67,7 +67,7 @@ function _api.path_Split(path, lut)
 					assert(accept_index >= 0, "Unable to specify parent of root directory")
 
 					if not parent_warning then
-						print("Warning: It is advisable to avoid ../ in spec install paths")
+						print("Warning: it is advisable to avoid ../ in spec install paths")
 						parent_warning = true
 					end
 				else

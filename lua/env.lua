@@ -49,7 +49,7 @@ return setmetatable(module, {
 			local gen = environment[var]
 			if not gen then
 				-- TODO: Might want to make this just a warning of sorts
-				error(string.format("No environment variable `%s` exists", var))
+				-- error(string.format("No environment variable `%s` exists", var))
 			elseif type(gen) == "function" then
 				_data[var] = gen()
 			else
