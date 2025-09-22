@@ -1,3 +1,4 @@
+local env_status, environment = pcall(require, "lua.env")
 local path_utils = require("lua.path")
 local staging = require("lua.staging")
 
@@ -28,7 +29,7 @@ end
 function spec.GetFeatureRoot(self)
 	local feature = self.opts.feature_root
 	if not feature then
-		feature = string.format("%s/%s", path_utils.path_GetDotfileRoot(), self.feature)
+		feature = string.format("%s/%s", environment.dotfile_root, self.feature)
 		self.opts.feature = feature
 	end
 	return feature
@@ -61,52 +62,6 @@ function spec.GetFeatureOverrides(self)
 	return overrides
 end
 
--- Not my best design, so a note to my future self:
--- I wanted to specify the values that would be returned via the object API,
--- thus requiring the following complicated procedure to apply closures and
--- store the generated table with the instantiated spec object.
---
--- The mistake I made in the initial design was not knowing what all I'd use
--- variable paths for. Ultimately, almost every use case intends to resolve
--- to an absolute path (aka any path will always start with / . or $)
--- With this assumption, this design could become far simpler. While this is
--- fully functional as defined, the definition itself is relatively unintuitive.
-local _varpath_fn_lut = {
-	install_root = spec.GetInstallRoot,
-	feature_root = spec.GetFeatureRoot,
-	feature_config = spec.GetFeatureConfig,
-	feature_edits = spec.GetFeatureEdits,
-	feature_overrides = spec.GetFeatureOverrides,
-}
-function spec.GetVarpathTable(self)
-	if not self.varpath_lut then
-		-- TLDR: we convert $variable values to actual path entries via a lookup table.
-		-- These table values will change depending on the current spec, thus we pass a
-		-- closure to the filesystem API to get the appropriate value.
-		self.varpath_lut = setmetatable({
-			user_home = path_utils.path_GetHomeDir,
-			catalyst_root = path_utils.path_GetScriptDir,
-			xdg_config = path_utils.path_GetXDGConfigDir,
-			xdg_data = path_utils.path_GetXDGDataDir,
-		}, {
-			__index = function(tbl, key)
-				local getter = _varpath_fn_lut[key]
-				if getter then
-					local _f = function()
-						return getter(self)
-					end
-					tbl[key] = _f -- Only generate a new closure once per value
-					return _f
-				else
-					error(string.format("No varpath set for $%s (feature: %s)", key, self.feature))
-				end
-			end,
-		})
-	end
-
-	return self.varpath_lut
-end
-
 -- Processes the config files specified by the spec
 -- (aka. each file is placed into the staging filetree)
 local function spec_ProcessFiles(spec, files)
@@ -131,11 +86,8 @@ local function spec_ProcessFiles(spec, files)
 		error("Bad call to spec_ProcessTables, files is not a table")
 	end
 
-	local varpath_lut = spec:GetVarpathTable() -- Needed for filesystem:AddFile()
 	local feature_config = spec:GetFeatureConfig() -- Path of dotfile dir within repo
-
-	-- Index the feature dotfiles for globbing
-	local index = path_utils.path_IndexFeature(feature_config)
+	local index = path_utils.path_IndexFeature(feature_config) -- Index for glob search
 
 	-- For each entry, search for it below
 	-- > if file (string), then install
@@ -158,7 +110,7 @@ local function spec_ProcessFiles(spec, files)
 
 			-- Resolve dotfile (link) path
 			local source_path = string.format("%s/%s", feature_config, dotfile)
-			staging:AddFile(install_path, source_path, varpath_lut)
+			staging:AddFile(install_path, source_path, spec.vars)
 		else
 			for _, _file in ipairs(search) do
 				-- Resolve install path
@@ -173,7 +125,7 @@ local function spec_ProcessFiles(spec, files)
 
 				-- Resolve dotfile (link) path
 				local source_path = string.format("%s/%s", feature_config, dotfile)
-				staging:AddFile(install_path, source_path, varpath_lut)
+				staging:AddFile(install_path, source_path, spec.vars)
 			end
 		end
 	end
@@ -295,6 +247,41 @@ function features.OutputSelectionList(self)
 	end
 end
 
+local spec_varpath_def = {
+	install_root = spec.GetInstallRoot,
+	feature_root = spec.GetFeatureRoot,
+	feature_config = spec.GetFeatureConfig,
+	feature_edits = spec.GetFeatureEdits,
+	feature_overrides = spec.GetFeatureOverrides,
+}
+local function spec_Init(_spec, api)
+	assert(type(_spec.feature) == "string") -- Feature name must be defined
+	-- ^^TODO: Consider instead setting this here on init; same as for system spec
+
+	-- NOTE: Currently no use of spec.vars being defined early
+	-- The following is mostly a demonstration for possible inspiration later
+	spec.vars = setmetatable(spec.vars or {}, {
+		__index = function(tbl, key)
+			-- local opt_val = _spec.opts[key]
+			-- if opt_val then
+				-- return opt_val
+			-- end
+
+			local fn = spec_varpath_def[key]
+			if fn then
+				return fn(_spec)
+			end
+		end,
+		__newindex = function()
+			-- No reason we couldn't support this; only right now if this
+			-- happens, then it is definitely a developer mistake
+			error("Spec vars table is read-only")
+		end
+	})
+
+	-- Attach the API metatable to the new feature spec
+	return setmetatable(_spec, { __index = api })
+end
 
 --- MODULE API (initialization) ---
 -- Spec list is a basic map of setmetatable(spec_entry, spec_api)
@@ -304,17 +291,18 @@ features.spec_list = (function(t, f, ...)
 		ret[k] = f(v, ...)
 	end
 	return ret
-end)(require("lua.dirload")("spec/feature"), function(_spec, _api)
-	assert(type(_spec.feature) == "string") -- Feature name must be defined
-	local mt = { __index = _api }
-	return setmetatable(_spec, mt)
-end, spec)
 
 -- TODO: Consider tweaking dirload such that the error message can be saved
 -- here and then output can be deferred later (doesn't really matter, just a
 -- possible nice-to-have)
-features:GenerateSelectionList()
-if features.feat_count == 0 then
+end)(require("lua.dirload")("spec/feature"), spec_Init, spec)
+
+if not path_status then
+	-- TODO: Consider the location of this; Current rationale is that some
+	-- script operations work with the wrong environment, but features
+	-- certainly cannot be installed without it
+	features.errormsg = "Failed to determine script environment"
+elseif features:GenerateSelectionList() == 0 then
 	features.errormsg = "No features available (is /spec/feature empty?)"
 end
 

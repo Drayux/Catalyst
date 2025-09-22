@@ -1,6 +1,7 @@
 #!/bin/lua
 
--- This is cursed but it (probably) guarantees the correct path--not sure if I want to use it
+-- The following is a cursed alternative to the current shebang, but it 
+-- (probably) guarantees the correct path
 -- #!/usr/bin/env -S sh -c 'RP="$(realpath "$0")"; cd "$(dirname "$RP")"; exec /bin/lua "$RP"'
 
 -- 

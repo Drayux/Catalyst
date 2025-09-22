@@ -113,11 +113,11 @@ local options = setmetatable({
 			summary = "Skip interactive prompts.",
 		}
 	},
-	debug = {
+	pretend = {
 		default = true, -- false (force true for development)
 		count = 0,
 		desc = {
-			name = "debug",
+			name = "pretend",
 			summary = "Instead of taking any action, dump what would be done to stdout.",
 		}
 	},
@@ -287,7 +287,7 @@ local options = setmetatable({
 options.__flags.short = {
 	f = options.features,
 	t = options.system,
-	d = options.debug,
+	p = options.pretend,
 	s = options.script,
 }
 options.__flags.long = { }

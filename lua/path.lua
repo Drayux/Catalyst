@@ -1,67 +1,10 @@
--- Represent an arbitrary filesystem with lua tables
--- This can be used to track directory merges and file conflicts
-
--- NOTE: This is not meant to be a recreation of the global filesystem. This
--- structure is used to prepare the selected feature configs for installation;
--- used to check for conflicts and determine what directories to create.
-
--- NOTE: Currently defined as a singleton since only one instance will be used
--- per invocation of this script. That known, this logic would otherwise be
--- well-suited for repurpose in an object-oriented architecture.
-
--- It is necessary to obtain the directory of the repo
-local repo_dir = os.getenv("PWD")
-
--- Assert that this is really the right directory
-do
-	local errmsg = "Failed to get repo directory path"
-	assert(repo_dir, errmsg)
-
-	local gitignore_file = io.open(repo_dir .. "/.gitignore")
-	assert(gitignore_file, errmsg)
-	assert(gitignore_file:read():match("^(#catalyst_repo_assertion)$"), errmsg)
-
-	gitignore_file:close()
-end
-
-local user_home = os.getenv("HOME")
--- Ensure $HOME is defined; Home path will always be at least `/home` on any of
--- my systems, hence I assert at least that many characters
-assert((type(user_home) == "string") and (#user_home >= 5))
-
---
-
-
 local _api = {} -- Filesystem function interface
 
--- FILESYSTEM UTILTY METHODS --
-function _api.path_GetScriptDir()
-	return repo_dir
-end
-
-function _api.path_GetDotfileRoot()
-	return repo_dir .. "/dotfiles"
-end
-
-function _api.path_GetHomeDir()
-	return user_home
-end
-
-function _api.path_GetXDGConfigDir()
-	print("TODO: XDG config dir")
-	return user_home .. "/.config"
-end
-
-function _api.path_GetXDGDataDir()
-	print("TODO: XDG data dir (.local)")
-	return user_home .. "/.local"
-end
-
 -- TODO: Considering a refactor of this
--- I don't love that the relative paths defined here depend on varpath variables
--- defined elsewhere. The primary fix idea is to move the relative path LUT to
--- its own subtable in the LUT that would be provided by the feature when calling
--- path_Split()
+-- I don't love that the relative paths defined here depend on varpath
+-- variables defined elsewhere. The primary fix idea is to move the relative
+-- path LUT to its own subtable in the LUT that would be provided by the
+-- feature when calling path_Split()
 local rel_path_lut = setmetatable({
 	["~"] = user_home,
 	["."] = "$install_root",
@@ -231,6 +174,7 @@ end
 -- Search for path_str in files index
 -- returns string on exact match (path is a file)
 -- returns table of files on partial match (path is a directory)
+-- TODO: Rename this function
 function _api.path_GlobPath(index, path_str)
 	assert(type(index) == "table", "File index must be generated")
 	assert(type(path_str) == "string", "Path to glob must be a string")
@@ -259,6 +203,6 @@ return setmetatable({}, {
 	__index = _api,
 	-- Trivial read-only
 	__newindex = function()
-		error("Filetree module is read-only")
+		error("Path utilites module is read-only")
 	end
 })

@@ -42,7 +42,7 @@ function _api.AddFile(install_path, link_target, lut)
 	end
 	assert(segment, string.format("Attempted to add invalid install path `%s`", install_path))
 
-	-- This is a deliberate deviation from classical unix CLI
+	-- This is a deliberate deviation from a classical unix CLI:
 	-- Do not make files a child of an existing directory at that path if one exists
 	assert(not install_ptr[segment], string.format("Spec conflict; `%s` already exists", install_path))
 	install_ptr[segment] = link_target

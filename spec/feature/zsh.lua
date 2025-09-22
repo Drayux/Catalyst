@@ -1,5 +1,5 @@
 local spec = {
-	feature = "zsh", -- Look for files in dotfiles/zsh, overrides/zsh, or scripts/zsh (TODO: Consider removing this here and setting it when the api is attached; same as we do for system spec)
+	feature = "zsh", -- Look for files in dotfiles/zsh, overrides/zsh, or scripts/zsh
 	-- Third-party soft depedencies (located in the reqs directory because I
 	-- hate when multiple directories begin with the same letter)
 	depends = { },
