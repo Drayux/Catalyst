@@ -149,10 +149,30 @@ local function _build(path_obj, path_splits)
 	})
 end
 
+-- NOTE: path_str should probably be absolute?
+local function _index(path_str)
+	assert((type(path_str) == "string") and (#path_str > 0),
+		"Feature config path must be a non-empty string")
+
+	local results_tbl = {}
+	local shell_handle
+
+	shell_handle = io.popen(string.format("find \"%s\" -mindepth 1 -type f", path_str))
+	local output = shell_handle:read("*a")
+	for entry in output:gmatch(path_str .. "/(.-)\n") do
+		-- NOTE: Unsure if an array or 'flag table' is better, may be worth testing
+		table.insert(results_tbl, entry)
+	end
+	shell_handle:close()
+
+	return results_tbl
+end
+
 --
 
 function api.Length(self)
-	return #self._data
+	-- TODO: Test that this actually works
+	return #self._data + self._pref
 end
 
 function api.GetAbsolute(self)
@@ -167,8 +187,32 @@ function api.Append(self, subpath_str)
 	return _build(self, split_data)
 end
 
-function api.Search(self)
-	-- TODO: Likely all-in-one replacement for index/search
+function api.Search(self, query)
+	local path_str = self:GetAbsolute()
+	local pattern = "^" .. query .. "/?(.-)$"
+
+	-- Index is just a filtered list of all children that are files
+	-- (It is the result of `find` with the original search path omitted)
+	self._index = self._index or _index(path_str)
+
+	local result
+	for _, path in ipairs(self._index) do
+		-- Anything that shows up after matching the start is a subpath;
+		-- If an exact match shows up, it's just a file
+		local subpath = path:match(pattern)
+		if subpath then
+			-- The capture resolves to "" on exact path match
+			if #subpath == 0 then
+				-- TODO: I don't remember what this was accomplishing
+				-- ^^refer to what I was doing in feature install
+				return query:match("^.*/(.-)$") or query
+			end
+
+			result = result or {}
+			table.insert(result, subpath)
+		end
+	end
+	return result
 end
 
 return setmetatable({}, {
