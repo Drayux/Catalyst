@@ -9,6 +9,12 @@ function print(...)
 	end
 end
 
+-- TODO: Not sure yet what all I can do with this
+-- local _assert = assert
+-- function assert(statement, comment)
+	-- _assert(statement, comment)
+-- end
+
 -- Keep track of test stats for pretty output
 local pass_count = 0
 local failure_count = 0

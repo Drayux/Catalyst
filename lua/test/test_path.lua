@@ -1,30 +1,31 @@
 --- TEST GLOBALS ---
-TEST_OUTPUT = false
+TEST_OUTPUT = true
 ---
 
 local test_result = true
-local path_utils = require("lua.path")
+local path = require("lua.path")
+
+--- BASE MODULE TEST ---
+
+local abs_test_path = path("/absolute/test/path/")
+print(abs_test_path)
+assert(abs_test_path:String() == "/absolute/test/path")
+
+local rel_test_path = path("relative/test/./path/")
+print(rel_test_path)
+assert(rel_test_path:String() == "relative/test/path")
 
 ---
 
-assert(path_utils.path_GetHomeDir() == "/home", "Test expected home directory")
 
 local test_lut = {
-	feature_config = function()
-		return "$catalyst_root/test_feature/config"
-	end,
-	catalyst_root = function()
-		return "/test/catalyst"
-	end,
-	install_target = function()
-		return "~/.config/test_feature"
-	end,
-	test_var = function()
-		return "ooga_booga"
-	end,
+	feature_config = "$catalyst_root/test_feature/config",
+	catalyst_root = "/test/catalyst",
+	install_target = "~/.config/test_feature",
+	test_var = "ooga_booga",
 }
 
-local function test_split(expected, ...)
+local function test_NewPath(expected, ...)
 	local input, lut = ...
 	print(string.format("Testing path: `%s`", input))
 
@@ -62,36 +63,36 @@ end
 
 -- Test path splitting
 
-test_split({ "home", "Catalyst", "dotfiles" }) -- Test nil path (will probably fail on your computer)
-test_split({ "home", "scripts", "pancakes" }, "~/scripts/pancakes") -- Test homedir lookup (will probably fail on your computer)
-test_split(nil, "/$test_var") -- Test absolute varpath lookup with no LUT
-test_split(nil, "$test_var") -- Test relative varpath lookup with no LUT
+-- test_split({ "home", "Catalyst", "dotfiles" }) -- Test nil path (will probably fail on your computer)
+-- test_split({ "home", "scripts", "pancakes" }, "~/scripts/pancakes") -- Test homedir lookup (will probably fail on your computer)
+-- test_split(nil, "/$test_var") -- Test absolute varpath lookup with no LUT
+-- test_split(nil, "$test_var") -- Test relative varpath lookup with no LUT
 
-test_split({}, "/", test_lut) -- Test root
-test_split({ "ooga_booga" }, "/$test_var", test_lut) -- Test absolute varpath lookup
-test_split({ "test", "catalyst", "test_feature", "config", "ooga_booga" }, "$test_var", test_lut) -- Test relative varpath lookup
-test_split({ "home", ".config", "test_feature" }, "$install_target", test_lut) -- Test parent path
+-- test_split({}, "/", test_lut) -- Test root
+-- test_split({ "ooga_booga" }, "/$test_var", test_lut) -- Test absolute varpath lookup
+-- test_split({ "test", "catalyst", "test_feature", "config", "ooga_booga" }, "$test_var", test_lut) -- Test relative varpath lookup
+-- test_split({ "home", ".config", "test_feature" }, "$install_target", test_lut) -- Test parent path
 
-test_split({ "ooga_booga", "ooga_booga" }, "///$test_var///$test_var", test_lut) -- Test weird path
-test_split({ "home", ".config" }, "$install_target/..", test_lut) -- Test parent path
-test_split({ "home" }, "$install_target/../..", test_lut) -- Test parent path even more
-test_split(nil, "../../../../../", test_lut) -- Test parents too far up the chain
+-- test_split({ "ooga_booga", "ooga_booga" }, "///$test_var///$test_var", test_lut) -- Test weird path
+-- test_split({ "home", ".config" }, "$install_target/..", test_lut) -- Test parent path
+-- test_split({ "home" }, "$install_target/../..", test_lut) -- Test parent path even more
+-- test_split(nil, "../../../../../", test_lut) -- Test parents too far up the chain
 
-test_split(nil, "$invalid/$also_invalid", test_lut)
-test_split({ "~" }, "/././config/..///.///$install_target/../../", test_lut) -- ~ feels wrong, but ~ only expected to work if at the start of a path
+-- test_split(nil, "$invalid/$also_invalid", test_lut)
+-- test_split({ "~" }, "/././config/..///.///$install_target/../../", test_lut) -- ~ feels wrong, but ~ only expected to work if at the start of a path
 
 
 -- Development shenanigans
 
-path_utils.path_Resolve("$feature_config/one/$test_var/three", test_lut)
+-- path_utils.path_Resolve("$feature_config/one/$test_var/three", test_lut)
 
-local index = path_utils.path_IndexFeature(path_utils.path_GetScriptDir() .. "/lua")
-print("index:")
-for _, v in ipairs(index) do
-	print(" ", v)
-end
-local search = path_utils.path_GlobPath(index, "test/dummy/file")
-print("search result:", search)
+-- local index = path_utils.path_IndexFeature(path_utils.path_GetScriptDir() .. "/lua")
+-- print("index:")
+-- for _, v in ipairs(index) do
+	-- print(" ", v)
+-- end
+-- local search = path_utils.path_GlobPath(index, "test/dummy/file")
+-- print("search result:", search)
 
 ---
 

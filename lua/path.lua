@@ -18,31 +18,95 @@ local api = {}
 -- Copies data from ref, if provided
 local function _new(path_ref)
 	local obj = {
+		_vars = false, -- Placeholder so __newindex doesn't error (_vars set after _build() in brand new path obj)
 		_data = {}, 
-		_vars = varpath_tbl,
-		_index = nil, -- Placeholder
 		_pref = 0, -- Count of leading parent refs (i.e. ../../../dir -> 3)
 
-		absolute = false, -- TODO
+		absolute = false,
+		index = {},
 	}
 
 	if path_ref and (type(path_ref._data) == "table") then
 		for _, val in ipairs(path_ref._data) do
 			table.insert(obj._data, val)
 		end
-		_data._vars = path_ref._vars
-		_data._pref = path_ref._pref
-		_data.absolute = path_ref.absolute
+		obj._vars = path_ref._vars
+		obj._pref = path_ref._pref
+		obj.absolute = path_ref.absolute
 	end
 
-	return path_ref
+	return setmetatable(obj, {
+		__index = api,
+		__newindex = function()
+			-- Not rigorous here, just help track of developer mistakes
+			error("Attempt to add new member to path table")
+		end,
+		__tostring = function(self)
+			return self:String()
+		end
+	})
 end
 
+-- Build creates a new table always
+-- path_obj is a reference to a path to copy or nil
+local function _build(path_obj, path_splits)
+	local _copy = _new(path_obj)
+	local _warning = false -- For helpful output (only)
+
+	if not path_splits then
+		-- Return right away if nothing to append (path:Append() symmetry)
+		return _copy
+	end
+
+	local data = _copy._data -- Ref
+	local accept_index = #data -- TODO: test this
+	for idx, split in ipairs(path_splits) do
+		if split == "." then
+			-- Ignore
+		elseif split == ".." then
+			if accept_index > 0 then
+				-- Step backward up the filetree
+				-- TODO: This differs slightly from unix: where if a given path
+				-- is a symlink, then traversing back up will navigate into the
+				-- directory containing the target of the symlink instead. That
+				-- functionality is not reflected here. Should it be?
+
+				data[accept_index] = nil
+				accept_index = accept_index - 1
+
+				if not _warning then
+					print("Warning: it is advisable to avoid ../ within spec install paths")
+					_warning = true
+				end
+			elseif not path_splits.absolute then
+				-- Index is 0: no known dirs to step up
+				_copy._pref = _copy._pref + 1
+			else
+				-- Path is: /(../)whatever
+				-- (this is technically okay: in unix /../ -> /; but high chance of user error in specs)
+				assert(false, "Unable to specify parent of root directory")
+			end
+		else
+			accept_index = accept_index + 1
+			data[accept_index] = split
+		end
+	end
+
+	-- The path splits (data to be appended) will always be false on an append
+	-- So we trust either one source reports TRUE
+	-- (This order also replaces a nil path_splits._absolute with false)
+	_copy.absolute = path_splits._absolute or _copy.absolute
+	return _copy
+end
+
+-- Prepares a path for use with _build()
+-- (Path to table converstion with varpath lookup)
 local function _split(path_str, varpath_tbl, append_mode)
 	-- path_str already validated; don't validate varpath_tbl until first lookup
 
 	local splits = {}
 	local absolute = true
+	local homedir = false
 	local current_varpath = nil -- For helpful output (only)
 
 	local splitter; splitter = function(_path, _start, _depth)
@@ -59,9 +123,14 @@ local function _split(path_str, varpath_tbl, append_mode)
 				assert(varpath, string.format("No such path variable `$%s`", varpath_key))
 				-- current_varpath = varpath_key -- Not used at path start
 
-				splitter(segment, true, depth + 1) -- Recurse on path variables
+				splitter(segment, true, _depth + 1) -- Recurse on path variables
+			elseif _start and (path_start == "~") then
+				-- Resolve homedir as a varpath (but only at start of path!)
+				splitter("$user_home", true, _depth + 1)
 			else
-				absolute = absolute and (not _start) -- false if splits start and no leading /
+				-- If at split start, path is definitely not absolute (no leading / )
+				-- Else (like in a recursive lookup) pass through the previous value
+				absolute = absolute and (not _start)
 				table.insert(splits, path_start)
 			end
 		else
@@ -90,63 +159,10 @@ local function _split(path_str, varpath_tbl, append_mode)
 		end
 	end
 
-	splitter(path, not append_mode, 1)
+	splitter(path_str, not append_mode, 1)
 	splits._absolute = absolute
+	splits._homedir = homedir
 	return splits --[[, err]]
-end
-
--- Build creates a new table always
--- path_obj is a reference to a path to copy or nil
-local function _build(path_obj, path_splits)
-	local _copy = _new(path_obj)
-	local _warning = false -- For helpful output (only)
-
-	if not path_splits then
-		-- Return right away if nothing to append (cleanup for path:Append())
-		return _copy
-	end
-
-	local data = _copy._data -- Ref
-	local accept_index = #data -- TODO: test this
-	for _, split in ipairs(path_splits) do
-		if split == "." then
-			-- Ignore
-		elseif split == ".." then
-			if accept_index > 0 then
-				-- Step backward up the filetree
-				-- TODO: This differs slightly from unix: where if a given path
-				-- is a symlink, then traversing back up will navigate into the
-				-- directory containing the target of the symlink instead. That
-				-- functionality is not reflected here. Should it be?
-
-				data[accept_index] = nil
-				accept_index = accept_index - 1
-
-				if not _warning then
-					print("Warning: it is advisable to avoid ../ within spec install paths")
-					_warning = true
-				end
-			elseif not path_splits.absolute then
-				-- Index is 0: no known dirs to step up
-				_copy._pref = _copy._pref + 1
-			else
-				-- Path is: /(../)whatever
-				-- (this is technically okay: in unix /../ -> /; but high chance of user error in specs)
-				assert(false, "Unable to specify parent of root directory")
-			end
-		else
-			accept_index = accept_index + 1
-			splits[accept_index] = segment
-		end
-	end
-
-	return setmetatable(_copy, {
-		__index = api,
-		__newindex = function()
-			-- Not rigorous here, just help track of developer mistakes
-			error("Attempt to add new member to path table")
-		end
-	})
 end
 
 -- NOTE: path_str should probably be absolute?
@@ -170,33 +186,16 @@ end
 
 --
 
-function api.Length(self)
-	-- TODO: Test that this actually works
-	return #self._data + self._pref
-end
-
-function api.GetAbsolute(self)
-	-- TODO: Get (guess) an absolute path or return if already absolute
-	-- TODO: Should this also resolve all parent path refs? (../)
-end
-
--- Copies and returns a modified path
-function api.Append(self, subpath_str)
-	local split_data = subpath_str and _split(subpath_str, self.vars, true)
-		or nil
-	return _build(self, split_data)
-end
-
 function api.Search(self, query)
 	local path_str = self:GetAbsolute()
 	local pattern = "^" .. query .. "/?(.-)$"
 
 	-- Index is just a filtered list of all children that are files
 	-- (It is the result of `find` with the original search path omitted)
-	self._index = self._index or _index(path_str)
+	self.index = self.index or index(path_str)
 
 	local result
-	for _, path in ipairs(self._index) do
+	for _, path in ipairs(self.index) do
 		-- Anything that shows up after matching the start is a subpath;
 		-- If an exact match shows up, it's just a file
 		local subpath = path:match(pattern)
@@ -215,11 +214,59 @@ function api.Search(self, query)
 	return result
 end
 
+function api.Length(self)
+	-- TODO: Test that this actually works
+	return #self._data + self._pref
+end
+
+function api.String(self)
+	local ret = table.concat(self._data, "/")
+
+	if self.absolute then
+		return "/" .. ret
+	else
+		return ret
+	end
+end
+
+-- NOTE: For now, this function always creates a new path object
+-- There is not yet a specific use case for this, but it may prove helpful
+-- Notably, if searching a path, we will need to generate a new index anyway
+function api.Absolute(self)
+	if self.absolute then
+		return _new(self)
+	end
+
+	-- Get the working directory from the current path lookup table
+	-- TODO: This needs to be set up in features/environment
+	local pwd_str = self._vars.install_root
+	local pwd_splits = _split(pwd_str, self._vars, false)
+	-- local pwd_splits = _split("$install_root", self._vars, false) -- Also works
+
+	-- Manually build some splits from the original path object
+	for idx = 1, self._pref do
+		print("pref number:", idx)
+		table.insert(pwd_splits, "..")
+	end
+	for segment in ipairs(self._data) do
+		table.insert(pwd_splits, segment)
+	end
+	
+	return _build(nil, pwd_splits)
+end
+
+-- Copies and returns a modified path
+function api.Append(self, subpath_str)
+	local split_data = subpath_str and _split(subpath_str, self.vars, true)
+		or nil
+	return _build(self, split_data)
+end
+
 return setmetatable({}, {
 	__newindex = function()
 		error("Path utilites module is read-only")
 	end,
-	__call = function(path_str, varpath_tbl)
+	__call = function(_, path_str, varpath_tbl)
 		assert(type(path_str) == "string", "Path must be instantiated with a string")
 		assert(#path_str > 0, "Path cannot be an empty string")
 		
@@ -229,6 +276,11 @@ return setmetatable({}, {
 			error(err)
 		end
 
-		return _build(nil, split_data)
+		local path_obj = _build(nil, split_data)
+		if varpath_tbl then
+			path_obj._vars = varpath_tbl
+		end
+
+		return path_obj
 	end
 })

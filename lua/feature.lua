@@ -300,13 +300,13 @@ features.spec_list = (function(t, f, ...)
 -- possible nice-to-have)
 end)(require("lua.dirload")("spec/feature"), spec_Init, spec)
 
-if not path_status then
+if not env_status then
 	-- TODO: Consider the location of this; Current rationale is that some
 	-- script operations work with the wrong environment, but features
 	-- certainly cannot be installed without it
 	features.errormsg = "Failed to determine script environment"
 elseif features:GenerateSelectionList() == 0 then
-	features.errormsg = "No features available (is /spec/feature empty?)"
+	features.errormsg = "No features available (is <catalyst>/spec/feature empty?)"
 end
 
 local module = setmetatable({

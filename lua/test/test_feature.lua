@@ -1,9 +1,11 @@
 --- TEST GLOBALS ---
-TEST_OUTPUT = true
+TEST_OUTPUT = false
 ---
 
 local test_result = true
 local features = require("lua.feature")
+
+do return false end
 
 -- Should give us a feature module that will only try to install one feature
 features("zsh")

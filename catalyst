@@ -6,8 +6,8 @@
 
 -- 
 
-local features = require("lua.feature")
 local options = require("lua.options")
+local features = require("lua.feature")
 
 -- Exit early if bad script env
 if features.error() then
