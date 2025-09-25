@@ -15,72 +15,119 @@ local rel_test_path = path("relative/test/./path/")
 print(rel_test_path)
 assert(rel_test_path:String() == "relative/test/path")
 
----
+--- PATH OBJECT CREATION ---
 
-
-local test_lut = {
+local generic_lut = {
 	feature_config = "$catalyst_root/test_feature/config",
-	catalyst_root = "/test/catalyst",
+	catalyst_root = "/catalyst",
 	install_target = "~/.config/test_feature",
+	user_home = "/home",
 	test_var = "ooga_booga",
 }
 
-local function test_NewPath(expected, ...)
-	local input, lut = ...
-	print(string.format("Testing path: `%s`", input))
+local function test_NewPath(expected, path_str)
+	print(string.format("Testing new: `%s` (%s)", path_str, expected or " ~ error ~ "))
 
 	local test_pass = true
-	-- local entry_count = 0
-	local status, result = pcall(path_utils.path_Split, input, lut)
+	local status, path_obj = pcall(path, path_str, generic_lut)
 	if status then
 		if not expected then
-			-- Test should have reached an error
+			-- Test expected to error out and failed to do so
 			test_pass = false
 
 		else
-			for i, v in ipairs(result) do
-				print("", v)
-				-- entry_count = entry_count + 1
-				test_pass = test_pass and (v == expected[i])
-			end
-
-			-- if #expected ~= entry_count then
-			if #expected ~= #result then
-				test_pass = false
-			end
+			-- print(path_obj) -- For debugging
+			test_pass = (expected == path_obj:String())
 		end
 	else
-		print(result)
-		test_pass = (expected == nil) -- false if unexpected failure
+		test_pass = (expected == nil) -- true if a failure was expected 
 	end
-	print(" * " .. (test_pass and "PASS" or "FAIL"))
 
+	print(" * " .. (test_pass and "PASS" or "FAIL"))
 	if not test_pass then
 		test_result = false
 	end
 end
 
+test_NewPath("/", "/") -- Root dir
+test_NewPath("apples", "./apples") -- Generic relative path
+test_NewPath(".", "./") -- Current working directory
+test_NewPath("/home/.config", "~/.config") -- Homedir path
+test_NewPath("..", "../") -- Relative parent path
+test_NewPath("/", "/dir_a/dir_b/dir_c/../../..") -- Absolute parent path
+test_NewPath(nil, "/../") -- Parent of root dir (error expected)
+test_NewPath("ooga_booga/ooga_booga", "$test_var/$test_var") -- Relative varpath lookup
+test_NewPath("/catalyst/test_feature/config", "$feature_config") -- Recursive varpath lookup
+test_NewPath(nil, "$invalid/$also_invalid") -- Bad varpath lookup (error expected)
+test_NewPath("/home", "/././config/..///.///$install_target/../../") -- Weird fuckin (but still valid) path syntax
 
--- Test path splitting
+--- PATH APPEND OPERATION ---
 
--- test_split({ "home", "Catalyst", "dotfiles" }) -- Test nil path (will probably fail on your computer)
--- test_split({ "home", "scripts", "pancakes" }, "~/scripts/pancakes") -- Test homedir lookup (will probably fail on your computer)
+local function test_AppendPath(expected, init_str, append_str)
+	print(string.format("Testing append: `%s` + `%s` (%s)", init_str, append_str, expected or " ~ error ~ "))
+
+	local test_pass = true
+	local status, path_obj = pcall(path, init_str, generic_lut)
+	if not status then
+		-- Creating the path object failed, return early
+		test_result = false
+		print(" * FAIL")
+		return
+	end
+
+	local status, new_path_obj = pcall(path_obj.Append, path_obj, append_str)
+	if not status then
+		test_pass = (expected == nil) -- true if a failure was expected 
+	else
+		-- print(new_path_obj) -- For debugging
+		test_pass = (expected == new_path_obj:String())
+	end
+
+	print(" * " .. (test_pass and "PASS" or "FAIL"))
+	if not test_pass then
+		test_result = false
+	end
+end
+
+test_AppendPath("apples/bananas", "./apples", "bananas") -- Generic append operation (relative)
+test_AppendPath("apples", "apples/bananas", "..") -- Parent append operation (relative)
+test_AppendPath("carrots", "apples/bananas/../../", "carrots") -- Parent in original path (test accept_index logic)
+test_AppendPath("/test_root/ooga_booga", "/test_root/oranges/", "../$test_var/") -- Parent in original path (test accept_index logic)
+test_AppendPath(nil, "apples", "/carrots") -- Append absolute path (error expected)
+test_AppendPath(nil, "/", "..") -- Append parent to root (error expected)
+
+--- ABSOLUTE PATH RESOLUTION ---
+
+local function test_AbsolutePath(expected, path_str)
+	print(string.format("Testing absolute: `%s` (%s)", path_str, expected or " ~ error ~ "))
+
+	local test_pass = true
+	local status, path_obj = pcall(path, path_str, generic_lut)
+	if not status then
+		-- Creating the path object failed, return early
+		test_result = false
+		print(" * FAIL")
+		return
+	end
+
+	local status, new_path_obj = pcall(path_obj.Absolute, path_obj)
+	if not status then
+		test_pass = (expected == nil) -- true if a failure was expected 
+	else
+		-- print(new_path_obj) -- For debugging
+		test_pass = (expected == new_path_obj:String())
+	end
+
+	print(" * " .. (test_pass and "PASS" or "FAIL"))
+	if not test_pass then
+		test_result = false
+	end
+end
+
+test_AbsolutePath("/home/catalyst", "/home/catalyst/") -- Test path that is already absolute
+
 -- test_split(nil, "/$test_var") -- Test absolute varpath lookup with no LUT
 -- test_split(nil, "$test_var") -- Test relative varpath lookup with no LUT
-
--- test_split({}, "/", test_lut) -- Test root
--- test_split({ "ooga_booga" }, "/$test_var", test_lut) -- Test absolute varpath lookup
--- test_split({ "test", "catalyst", "test_feature", "config", "ooga_booga" }, "$test_var", test_lut) -- Test relative varpath lookup
--- test_split({ "home", ".config", "test_feature" }, "$install_target", test_lut) -- Test parent path
-
--- test_split({ "ooga_booga", "ooga_booga" }, "///$test_var///$test_var", test_lut) -- Test weird path
--- test_split({ "home", ".config" }, "$install_target/..", test_lut) -- Test parent path
--- test_split({ "home" }, "$install_target/../..", test_lut) -- Test parent path even more
--- test_split(nil, "../../../../../", test_lut) -- Test parents too far up the chain
-
--- test_split(nil, "$invalid/$also_invalid", test_lut)
--- test_split({ "~" }, "/././config/..///.///$install_target/../../", test_lut) -- ~ feels wrong, but ~ only expected to work if at the start of a path
-
 
 -- Development shenanigans
 

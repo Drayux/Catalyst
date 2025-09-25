@@ -57,9 +57,14 @@ local function _build(path_obj, path_splits)
 		-- Return right away if nothing to append (path:Append() symmetry)
 		return _copy
 	end
-
+	
 	local data = _copy._data -- Ref
 	local accept_index = #data -- TODO: test this
+
+	-- The path splits (data to be appended) will always be false on an append
+	-- So we trust either one source reports TRUE
+	-- (This order also replaces a nil path_splits._absolute with false)
+	local is_absolute = path_splits._absolute or _copy.absolute
 	for idx, split in ipairs(path_splits) do
 		if split == "." then
 			-- Ignore
@@ -78,13 +83,13 @@ local function _build(path_obj, path_splits)
 					print("Warning: it is advisable to avoid ../ within spec install paths")
 					_warning = true
 				end
-			elseif not path_splits.absolute then
+			elseif not is_absolute then
 				-- Index is 0: no known dirs to step up
 				_copy._pref = _copy._pref + 1
 			else
 				-- Path is: /(../)whatever
 				-- (this is technically okay: in unix /../ -> /; but high chance of user error in specs)
-				assert(false, "Unable to specify parent of root directory")
+				error("Unable to specify parent of root directory")
 			end
 		else
 			accept_index = accept_index + 1
@@ -92,10 +97,7 @@ local function _build(path_obj, path_splits)
 		end
 	end
 
-	-- The path splits (data to be appended) will always be false on an append
-	-- So we trust either one source reports TRUE
-	-- (This order also replaces a nil path_splits._absolute with false)
-	_copy.absolute = path_splits._absolute or _copy.absolute
+	_copy.absolute = is_absolute
 	return _copy
 end
 
@@ -105,8 +107,7 @@ local function _split(path_str, varpath_tbl, append_mode)
 	-- path_str already validated; don't validate varpath_tbl until first lookup
 
 	local splits = {}
-	local absolute = true
-	local homedir = false
+	local absolute = not append_mode -- Assume true if start of path, else false
 	local current_varpath = nil -- For helpful output (only)
 
 	local splitter; splitter = function(_path, _start, _depth)
@@ -123,7 +124,7 @@ local function _split(path_str, varpath_tbl, append_mode)
 				assert(varpath, string.format("No such path variable `$%s`", varpath_key))
 				-- current_varpath = varpath_key -- Not used at path start
 
-				splitter(segment, true, _depth + 1) -- Recurse on path variables
+				splitter(varpath, true, _depth + 1) -- Recurse on path variables
 			elseif _start and (path_start == "~") then
 				-- Resolve homedir as a varpath (but only at start of path!)
 				splitter("$user_home", true, _depth + 1)
@@ -135,9 +136,13 @@ local function _split(path_str, varpath_tbl, append_mode)
 			end
 		else
 			if not _start then
-				-- No path start so path is absolute, but not _start means that
-				-- this is a varpath in the middle of a path string
-				print(string.format("Warning: path var `%s` appears absolute", current_varpath))
+				-- No path_start so path has absolute format, but cannot be,
+				-- as _start is false
+				if append_mode then
+					error(string.format("Cannot append absolute path `%s`", _path))
+				else
+					error(string.format("Path var `%s` appears absolute", current_varpath))
+				end
 			end
 			path_end = _path
 		end
@@ -147,10 +152,11 @@ local function _split(path_str, varpath_tbl, append_mode)
 			local varpath_key = segment:match("^%$(.*)$")
 			if varpath_key then
 				local varpath = varpath_tbl[varpath_key]
+print(varpath) -- something going silly here in tests
 				assert(varpath, string.format("No such path variable `$%s`", varpath_key))
 				current_varpath = varpath_key
 
-				splitter(segment, false, depth + 1) -- Recurse on path variables
+				splitter(segment, false, _depth + 1) -- Recurse on path variables
 			elseif segment == "." then
 				-- Ignore
 			else
@@ -161,7 +167,6 @@ local function _split(path_str, varpath_tbl, append_mode)
 
 	splitter(path_str, not append_mode, 1)
 	splits._absolute = absolute
-	splits._homedir = homedir
 	return splits --[[, err]]
 end
 
@@ -220,12 +225,30 @@ function api.Length(self)
 end
 
 function api.String(self)
-	local ret = table.concat(self._data, "/")
+	local path_str = table.concat(self._data, "/")
 
 	if self.absolute then
-		return "/" .. ret
+		-- Tack on leading /
+		-- _build asserts that _pref is 0 when absolute is true
+		return "/" .. path_str
+	elseif self._pref > 0 then
+		-- Build up the parent path string
+		local parent_tbl = {}
+		for i = 1, self._pref do
+			table.insert(parent_tbl, "..")
+		end
+		if #path_str > 0 then
+			-- Hacky way to insert the extra / in the middle
+			table.insert(parent_tbl, path_str)
+		end
+		return table.concat(parent_tbl, "/")
 	else
-		return ret
+		if #path_str > 0 then
+			return path_str
+		else
+			-- Keep relative paths CLI-friendly
+			return "."
+		end
 	end
 end
 
