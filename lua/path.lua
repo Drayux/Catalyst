@@ -125,9 +125,15 @@ local function _split(path_str, varpath_tbl, append_mode)
 				-- current_varpath = varpath_key -- Not used at path start
 
 				splitter(varpath, true, _depth + 1) -- Recurse on path variables
-			elseif _start and (path_start == "~") then
-				-- Resolve homedir as a varpath (but only at start of path!)
-				splitter("$user_home", true, _depth + 1)
+			elseif path_start == "~" then
+				if _start then
+					-- Resolve homedir as a varpath (but only at start of path!)
+					splitter("$user_home", true, _depth + 1)
+				else
+					-- NOTE: Valid in unix, but at no point would I intentionally
+					-- name a config file `~` so go throw a tantrum I don't care
+					error("Home dir specified in middle of path")
+				end
 			else
 				-- If at split start, path is definitely not absolute (no leading / )
 				-- Else (like in a recursive lookup) pass through the previous value
@@ -152,11 +158,10 @@ local function _split(path_str, varpath_tbl, append_mode)
 			local varpath_key = segment:match("^%$(.*)$")
 			if varpath_key then
 				local varpath = varpath_tbl[varpath_key]
-print(varpath) -- something going silly here in tests
 				assert(varpath, string.format("No such path variable `$%s`", varpath_key))
 				current_varpath = varpath_key
 
-				splitter(segment, false, _depth + 1) -- Recurse on path variables
+				splitter(varpath, false, _depth + 1) -- Recurse on path variables
 			elseif segment == "." then
 				-- Ignore
 			else
@@ -252,42 +257,54 @@ function api.String(self)
 	end
 end
 
+-- Copies and returns a modified path
+function api.Append(self, subpath_str)
+	local split_data = subpath_str and _split(subpath_str, self._vars, true)
+		or nil
+	return _build(self, split_data)
+end
+
 -- NOTE: For now, this function always creates a new path object
 -- There is not yet a specific use case for this, but it may prove helpful
 -- Notably, if searching a path, we will need to generate a new index anyway
+-- NOTE: Working directory always assumed $install_root from the varpath LUT
 function api.Absolute(self)
 	if self.absolute then
 		return _new(self)
 	end
 
+	-- The only point at which we would need to infer an absolute path anyway
+	-- is the advanced file config (pwd is $install_root.) The essential trick
+	-- is checking if the path is absolute and only prepending the pwd if not.
+	-- Else, the absolute path is constructed by feature.lua
+	--  * Files to install: $feature_config/$file (spec is ALWAYS relative)
+	--  * Install locations become: $install_root/$target/ (default is $install_root/./)
+
 	-- Get the working directory from the current path lookup table
-	-- TODO: This needs to be set up in features/environment
 	local pwd_str = self._vars.install_root
 	local pwd_splits = _split(pwd_str, self._vars, false)
 	-- local pwd_splits = _split("$install_root", self._vars, false) -- Also works
 
 	-- Manually build some splits from the original path object
 	for idx = 1, self._pref do
-		print("pref number:", idx)
 		table.insert(pwd_splits, "..")
 	end
-	for segment in ipairs(self._data) do
+	for _, segment in ipairs(self._data) do
 		table.insert(pwd_splits, segment)
 	end
 	
 	return _build(nil, pwd_splits)
 end
 
--- Copies and returns a modified path
-function api.Append(self, subpath_str)
-	local split_data = subpath_str and _split(subpath_str, self.vars, true)
-		or nil
-	return _build(self, split_data)
-end
-
 return setmetatable({}, {
 	__newindex = function()
 		error("Path utilites module is read-only")
+	end,
+	__ipairs = function(self)
+		-- TODO: It may be prudent to change how this works
+		-- For now, the only use case of ipairs() is config file staging, which
+		-- necessarily demands an absolute path, thus the following retval...
+		return ipairs(self:Absolute()._data)
 	end,
 	__call = function(_, path_str, varpath_tbl)
 		assert(type(path_str) == "string", "Path must be instantiated with a string")

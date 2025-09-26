@@ -1,9 +1,9 @@
 local spec = {
 	feature = "zsh", -- Look for files in dotfiles/zsh, overrides/zsh, or scripts/zsh
-	-- Third-party soft depedencies (located in the reqs directory because I
-	-- hate when multiple directories begin with the same letter)
+	-- Third-party soft depedencies (defined in the reqs/ directory)
 	depends = { },
 	opts = {
+		-- TODO: Consider moving these two to a vars table (perhaps the feature name too)
 		install_root = "~/.config/zsh", -- Root of target install location
 		-- feature_config = "$feature_root/config", -- Override if defined (should be rare; must be abs path)
 
@@ -36,9 +36,9 @@ local spec = {
 	-- ** > Essentially for any key, the value is necessarily a directory
 	-- files = {
 		-- All (links) would install to: $install_root/alt_zsh_config_X (same name)
-		-- ["alt_zsh_config_1"] = "$install_root",
-		-- ["alt_zsh_config_2"] = ".", 
-		-- ["alt_zsh_config_3"] = true,
+		-- ["profile"] = "$install_root",
+		-- ["config"] = ".", 
+		-- ["logout"] = true,
 		--
 		-- ["explicit_path"] = "~/.config/crazy_style",  -- ~/.config/crazy_style/explicit_path
 		-- ["folder_config"] = "~/.config/",              -- ~/.config/entry_1, ~/.config/entry_2, ...
@@ -81,6 +81,9 @@ local spec = {
 			overrides = { -- Merges with spec.files (overwrites conflicting entries)
 				["work"] = "~/.local/zsh/overrides",
 			}
+			-- vars = {} -- TODO: Rough idea, offer a good usecase for varpaths
+			-- where files can be installed in different locations on different
+			-- systems without other system overrides.
 		},
 	},
 }

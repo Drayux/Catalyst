@@ -256,7 +256,8 @@ local spec_varpath_def = {
 }
 local function spec_Init(_spec, api)
 	assert(type(_spec.feature) == "string") -- Feature name must be defined
-	-- ^^TODO: Consider instead setting this here on init; same as for system spec
+	-- ^^TODO: Instead of asserting, consider instead just setting this value
+	-- on init, the same way as we do for for system spec files
 
 	-- NOTE: Currently no use of spec.vars being defined early
 	-- The following is mostly a demonstration for possible inspiration later

@@ -20,9 +20,11 @@ assert(rel_test_path:String() == "relative/test/path")
 local generic_lut = {
 	feature_config = "$catalyst_root/test_feature/config",
 	catalyst_root = "/catalyst",
-	install_target = "~/.config/test_feature",
+	install_root = "~/.config/test_feature",
 	user_home = "/home",
 	test_var = "ooga_booga",
+	long_var = "elbows/carpets/apples",
+	recursive = "$recursive",
 }
 
 local function test_NewPath(expected, path_str)
@@ -58,8 +60,11 @@ test_NewPath("/", "/dir_a/dir_b/dir_c/../../..") -- Absolute parent path
 test_NewPath(nil, "/../") -- Parent of root dir (error expected)
 test_NewPath("ooga_booga/ooga_booga", "$test_var/$test_var") -- Relative varpath lookup
 test_NewPath("/catalyst/test_feature/config", "$feature_config") -- Recursive varpath lookup
+test_NewPath(nil, "/absolute/$catalyst_root") -- Absolute varpath in middle (error expected)
+test_NewPath(nil, "/absolute/$install_root") -- Absolute varpath in middle (error expected)
 test_NewPath(nil, "$invalid/$also_invalid") -- Bad varpath lookup (error expected)
-test_NewPath("/home", "/././config/..///.///$install_target/../../") -- Weird fuckin (but still valid) path syntax
+test_NewPath("/elbows", "/././config/..///.///$long_var/../../") -- Weird fuckin (but still valid) path syntax
+test_NewPath(nil, "$recursive") -- Infinitely recursive varpath (error expected)
 
 --- PATH APPEND OPERATION ---
 
@@ -91,8 +96,8 @@ end
 
 test_AppendPath("apples/bananas", "./apples", "bananas") -- Generic append operation (relative)
 test_AppendPath("apples", "apples/bananas", "..") -- Parent append operation (relative)
-test_AppendPath("carrots", "apples/bananas/../../", "carrots") -- Parent in original path (test accept_index logic)
-test_AppendPath("/test_root/ooga_booga", "/test_root/oranges/", "../$test_var/") -- Parent in original path (test accept_index logic)
+test_AppendPath("carrots", "apples/bananas/../../", "carrots") -- Parent in original path (accept_index logic)
+test_AppendPath("/test_root/ooga_booga", "/test_root/oranges/", "../$test_var/") -- Append varpath
 test_AppendPath(nil, "apples", "/carrots") -- Append absolute path (error expected)
 test_AppendPath(nil, "/", "..") -- Append parent to root (error expected)
 
@@ -124,12 +129,20 @@ local function test_AbsolutePath(expected, path_str)
 	end
 end
 
-test_AbsolutePath("/home/catalyst", "/home/catalyst/") -- Test path that is already absolute
+test_AbsolutePath("/home/catalyst", "/home/catalyst/") -- Path that is already absolute
+test_AbsolutePath("/catalyst/test_feature/config", "$feature_config") -- Absolute varpath
+test_AbsolutePath("/home/.config/test_feature", ".") -- Default working directory
+test_AbsolutePath("/home/.config/test_feature/apples/oranges", "./apples/oranges") -- Subdir of working dir
+test_AbsolutePath("/home/.config/ooga_booga", "./../$test_var") -- Varpath in working dir
+test_AbsolutePath("/", "../../..") -- Absurd parent of default working directory
+test_AbsolutePath(nil, "../../../../") -- Too many parents (error expected)
+
+---
+
+-- Development shenanigans
 
 -- test_split(nil, "/$test_var") -- Test absolute varpath lookup with no LUT
 -- test_split(nil, "$test_var") -- Test relative varpath lookup with no LUT
-
--- Development shenanigans
 
 -- path_utils.path_Resolve("$feature_config/one/$test_var/three", test_lut)
 
