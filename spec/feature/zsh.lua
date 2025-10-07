@@ -1,9 +1,9 @@
 local spec = {
 	feature = "zsh", -- Look for files in dotfiles/zsh, overrides/zsh, or scripts/zsh
-	-- Third-party soft depedencies (defined in the reqs/ directory)
+	-- Third-party soft dependencies (check scripts in the reqs/ directory)
 	depends = { },
 	opts = {
-		-- TODO: Consider moving these two to a vars table (perhaps the feature name too)
+		-- TODO: Consider moving these two to a vars table (perhaps the feature name--above--as well)
 		install_root = "~/.config/zsh", -- Root of target install location
 		-- feature_config = "$feature_root/config", -- Override if defined (should be rare; must be abs path)
 
@@ -18,8 +18,8 @@ local spec = {
 	},
 
 	-- FILES TABLE RULES:
-	-- * If present, install target always assumed to be a directory
-	-- ** Thus $install_target will be generated as a dir;
+	-- * If present, install_root always assumed to be a directory
+	-- ** Thus a directory at $install_root will be generated;
 	-- ** Else a symlink to $feature_config will be installed with the name $install_root
 	-- * If $feature_config/$dotfile specifies a directory
 	-- ** Its contents will be (globbed and) installed to the install target (still a directory)
@@ -35,7 +35,7 @@ local spec = {
 	-- * $key:$value pairs mapped as: $value/$key (link) targets [$feature_config/]$key
 	-- ** > Essentially for any key, the value is necessarily a directory
 	-- files = {
-		-- All (links) would install to: $install_root/alt_zsh_config_X (same name)
+		-- Each of these (links) would install to: $install_root/$key (profile, config, logout)
 		-- ["profile"] = "$install_root",
 		-- ["config"] = ".", 
 		-- ["logout"] = true,

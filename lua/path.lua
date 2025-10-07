@@ -14,31 +14,47 @@
 
 local api = {}
 
--- Creates and returns a path obj table only (no MT)
+-- Creates and returns a path obj table only
 -- Copies data from ref, if provided
 local function _new(path_ref)
 	local obj = {
 		_vars = false, -- Placeholder so __newindex doesn't error (_vars set after _build() in brand new path obj)
-		_data = {}, 
+		_data = {}, -- Array containing raw splits (each named step is an element)
 		_pref = 0, -- Count of leading parent refs (i.e. ../../../dir -> 3)
+		_contents = false, -- Contains path search data (placeholder, false or table)
 
-		absolute = false,
-		index = {},
+		absolute = false, -- Tracks if the path object is absolute
+		file = nil, -- Tracks if the path points to a file (or directory)
 	}
 
 	if path_ref and (type(path_ref._data) == "table") then
 		for _, val in ipairs(path_ref._data) do
+			assert(val ~= "..", "Bad path ref; object cannot contain ../") -- Dev error
 			table.insert(obj._data, val)
 		end
 		obj._vars = path_ref._vars
 		obj._pref = path_ref._pref
 		obj.absolute = path_ref.absolute
+
+		-- (Do not copy _contents or file flag)
 	end
 
 	return setmetatable(obj, {
-		__index = api,
+		__index = function(self, key)
+			-- Special functionality to ensure the path is indexed when the
+			-- file flag is checked
+			if key == "file" then
+				local file_val = not api.Search(self)
+				rawset(self, "file", file_val)
+				return file_val
+
+			-- Standard class-like MT otherwise
+			else
+				return api[key]
+			end
+		end,
 		__newindex = function()
-			-- Not rigorous here, just help track of developer mistakes
+			-- Not rigorous here, just for help tracking dev mistakes
 			error("Attempt to add new member to path table")
 		end,
 		__tostring = function(self)
@@ -47,8 +63,12 @@ local function _new(path_ref)
 	})
 end
 
--- Build creates a new table always
+-- Build outputs a new table object always
 -- path_obj is a reference to a path to copy or nil
+-- > Formally, _build traverses a list of splits, handling/extracting relative
+-- > parent paths (../) and appends this to a reference path or {}
+-- NOTE: This could make checks with [if path_obj.file] but assertions would
+-- > only apply to paths already indexed, so we perform none
 local function _build(path_obj, path_splits)
 	local _copy = _new(path_obj)
 	local _warning = false -- For helpful output (only)
@@ -153,7 +173,7 @@ local function _split(path_str, varpath_tbl, append_mode)
 			path_end = _path
 		end
 
-		-- After this, any path will have a regular format ( /a/b/.../d )
+		-- At this point, any remaining input has a regular format ( /a/b/.../d )
 		for segment in path_end:gmatch("/+([^/]+)") do
 			local varpath_key = segment:match("^%$(.*)$")
 			if varpath_key then
@@ -180,47 +200,91 @@ local function _index(path_str)
 	assert((type(path_str) == "string") and (#path_str > 0),
 		"Feature config path must be a non-empty string")
 
-	local results_tbl = {}
-	local shell_handle
+	local contents
+	local shell_handle = io.popen(string.format("find \"%s\" -type f", path_str))
 
-	shell_handle = io.popen(string.format("find \"%s\" -mindepth 1 -type f", path_str))
+	-- Alternative version using mindepth param to skip self if path is a file
+	-- local shell_handle = io.popen(string.format("find \"%s\" -mindepth 1 -type f", path_str))
+	-- (TODO: Remove this reference code if we confidently will not use it)
+
 	local output = shell_handle:read("*a")
-	for entry in output:gmatch(path_str .. "/(.-)\n") do
-		-- NOTE: Unsure if an array or 'flag table' is better, may be worth testing
-		table.insert(results_tbl, entry)
-	end
-	shell_handle:close()
-
-	return results_tbl
-end
-
---
-
-function api.Search(self, query)
-	local path_str = self:GetAbsolute()
-	local pattern = "^" .. query .. "/?(.-)$"
-
-	-- Index is just a filtered list of all children that are files
-	-- (It is the result of `find` with the original search path omitted)
-	self.index = self.index or index(path_str)
-
-	local result
-	for _, path in ipairs(self.index) do
-		-- Anything that shows up after matching the start is a subpath;
-		-- If an exact match shows up, it's just a file
-		local subpath = path:match(pattern)
-		if subpath then
-			-- The capture resolves to "" on exact path match
-			if #subpath == 0 then
-				-- TODO: I don't remember what this was accomplishing
-				-- ^^refer to what I was doing in feature install
-				return query:match("^.*/(.-)$") or query
-			end
-
-			result = result or {}
-			table.insert(result, subpath)
+	if output == (path_str .. "\n") then
+		-- Exact* match if the path points to a file; return a string
+		contents = path_str
+	else
+		contents = {}
+		for entry in output:gmatch(path_str .. "/(.-)\n") do
+			table.insert(contents, entry)
 		end
 	end
+
+	shell_handle:close()
+	return contents
+end
+
+--[[
+
+I finally remembered what the original structure of Search was. The index will
+run the unix 'find' command and then extract the results, so that the resulting
+string exactly matches what would be specified in a spec file. For example,
+with the path: /home/Projects/Catalyst/dotfiles/zsh/config
+After the index function, the contents would become
+{
+	config
+	logout
+	profile
+	scripts/audio-exec
+	scripts/gitlog
+	scripts/neofetch
+	scripts/sudo
+	scripts/wget
+}
+
+The query allows us to select the config entry. So if config, we would match
+'config' exactly and link it accordingly. If we query scripts, then all five
+entries would be returned and linked.
+
+]]
+
+-- Search for conents matching the query (see above)
+-- Return nil if path is a file, string if exact match, or table of matches
+function api.Search(self, query)
+	-- The index (contents) is a filtered list of all children that are files
+	-- (It is the result of `find` with the original search path omitted)
+	local contents = self._contents
+	if not contents then
+		local path_str = self:Absolute():String()
+		contents = _index(path_str)
+
+		self._contents = contents
+	end
+
+	-- Early exit conditions
+	if type(contents) == "string" then
+		return -- nil
+	end
+	if (not query) or (query == "") then
+		return contents -- No search filter so return everything
+	end
+
+	local result
+	local pattern = "^" .. query .. "/.-$"
+
+	for _, path in ipairs(contents) do
+		if (not result) and (path == query) then
+			-- If an exact match shows up, it's just a file
+			-- (No need to check if result table is non-empty)
+			return path
+		end
+
+		-- Anything that shows up after matching the start is a subpath;
+		local search = path:match(pattern)
+		if search then
+			result = result or {}
+			table.insert(result, path)
+		end
+	end
+
 	return result
 end
 

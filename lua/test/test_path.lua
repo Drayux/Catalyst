@@ -15,6 +15,41 @@ local rel_test_path = path("relative/test/./path/")
 print(rel_test_path)
 assert(rel_test_path:String() == "relative/test/path")
 
+--- DEVELOPMENT ---
+
+local search_test_1 = path("/home/Projects/Catalyst/dotfiles/zsh/")
+print(search_test_1.file) -- false
+
+local search_test_2 = path("/home/Projects/Catalyst/dotfiles/zsh/config/config")
+print(search_test_2.file) -- true
+
+print("\nAttempting search 1:")
+local search_test_1_search = search_test_1:Search("config/scripts")
+for i, v in ipairs(search_test_1_search) do
+	print(v)
+end
+
+print("\nAttempting search 2:")
+local search_test_2_search = search_test_1:Search("config/config")
+print(search_test_2_search)
+
+print()
+
+do return end
+
+-- test_split(nil, "/$test_var") -- Test absolute varpath lookup with no LUT
+-- test_split(nil, "$test_var") -- Test relative varpath lookup with no LUT
+
+-- path_utils.path_Resolve("$feature_config/one/$test_var/three", test_lut)
+
+-- local index = path_utils.path_IndexFeature(path_utils.path_GetScriptDir() .. "/lua")
+-- print("index:")
+-- for _, v in ipairs(index) do
+	-- print(" ", v)
+-- end
+-- local search = path_utils.path_GlobPath(index, "test/dummy/file")
+-- print("search result:", search)
+
 --- PATH OBJECT CREATION ---
 
 local generic_lut = {
@@ -137,22 +172,10 @@ test_AbsolutePath("/home/.config/ooga_booga", "./../$test_var") -- Varpath in wo
 test_AbsolutePath("/", "../../..") -- Absurd parent of default working directory
 test_AbsolutePath(nil, "../../../../") -- Too many parents (error expected)
 
----
+--- PATH INDEXING/SEARCH ---
 
--- Development shenanigans
-
--- test_split(nil, "/$test_var") -- Test absolute varpath lookup with no LUT
--- test_split(nil, "$test_var") -- Test relative varpath lookup with no LUT
-
--- path_utils.path_Resolve("$feature_config/one/$test_var/three", test_lut)
-
--- local index = path_utils.path_IndexFeature(path_utils.path_GetScriptDir() .. "/lua")
--- print("index:")
--- for _, v in ipairs(index) do
-	-- print(" ", v)
--- end
--- local search = path_utils.path_GlobPath(index, "test/dummy/file")
--- print("search result:", search)
+-- TODO: Could use some tests once I'm sure of the implementation requirements
+-- which would be revealed during the completion of the feature spec processing
 
 ---
 
