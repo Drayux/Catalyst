@@ -1,5 +1,5 @@
 --- TEST GLOBALS ---
-TEST_OUTPUT = true
+TEST_OUTPUT = false
 ---
 
 local test_result = true
@@ -17,26 +17,6 @@ assert(rel_test_path:String() == "relative/test/path")
 
 --- DEVELOPMENT ---
 
-local search_test_1 = path("/home/Projects/Catalyst/dotfiles/zsh/")
-print(search_test_1.file) -- false
-
-local search_test_2 = path("/home/Projects/Catalyst/dotfiles/zsh/config/config")
-print(search_test_2.file) -- true
-
-print("\nAttempting search 1:")
-local search_test_1_search = search_test_1:Search("config/scripts")
-for i, v in ipairs(search_test_1_search) do
-	print(v)
-end
-
-print("\nAttempting search 2:")
-local search_test_2_search = search_test_1:Search("config/config")
-print(search_test_2_search)
-
-print()
-
-do return end
-
 -- test_split(nil, "/$test_var") -- Test absolute varpath lookup with no LUT
 -- test_split(nil, "$test_var") -- Test relative varpath lookup with no LUT
 
@@ -49,6 +29,8 @@ do return end
 -- end
 -- local search = path_utils.path_GlobPath(index, "test/dummy/file")
 -- print("search result:", search)
+
+-- do return end
 
 --- PATH OBJECT CREATION ---
 
@@ -176,6 +158,22 @@ test_AbsolutePath(nil, "../../../../") -- Too many parents (error expected)
 
 -- TODO: Could use some tests once I'm sure of the implementation requirements
 -- which would be revealed during the completion of the feature spec processing
+
+local search_test_1 = path("/home/Projects/Catalyst/dotfiles/zsh/")
+print(search_test_1.file) -- false
+
+local search_test_2 = path("/home/Projects/Catalyst/dotfiles/zsh/config/config")
+print(search_test_2.file) -- true
+
+print("\nAttempting search 1:")
+local search_test_1_search = search_test_1:Search("config/scripts")
+for i, v in ipairs(search_test_1_search) do
+	print(v)
+end
+
+print("\nAttempting search 2:") -- Still using search_test_1 var btw
+local search_test_2_search = search_test_1:Search("config/config")
+print(search_test_2_search)
 
 ---
 

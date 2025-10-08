@@ -1,5 +1,5 @@
 local env_status, environment = pcall(require, "lua.env")
-local path_utils = require("lua.path")
+local path = require("lua.path")
 local staging = require("lua.staging")
 
 --- FEATURE SPEC API ---
@@ -165,7 +165,15 @@ function spec.Process(self, system_name)
 
 	if not (files or links) then
 		-- Simple install; symlink to root
-		staging:AddFile("$install_root", self:GetFeatureConfig(), self:GetVarpathTable())
+		-- staging:AddFile("$install_root", self:GetFeatureConfig(), self:GetVarpathTable())
+
+		-- Some refactor notes:
+		-- I think it makes sense that staging only deals in path objects
+		-- > It should know nothing of the vars table or spec file
+		-- Similarly, the spec varpath table needs to be updated the revised format (no closures)
+		local source = path(self:GetFeatureConfig(), self:GetVarpathTable())
+		local target = path("$install_root", self:GetVarpathTable())
+		staging:AddFile(target, source)
 	else
 		spec_ProcessFiles(self, files)
 		-- spec_ProcessLinks(self, links)

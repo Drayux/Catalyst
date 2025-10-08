@@ -12,7 +12,7 @@
 --
 
 
-local path_utils = require("lua.path")
+local path_utils = require("lua.path") -- TODO: remove this dependency 
 
 local _api = {} -- Filesystem function interface
 local _data = {} -- Filesystem internal storage
@@ -49,6 +49,14 @@ function _api.AddFile(install_path, link_target, lut)
 end
 
 -- Pretty output of the target filesystem
+-- TODO: With the new path system, consider saving path objects instead of
+-- strings (link target)
+-- ^^Leaning towards no, since we *have* to process the install path to
+-- construct the staging table
+-- ^^Further, staging doesn't even worry about overrides, it just errors on a
+-- conflict; so a path that's in should truly be locked in and ready to go
+-- ^^Okay on final thought, converting the main entry back into a string is
+-- totally doable since we already assert that it's at an absolute path
 function _api.Print()
 	assert(self == module, "Object method must be invoked as object (use `:` instead of `.`)")
 

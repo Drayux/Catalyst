@@ -2,11 +2,9 @@ local spec = {
 	feature = "zsh", -- Look for files in dotfiles/zsh, overrides/zsh, or scripts/zsh
 	-- Third-party soft dependencies (check scripts in the reqs/ directory)
 	depends = { },
-	opts = {
-		-- TODO: Consider moving these two to a vars table (perhaps the feature name--above--as well)
-		install_root = "~/.config/zsh", -- Root of target install location
-		-- feature_config = "$feature_root/config", -- Override if defined (should be rare; must be abs path)
 
+	-- Values that affect how the script processes this spec(?)
+	opts = {
 		prefer_link = true,
 
 		-- TODO: Considering something about needing privilege escallation?
@@ -15,6 +13,13 @@ local spec = {
 		local_needs_su = false,
 		-- Also TODO: When true, feature will not be set to install with the ALL keyword
 		ignore_select_all = false,
+		-- Alternatively, perhaps 'hidden = true/false' so it doesn't show up at all? (Maybe 'deprecated'?)
+
+		---
+
+		-- TODO: Consider moving these two to a vars table (perhaps the feature name--above--as well)
+		install_root = "~/.config/zsh", -- Root of target install location
+		-- feature_config = "$feature_root/config", -- Override if defined (should be rare; must be abs path)
 	},
 
 	-- FILES TABLE RULES:
