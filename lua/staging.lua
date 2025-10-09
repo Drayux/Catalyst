@@ -17,35 +17,42 @@ local path_utils = require("lua.path") -- TODO: remove this dependency
 local _api = {} -- Filesystem function interface
 local _data = {} -- Filesystem internal storage
 
-function _api.AddFile(install_path, link_target, lut)
-	-- TODO: Consider asserting that install_path is a string (aka split every time)
-	-- Further, link_target will not need to be split, but resolved
-	local path = (type(install_path) == "table") and install_path
-		or path_utils.path_Split(install_path, lut)
-	local install_ptr = _data
+function _api.AddFile(install_path, link_target)
+	-- TODO: Consider assertion that inputs are path objects
+
+	local final_segment
+	local target_depth = install_path:Length()
+	local data_ptr = _data
 
 	-- Traverse the install tree or create directories as we go
-	local segment
-	local max_depth = #path
-	for depth, _segment in ipairs(path) do
-		segment = _segment
-		if depth == max_depth then
+	for depth, segment in ipairs(install_path) do
+		if depth == target_depth then
+			-- Push the last segment up in scope and break
+			final_segment = segment
 			break
 		end
 
-		-- Create new directory if necessary, traverse filetree
-		if not install_ptr[segment] then
-			install_ptr[segment] = {}
+		-- Create new directory if necessary
+		if not data_ptr[segment] then
+			data_ptr[segment] = {}
 		end
-		install_ptr = install_ptr[segment]
-		assert(type(install_ptr) == "table", string.format("Spec conflict; `%s` already exists", install_path))
-	end
-	assert(segment, string.format("Attempted to add invalid install path `%s`", install_path))
 
-	-- This is a deliberate deviation from a classical unix CLI:
-	-- Do not make files a child of an existing directory at that path if one exists
-	assert(not install_ptr[segment], string.format("Spec conflict; `%s` already exists", install_path))
-	install_ptr[segment] = link_target
+		-- Traverse filetree
+		data_ptr = data_ptr[segment]
+		assert(type(data_ptr) == "table",
+			string.format("Spec conflict; `%s` already exists", install_path:String()))
+	end
+
+	-- Should only trigger if install_path was empty (probably?)
+	assert(final_segment,
+		string.format("Attempted to add invalid install path `%s`", install_path:String()))
+
+	-- Error on any conflict, even if it's a directory
+	-- (This deviates from classical unix behavior that puts the new file inside the dir)
+	assert(not data_ptr[final_segment],
+		string.format("Spec conflict; `%s` already exists", install_path:String()))
+
+	data_ptr[final_segment] = link_target:Absolute():String()
 end
 
 -- Pretty output of the target filesystem
@@ -56,10 +63,9 @@ end
 -- ^^Further, staging doesn't even worry about overrides, it just errors on a
 -- conflict; so a path that's in should truly be locked in and ready to go
 -- ^^Okay on final thought, converting the main entry back into a string is
--- totally doable since we already assert that it's at an absolute path
+-- totally doable since we already assert that it's at an absolute path, so
+-- this module should "convert path objects into staged files"
 function _api.Print()
-	assert(self == module, "Object method must be invoked as object (use `:` instead of `.`)")
-
 	local output = {}
 	local indent_inc = " │ "
 	local indent_fin = " └ "
@@ -147,11 +153,16 @@ return setmetatable(module, {
 	__index = function(self, key)
 		local _fn = _api[key]
 		assert(_fn, string.format("No method %s exists for staging module", key))
-		rawset(self, key, function(self, ...)
-			assert(self == module, "Object method must be invoked as object (use `:` instead of `.`)")
-			return _fn(...) -- Since this is a singleton module, we don't actually need to invoke with 'self'
-		end)
-		return self[key] -- Returns the new closure created just above
+
+		-- Since this is a singleton module, we don't actually need to invoke with 'self'
+		local closure = function(self, ...)
+			assert(self == module,
+				"Object method must be invoked as object (use `:` instead of `.`)")
+			return _fn(...)
+		end
+
+		rawset(self, key, closure)
+		return closure
 	end,
 	-- Trivial read-only
 	__newindex = function()

@@ -86,32 +86,38 @@ local function spec_ProcessFiles(spec, files)
 		error("Bad call to spec_ProcessTables, files is not a table")
 	end
 
-	local feature_config = spec:GetFeatureConfig() -- Path of dotfile dir within repo
-	local index = path_utils.path_IndexFeature(feature_config) -- Index for glob search
+	local feature_config = path(spec:GetFeatureConfig()):Absolute()
 
 	-- For each entry, search for it below
 	-- > if file (string), then install
 	-- > if directory (table), then install children
 	for dotfile, location in pairs(files) do
 		print("adding file:", location, "-->", dotfile)
-		local search = path_utils.path_GlobPath(index, dotfile)
-		local install_path
 
-		if type(search) == "string" then
-			-- Resolve install path
+		local search_result = feature_config:Search(dotfile)
+		local install_path
+		local file_name
+
+		if type(search_result) == "string" then
+			-- Target is a config file
 			if type(location) == "table" then
+				-- location[1] is the target install location
+				-- location[2] is the new name of the dotfile
+				assert(#location == 2, "Rename spec must specify exactly 2 entries")
+
 				-- TODO: Make sure that when calling AddFile(path) that it
 				-- throws an error if location[2] == "" (or nil)
-				assert(#location == 2, "Rename spec must specify exactly 2 entries")
-				install_path = string.format("%s/%s", location[1], location[2])
+
+				install_path = path(location[1], self.vars):Absolute()
+				file_name = string.format("%s/%s", location[1], location[2])
 			else
-				install_path = string.format("%s/%s", location, search)
+				install_path = path(location, spec.vars):Absolute()
+				file_name = dotfile
 			end
 
-			-- Resolve dotfile (link) path
-			local source_path = string.format("%s/%s", feature_config, dotfile)
-			staging:AddFile(install_path, source_path, spec.vars)
+			staging:AddFile(install_path, feature_config:Append(file_name))
 		else
+			--[[ TODO: Correct this after the refactor
 			for _, _file in ipairs(search) do
 				-- Resolve install path
 				if type(location) == "table" then
@@ -127,6 +133,7 @@ local function spec_ProcessFiles(spec, files)
 				local source_path = string.format("%s/%s", feature_config, dotfile)
 				staging:AddFile(install_path, source_path, spec.vars)
 			end
+			]]
 		end
 	end
 end
@@ -165,15 +172,9 @@ function spec.Process(self, system_name)
 
 	if not (files or links) then
 		-- Simple install; symlink to root
-		-- staging:AddFile("$install_root", self:GetFeatureConfig(), self:GetVarpathTable())
-
-		-- Some refactor notes:
-		-- I think it makes sense that staging only deals in path objects
-		-- > It should know nothing of the vars table or spec file
-		-- Similarly, the spec varpath table needs to be updated the revised format (no closures)
-		local source = path(self:GetFeatureConfig(), self:GetVarpathTable())
-		local target = path("$install_root", self:GetVarpathTable())
-		staging:AddFile(target, source)
+		local install_path = path("$install_root", self.vars)
+		local link_target = path("$feature_config", self.vars)
+		staging:AddFile(install_path, link_target)
 	else
 		spec_ProcessFiles(self, files)
 		-- spec_ProcessLinks(self, links)
@@ -269,7 +270,7 @@ local function spec_Init(_spec, api)
 
 	-- NOTE: Currently no use of spec.vars being defined early
 	-- The following is mostly a demonstration for possible inspiration later
-	spec.vars = setmetatable(spec.vars or {}, {
+	_spec.vars = setmetatable(_spec.vars or {}, {
 		__index = function(tbl, key)
 			-- local opt_val = _spec.opts[key]
 			-- if opt_val then
@@ -278,15 +279,16 @@ local function spec_Init(_spec, api)
 
 			local fn = spec_varpath_def[key]
 			if fn then
-				return fn(_spec)
+				local varpath_val = fn(_spec)
+				rawset(tbl, key, varpath_val)
+				return varpath_val
 			end
 
 			-- Fallback to script env vars
 			return environment[key]
 		end,
 		__newindex = function()
-			-- No reason we couldn't support this; only right now if this
-			-- happens, then it is definitely a developer mistake
+			-- No reason we couldn't support this; developer mistake for now though
 			error("Spec vars table is read-only")
 		end
 	})
