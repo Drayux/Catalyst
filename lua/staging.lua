@@ -18,14 +18,16 @@ local _api = {} -- Filesystem function interface
 local _data = {} -- Filesystem internal storage
 
 function _api.AddFile(install_path, link_target)
-	-- TODO: Consider assertion that inputs are path objects
+	-- TODO: Consider assertion that both inputs are path objects
+	install_path = install_path:Absolute()
 
 	local final_segment
 	local target_depth = install_path:Length()
 	local data_ptr = _data
 
 	-- Traverse the install tree or create directories as we go
-	for depth, segment in ipairs(install_path) do
+	-- TODO: for depth, segment in ipairs(install_path) do
+	for depth, segment in ipairs(install_path._data) do
 		if depth == target_depth then
 			-- Push the last segment up in scope and break
 			final_segment = segment

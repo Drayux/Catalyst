@@ -91,49 +91,43 @@ local function spec_ProcessFiles(spec, files)
 	-- For each entry, search for it below
 	-- > if file (string), then install
 	-- > if directory (table), then install children
-	for dotfile, location in pairs(files) do
-		print("adding file:", location, "-->", dotfile)
-
-		local search_result = feature_config:Search(dotfile)
-		local install_path
-		local file_name
-
+	for name, directory in pairs(files) do
+		local search_result = feature_config:Search(name)
 		if type(search_result) == "string" then
-			-- Target is a config file
-			if type(location) == "table" then
-				-- location[1] is the target install location
-				-- location[2] is the new name of the dotfile
-				assert(#location == 2, "Rename spec must specify exactly 2 entries")
+			search_result = { name }
+		end
 
-				-- TODO: Make sure that when calling AddFile(path) that it
-				-- throws an error if location[2] == "" (or nil)
+		for _, dotfile in ipairs(search_result) do
+			local install_path
+			local config_path = feature_config:Append(dotfile)
+			local filename = dotfile:match("^.-/(.+)$") or dotfile
 
-				install_path = path(location[1], self.vars):Absolute()
-				file_name = string.format("%s/%s", location[1], location[2])
-			else
-				install_path = path(location, spec.vars):Absolute()
-				file_name = dotfile
-			end
+			if type(directory) == "table" then
+				assert(#directory == 2,
+					"Rename spec must specify exactly 2 non-empty entries")
+				-- directory[1] is the target install directory
+				assert(directory[1] and (#directory[1] > 0),
+					"Rename spec must specify an install directory (first position)")
+				-- directory[2] is the new name of the dotfile
+				assert(directory[2] and (#directory[2] > 0),
+					"Rename spec must specify an installed filename (second position)")
 
-			staging:AddFile(install_path, feature_config:Append(file_name))
-		else
-			--[[ TODO: Correct this after the refactor
-			for _, _file in ipairs(search) do
-				-- Resolve install path
-				if type(location) == "table" then
-					-- TODO: Make sure that this going through AddFile
-					-- throws an error if location[2] == "" (or nil)
-					assert(#location == 2, "Rename spec must specify exactly 2 entries")
-					install_path = string.format("%s/%s/%s", location[1], location[2], _file)
-				else
-					install_path = string.format("%s/%s", location, _file)
+				install_path = path(directory[1], spec.vars):Append(directory[2])
+
+				-- Folder rename is a pretty different structure, perhaps this
+				-- can be made cleaner sometime (TODO)
+				if #search_result > 1 then
+					install_path = install_path:Append(filename)
 				end
-
-				-- Resolve dotfile (link) path
-				local source_path = string.format("%s/%s", feature_config, dotfile)
-				staging:AddFile(install_path, source_path, spec.vars)
+			else
+				-- Flatten directory contents
+				if directory == true then
+					directory = "$install_root"
+				end
+				install_path = path(directory, spec.vars):Append(filename)
 			end
-			]]
+
+			staging:AddFile(install_path, config_path)
 		end
 	end
 end
