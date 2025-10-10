@@ -35,8 +35,7 @@ local spec = {
 
 	-- * 'ipairs $values' will install to: $install_root/$value (link target: $feature_config/$value)
 	-- ** I.E. for profile below: ~/.config/zsh/profile --> $feature_config/profile
-	-- files = { "profile", "config", "logout", --[[ ... ]] },
-	files = { "profile", "config", ["scripts"] = "bacon" },
+	files = { "profile", "config", "logout", --[[ ... ]] },
 
 	-- * $key:$value pairs mapped as: $value/$key (link) targets [$feature_config/]$key
 	-- ** > Essentially for any key, the value is necessarily a directory

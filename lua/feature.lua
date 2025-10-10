@@ -91,40 +91,62 @@ local function spec_ProcessFiles(spec, files)
 	-- For each entry, search for it below
 	-- > if file (string), then install
 	-- > if directory (table), then install children
-	for name, directory in pairs(files) do
-		local search_result = feature_config:Search(name)
+	for config_filename, directory in pairs(files) do
+		local search_result = feature_config:Search(config_filename)
+		local dir_install = false
 		if type(search_result) == "string" then
-			search_result = { name }
+			search_result = { config_filename }
+			dir_install = true
 		end
 
-		for _, dotfile in ipairs(search_result) do
+		for _, path_str in ipairs(search_result) do
 			local install_path
-			local config_path = feature_config:Append(dotfile)
-			local filename = dotfile:match("^.-/(.+)$") or dotfile
+			local config_path = feature_config:Append(path_str)
+			local target_filename = path_str:match("^.-/(.+)$") or path_str
 
 			if type(directory) == "table" then
-				assert(#directory == 2,
-					"Rename spec must specify exactly 2 non-empty entries")
 				-- directory[1] is the target install directory
 				assert(directory[1] and (#directory[1] > 0),
 					"Rename spec must specify an install directory (first position)")
-				-- directory[2] is the new name of the dotfile
-				assert(directory[2] and (#directory[2] > 0),
-					"Rename spec must specify an installed filename (second position)")
-
-				install_path = path(directory[1], spec.vars):Append(directory[2])
-
-				-- Folder rename is a pretty different structure, perhaps this
-				-- can be made cleaner sometime (TODO)
-				if #search_result > 1 then
-					install_path = install_path:Append(filename)
+				-- directory[2] is the new name of the dotfile (or nil for the same)
+				local _rename
+				if directory[2] and (#directory[2] > 0) then
+					_rename = directory[2]
 				end
+
+				install_path = path(directory[1], spec.vars)
+
+				-- file rename:
+				-- install path is directory[1] + directory[2]
+				-- * unless empty, then directory[1] + target_filename
+				-- dir rename:
+				-- install path is directory[1] + directory[2] + target_filename
+				-- * unless empty, then directory[1] + target_filename
+				if dir_install then
+					-- Folder rename is a pretty different structure, perhaps this
+					-- can be made cleaner sometime (TODO)
+					if _rename then
+						install_path = install_path:Append(_rename)
+					end
+					install_path = install_path:Append(target_filename)
+				else
+					install_path = install_path:Append(_rename or target_filename)
+				end
+
+				if directory[2] and (#directory[2] > 0) then
+					install_path = path(directory[1], spec.vars):Append(directory[2])
+				end
+
 			else
 				-- Flatten directory contents
 				if directory == true then
 					directory = "$install_root"
+				elseif directory == "" then
+					-- TODO: Consider allowing this--doesn't hurt to have, just
+					-- not much (intuitive) use for it
+					error("Bad target directory (empty string)")
 				end
-				install_path = path(directory, spec.vars):Append(filename)
+				install_path = path(directory, spec.vars):Append(target_filename)
 			end
 
 			staging:AddFile(install_path, config_path)
