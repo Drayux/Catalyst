@@ -83,7 +83,7 @@ local function spec_ProcessFiles(spec, files)
 		})
 	else
 		-- Developer error
-		error("Bad call to spec_ProcessTables, files is not a table")
+		error("Bad call to spec_ProcessFiles, files is not a table")
 	end
 
 	local feature_config = path(spec:GetFeatureConfig()):Absolute()
@@ -154,6 +154,28 @@ local function spec_ProcessFiles(spec, files)
 	end
 end
 
+-- Processes the extra symlinks specified by the spec
+-- (aka. each file is placed into the staging filetree)
+local function spec_ProcessLinks(spec, links)
+	if not links then
+		return
+	end
+	assert(type(links) == "table", "Bad call to spec_ProcessLinks, links is not a table")
+
+	for link_filename, link_target in pairs(links) do
+		assert(type(link_filename) == "string")
+		assert(type(link_target) == "string")
+
+		-- This association is much simpler than files, links will be generated
+		-- almost exactly as they appear in the spec
+
+		install_path = path("$install_root", spec.vars):Append(link_filename)
+		target_path = path(link_target, spec.vars)
+
+		staging:AddFile(install_path, target_path)
+	end
+end
+
 -- Processes spec config (call only once)
 function spec.Process(self, system_name)
 	assert(not self._processed, string.format("Feature %s has already been processed", self.feature))
@@ -193,7 +215,7 @@ function spec.Process(self, system_name)
 		staging:AddFile(install_path, link_target)
 	else
 		spec_ProcessFiles(self, files)
-		-- spec_ProcessLinks(self, links)
+		spec_ProcessLinks(self, links)
 	end
 
 	staging:Print()
