@@ -14,20 +14,26 @@
 
 local path_utils = require("lua.path") -- TODO: remove this dependency 
 
-local _api = {} -- Filesystem function interface
-local _data = {} -- Filesystem internal storage
+-- Filesystem function interface
+local _api = {}
 
-function _api.AddFile(install_path, link_target)
+local _tree = {} -- Filesystem internal storage
+local _data = {} -- Final install contents (array)
+
+-- Nomrally source is the link target (aka the "source" file w/in the repo)
+-- For copy operations, source refers to the the "copy from" file
+function _api.AddFile(install_path, source, type)
 	-- TODO: Consider assertion that both inputs are path objects
 	install_path = install_path:Absolute()
+	type = type or _api.LINK -- Allow symlink as default install type
 
 	local final_segment
 	local target_depth = install_path:Length()
-	local data_ptr = _data
+	local data_ptr = _tree
 
 	-- Traverse the install tree or create directories as we go
 	-- TODO: for depth, segment in ipairs(install_path) do
-	for depth, segment in ipairs(install_path._data) do
+	for depth, segment in ipairs(install_path._tree) do
 		if depth == target_depth then
 			-- Push the last segment up in scope and break
 			final_segment = segment
@@ -54,19 +60,23 @@ function _api.AddFile(install_path, link_target)
 	assert(not data_ptr[final_segment],
 		string.format("Spec conflict; `%s` already exists", install_path:String()))
 
-	data_ptr[final_segment] = link_target:Absolute():String()
+	-- Create final file object for staging
+	if type ~= _api.LINK then
+		source = source:Absolute()
+	end
+	local contents = {
+		source = source,
+		location = install_path
+		type = type,
+	}
+
+	table.insert(_data, contents) -- Append contents obj to final install array
+	data_ptr[final_segment] = source:String() -- TREE[install_path] = source (aka link target)
 end
 
 -- Pretty output of the target filesystem
--- TODO: With the new path system, consider saving path objects instead of
--- strings (link target)
--- ^^Leaning towards no, since we *have* to process the install path to
--- construct the staging table
--- ^^Further, staging doesn't even worry about overrides, it just errors on a
--- conflict; so a path that's in should truly be locked in and ready to go
--- ^^Okay on final thought, converting the main entry back into a string is
--- totally doable since we already assert that it's at an absolute path, so
--- this module should "convert path objects into staged files"
+-- Each directory will output itself, recurse on its child directories, and
+-- finally output its remaining children (which are not recursed)
 function _api.Print()
 	local output = {}
 	local indent_inc = " │ "
@@ -146,11 +156,19 @@ function _api.Print()
 		end
 	end
 
-	_worker(output, "<< root >>", _data, "", nil)
+	_worker(output, "<< root >>", _tree, "", nil)
 	print(table.concat(output))
 end
 
-local module = {} -- Module proxy table
+-- Module proxy table
+local module = {
+	-- Enum-like installation 'types'
+	PATH = {}, -- Path install (absolute symbolic link, default for dotfiles)
+	COPY = {}, -- File copy (used by edit installs)
+	HARD = {}, -- Hard link to dotfile (rare, but supported)
+	LINK = {}, -- Relative symbolic link (usually for hidden file fixup)
+}
+
 return setmetatable(module, {
 	__index = function(self, key)
 		local _fn = _api[key]
@@ -169,5 +187,13 @@ return setmetatable(module, {
 	-- Trivial read-only
 	__newindex = function()
 		error("Staging filetree module is read-only")
+	end,
+	-- Iterator over final install contents
+	__pairs = function(self)
+		local iter = ipairs(_data)
+		-- TODO: Test this (no idea if it works)
+		return function()
+			return iter(_data, ret)
+		end, nil, nil
 	end
 })

@@ -1,7 +1,7 @@
 local spec = {
 	feature = "zsh", -- Look for files in dotfiles/zsh, overrides/zsh, or scripts/zsh
 	-- Third-party soft dependencies (check scripts in the reqs/ directory)
-	depends = { },
+	depends = { "zsh-syntax-highlighting" },
 
 	-- Values that affect how the script processes this spec(?)
 	opts = {
@@ -73,7 +73,13 @@ local spec = {
 
 	-- Config editing scripts instead of files
 	edits = {
-		["zprofile"] = { "/etc/zprofile", syntax = "bash" }
+		["zdotdir"] = { "/etc/profile.d/zdotdir.sh",
+			syntax = "shell",
+			create = true, -- Do not error if original file is not found
+			access = "0644", -- file / user: read/write / group: read / other: read
+			-- TODO: Do I need owner/group?
+			-- write = "redirect", -- TODO: Thinking maybe options for copy, pipe, etc.
+		}
 	},
 
 	-- System-specific overrides
@@ -81,10 +87,10 @@ local spec = {
 		-- If system is not listed here, no override is defined
 		-- (Same map rules as dotfiles above)
 		work = {
-			-- files = {}, -- Overrides spec.files if defined (does not merge)
+			-- files = {}, -- Replaces spec.files if defined (does not merge)
 			-- edits = {} -- Merges with spec.edits (overwrites conflicting entires)
 			overrides = { -- Merges with spec.files (overwrites conflicting entries)
-				["work"] = "~/.local/zsh/overrides",
+				["work"] = { "~/.local/zsh", "overrides" },
 			}
 			-- vars = {} -- TODO: Rough idea, offer a good usecase for varpaths
 			-- where files can be installed in different locations on different

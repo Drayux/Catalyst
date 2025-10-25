@@ -16,6 +16,19 @@ Had a thought regarding the system spec:
 - Specify overrides via selecting a system via the options; this will also preset the selected features
 - Thus the selected features option becomes an override to this behavior
 
+Once installed, consider the upgrade/removal process:
+- It can help to know what was installed already
+ - Consider a cache of sorts
+ - OR it would be possible to check if the spec still existed
+- This changes when an spec change happens (likely only major changes?)
+ - Wiping out specific files can lead to files removed from the spec to be skipped
+ - Therefore I'm thinking of the cache containing the install_root directory, and wiping out the entire thing
+ - This would also track system edits and files outside of install_root individually
+- A similar feature would be up in the air now
+ - I could create a "check" mode that can determine if the current form of a spec is installed
+ - Should spec files explicitly specify version numbers?
+  - This would be a pain to maintain unless it were automated!
+
 Some extra notes for the new README:
 - The "installation" works by generating a bash script: ./install (gitignored)
  - This is so that the install command can be manually inspected first because it might use scary commands

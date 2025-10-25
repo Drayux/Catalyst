@@ -62,7 +62,7 @@ function spec.GetFeatureOverrides(self)
 	return overrides
 end
 
--- Processes the config files specified by the spec
+-- Subroutine that processes the config files specified by the spec
 -- (aka. each file is placed into the staging filetree)
 local function spec_ProcessFiles(spec, files)
 	if not files then
@@ -149,12 +149,15 @@ local function spec_ProcessFiles(spec, files)
 				install_path = path(directory, spec.vars):Append(target_filename)
 			end
 
-			staging:AddFile(install_path, config_path)
+			-- TODO: Support for hard links (just need to read config
+			-- and set staging.HARD if requested)
+
+			staging:AddFile(install_path, config_path, staging.PATH)
 		end
 	end
 end
 
--- Processes the extra symlinks specified by the spec
+-- Subroutine to that processes the extra symlinks specified by the spec
 -- (aka. each file is placed into the staging filetree)
 local function spec_ProcessLinks(spec, links)
 	if not links then
@@ -172,11 +175,18 @@ local function spec_ProcessLinks(spec, links)
 		install_path = path("$install_root", spec.vars):Append(link_filename)
 		target_path = path(link_target, spec.vars)
 
-		staging:AddFile(install_path, target_path)
+		staging:AddFile(install_path, target_path, staging.LINK)
 	end
 end
 
--- Processes spec config (call only once)
+-- Subroutine to that processes spec edits
+-- DEV NOTE: A spec that specifies multiple edits should NOT create multiple
+-- catalyst config sections; it should be applied sequentially (in what order though?)
+function spec_ProcessEdits(spec, edits)
+	print("TODO process spec edits")
+end
+
+-- Process spec config (call only once)
 function spec.Process(self, system_name)
 	assert(not self._processed, string.format("Feature %s has already been processed", self.feature))
 	self._processed = true
@@ -203,7 +213,7 @@ function spec.Process(self, system_name)
 		if system_ovr.edits then
 			edits = edits or {}
 			for k, v in pairs(system_ovr.edits) do
-				files[k] = v -- Overrides table values stomp original table values
+				edits[k] = v -- Overrides table values stomp original table values
 			end
 		end
 	end
@@ -212,10 +222,14 @@ function spec.Process(self, system_name)
 		-- Simple install; symlink to root
 		local install_path = path("$install_root", self.vars)
 		local link_target = path("$feature_config", self.vars)
-		staging:AddFile(install_path, link_target)
+		staging:AddFile(install_path, link_target, staging.PATH)
 	else
 		spec_ProcessFiles(self, files)
 		spec_ProcessLinks(self, links)
+	end
+
+	if edits then
+		spec_ProcessEdits(self, edits)
 	end
 
 	staging:Print()
