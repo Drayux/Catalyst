@@ -12,7 +12,7 @@ Big ol todo list:
 - The final solution will likely be a mix of Bash and Lua
 ---
 Had a thought regarding the system spec:
-- Allow system names to be specified as a feature selection keyword (i.e. KOKORO (itg pc) -> nvim, weston (+login scripts))
+- Allow system names to be specified as a feature selection keyword within the CLI (i.e. KOKORO (itg pc) -> nvim, weston (+login scripts))
 - Specify overrides via selecting a system via the options; this will also preset the selected features
 - Thus the selected features option becomes an override to this behavior
 
@@ -28,6 +28,12 @@ Once installed, consider the upgrade/removal process:
  - I could create a "check" mode that can determine if the current form of a spec is installed
  - Should spec files explicitly specify version numbers?
   - This would be a pain to maintain unless it were automated!
+
+Misc notes of things I keep losing track of from the development perspective:
+- The dotfiles/ directory is strictly files (data) that would be put into the system (usually linked). The spec/ directory is strictly the rules on how to install it. There exists a temptation to merge these, and while possible, I think this will complicate the organization.
+ - If we move feature spec into its dotfile dir (at say dotfiles/\<feature\>/init.lua) then where do we put system/ and depend/?
+ - We could remove system entirely and nest it within the feature spec, but then adding a new system would be far more tedious, requiring that we manually include/omit every feature. Simliarly, shared soft dependencies would most likely just be duplicated into any feature that calls for them.
+ - There is also the implication that doing this adds another directory from which we execute lua. The split structure means that no file in dotfiles/ is ever loaded as a chunk by the interpreter.
 
 Some extra notes for the new README:
 - The "installation" works by generating a bash script: ./install (gitignored)

@@ -150,7 +150,7 @@ local function spec_ProcessFiles(spec, files)
 			end
 
 			-- TODO: Support for hard links (just need to read config
-			-- and set staging.HARD if requested)
+			-- and set type param to staging.HARD if requested)
 
 			staging:AddFile(install_path, config_path, staging.PATH)
 		end
@@ -179,7 +179,8 @@ local function spec_ProcessLinks(spec, links)
 	end
 end
 
--- Subroutine to that processes spec edits
+-- Subroutine to process spec edits
+-- Edited file generation happens later; here we just validate the targets
 -- DEV NOTE: A spec that specifies multiple edits should NOT create multiple
 -- catalyst config sections; it should be applied sequentially (in what order though?)
 function spec_ProcessEdits(spec, edits)
@@ -212,11 +213,40 @@ function spec.Process(self, system_name)
 		-- "Merge" edit files if system_ovr.edits if defined
 		if system_ovr.edits then
 			edits = edits or {}
-			for k, v in pairs(system_ovr.edits) do
-				edits[k] = v -- Overrides table values stomp original table values
+			for ovr_name, ovr_spec in pairs(system_ovr.edits) do
+				local base_edit = edits[ovr_name]
+				if base_edit then
+					-- Named edit already exists in base, merge its contents
+					for ovr_k, ovr_v in pairs(ovr_spec) do
+						if (ovr_k == "sequence")
+							and (type(ovr_v) == "string")
+						then
+							-- Edge case to append single edit to sequence
+							table.insert(base_edit.sequence, ovr_v)
+						else
+							-- Normal case, replace if defined by override
+							base_edit[ovr_k] = ovr_v
+						end
+					end
+				else
+					-- Otherwise copy the entire entry from the overrides
+					edits[ovr_name] = over_spec
+				end
 			end
 		end
 	end
+
+	-- FOR NEXT TIME (TODO)
+	-- I shouldn't need this if I actually work on this when I should be but....
+	-- Mystery is when to stage edits versus actually process edits
+	-- Thinking to split up "process" and a new routine "stage"
+	-- Reorganize all current processing into staging
+	-- Finally the top-level spec handling function will run stage (aka prepare files/paths)
+	-- ...followed by process (aka generate intermediate files) *maybe* followed by install
+	-- (aka generate the main ./install and ./restore scripts -- might also be merged with process)
+	-- Finally, a note for extra later, the restore script should probably check for a time and maybe
+	-- even a signed hash as a small extra security measure. (The fear is someone editing the system
+	-- file backups and then the user reverting to those "now bad" files.)
 
 	if not (files or links) then
 		-- Simple install; symlink to root

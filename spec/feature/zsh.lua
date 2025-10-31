@@ -72,13 +72,22 @@ local spec = {
 	},
 
 	-- Config editing scripts instead of files
+	-- Edits table keys are internal names for merge logic (arbitrary, spec-defined) 
 	edits = {
-		["zdotdir"] = { "/etc/profile.d/zdotdir.sh",
+		["environment"] = {
+			file = "/etc/profile.d/zdotdir.sh",
 			syntax = "shell",
 			create = true, -- Do not error if original file is not found
 			access = "0644", -- file / user: read/write / group: read / other: read
+			-- TODO: Optional additional contents if we do create the file (such as a hashbang)
 			-- TODO: Do I need owner/group?
-			-- write = "redirect", -- TODO: Thinking maybe options for copy, pipe, etc.
+			-- TODO: write = "redirect" (Thinking maybe options for copy, pipe, etc.)
+			-- (also) TODO: All of the above values will need defaults in code!
+			-- TODO: Override spec can add a `skip = true` flag (and not apply this edit)
+			sequence = {
+				"zdotdir",
+				-- Any additional edits to apply
+			}
 		}
 	},
 
