@@ -65,13 +65,18 @@ function _api.AddFile(install_path, source, type)
 		source = source:Absolute()
 	end
 	local contents = {
-		source = source,
-		location = install_path
-		type = type,
+		source = source, -- The data origin of the staged file
+		location = install_path -- The path that the new file is created
+		type = type, -- Link, copy, etc.
 	}
 
 	table.insert(_data, contents) -- Append contents obj to final install array
 	data_ptr[final_segment] = source:String() -- TREE[install_path] = source (aka link target)
+end
+
+-- System configuration edits are staged in their own table for processing once
+-- the staging tree is verified
+function _api.AddEdit(system_path, edit_spec)
 end
 
 -- Pretty output of the target filesystem

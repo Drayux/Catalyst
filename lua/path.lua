@@ -293,6 +293,12 @@ function api.Length(self)
 	return #self._data + self._pref
 end
 
+function api.Filename(self)
+	-- TODO: Consider variation that asserts this is a file
+	-- ^^Would possibly allow for a Dirname variation
+	return self._data[#self._data]
+end
+
 function api.String(self)
 	local path_str = table.concat(self._data, "/")
 

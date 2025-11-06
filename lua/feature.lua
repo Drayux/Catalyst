@@ -114,7 +114,7 @@ local function spec_ProcessFiles(spec, files)
 					_rename = directory[2]
 				end
 
-				install_path = path(directory[1], spec.vars)
+				install_path = path(directory[1], spec._varpath_tbl)
 
 				-- file rename:
 				-- install path is directory[1] + directory[2]
@@ -134,7 +134,7 @@ local function spec_ProcessFiles(spec, files)
 				end
 
 				if directory[2] and (#directory[2] > 0) then
-					install_path = path(directory[1], spec.vars):Append(directory[2])
+					install_path = path(directory[1], spec._varpath_tbl):Append(directory[2])
 				end
 
 			else
@@ -146,7 +146,7 @@ local function spec_ProcessFiles(spec, files)
 					-- not much (intuitive) use for it
 					error("Bad target directory (empty string)")
 				end
-				install_path = path(directory, spec.vars):Append(target_filename)
+				install_path = path(directory, spec._varpath_tbl):Append(target_filename)
 			end
 
 			-- TODO: Support for hard links (just need to read config
@@ -172,25 +172,48 @@ local function spec_ProcessLinks(spec, links)
 		-- This association is much simpler than files, links will be generated
 		-- almost exactly as they appear in the spec
 
-		install_path = path("$install_root", spec.vars):Append(link_filename)
-		target_path = path(link_target, spec.vars)
+		install_path = path("$install_root", spec._varpath_tbl):Append(link_filename)
+		target_path = path(link_target, spec._varpath_tbl)
 
 		staging:AddFile(install_path, target_path, staging.LINK)
 	end
 end
 
--- Subroutine to process spec edits
--- Edited file generation happens later; here we just validate the targets
--- DEV NOTE: A spec that specifies multiple edits should NOT create multiple
--- catalyst config sections; it should be applied sequentially (in what order though?)
+-- Subroutine to stage sysconfig edits for processing
+-- Behind the scenes, we're just flattening and sticking it in an array
+-- Since edits cannot conflict (multiple features touching the same file is
+-- OKAY) there is no error handling to be done yet.
 function spec_ProcessEdits(spec, edits)
-	print("TODO process spec edits")
+
+	-- DEV NOTE: Multiple edits to the same file should NOT create multiple config
+	-- sections; it should be applied sequentially (in what order though?)
+
+	for edit_id, edit_spec in pairs(edits) do
+		-- Edit staging indexes by filepath instead of internal name
+		-- Spec files should use variables for shared system-level files to
+		-- mitigate the chance of a system override generating extra system
+		-- files by mistake.
+		local edit_file = path(edit_spec.file, spec._varpath_tbl)
+		edit_spec.file = edit_file:Absolute()
+
+		-- TODO: We need something more creative than just the filename
+		local name = edit_file:Filename()
+		staging:AddEdit(name, edit_spec)
+
+		-- NOTE: We need a staging:AddFile(edit_file, "install/edits/" .. name, staging.COPY)
+		-- but we can't add it here or multiple callouts to the same file will conflict.
+		-- It must be added during the generation, perhaps after each file successful builds?
+	end
 end
 
 -- Process spec config (call only once)
 function spec.Process(self, system_name)
 	assert(not self._processed, string.format("Feature %s has already been processed", self.feature))
 	self._processed = true
+
+	-- NOTE: Spec-defined variables are added to globals during init, BUT if it
+	-- becomes prudent to only add the vars of *selected* spec files, then that
+	-- must move here-ish (specifically, before staging any files)
 
 	local files = self.files
 	local links = self.links
@@ -247,6 +270,19 @@ function spec.Process(self, system_name)
 	-- Finally, a note for extra later, the restore script should probably check for a time and maybe
 	-- even a signed hash as a small extra security measure. (The fear is someone editing the system
 	-- file backups and then the user reverting to those "now bad" files.)
+	-- 
+	-- ^^That should be plenty: An actor with access to the restore cache would
+	-- also have access to the ssh keys, so no keypair RSA hash exists (i.e. the restore cache would
+	-- be self-signed.) The timestamp and hash should be checked for accidental modifications, but
+	-- we must assume that any user of this script has root access. Moreover, we assume that this
+	-- script is stored somewhere it could be modified by the bad actor as well.
+	--
+	-- The new pressing question: How to handle multiple features editing the same system conf?
+	-- This means that edits should* not cause conflicts! So....do we stage them at all?
+	-- Further thought, most features will probably depend only on system edits unique to them,
+	-- but there are a few that might have cross over (like adding an environment variable to zprofile)
+	-- How should we handle cases when different systems have /etc/zprofile in different locations?
+	-- Sure, each spec could use a system override, but this feels clunky. (TODO!!!)
 
 	if not (files or links) then
 		-- Simple install; symlink to root
@@ -350,9 +386,15 @@ local function spec_Init(_spec, api)
 	-- ^^TODO: Instead of asserting, consider instead just setting this value
 	-- on init, the same way as we do for for system spec files
 
-	-- NOTE: Currently no use of spec.vars being defined early
-	-- The following is mostly a demonstration for possible inspiration later
-	_spec.vars = setmetatable(_spec.vars or {}, {
+	-- Add the spec vars to the global table (managed by env.lua)
+	-- TODO: We might want to ONLY do this if the feature is selected!!
+	-- ^^If so, move the following to the top of spec_obj:Process()
+	for var, value in pairs(_spec.vars or {}) do
+		environment[var] = value
+	end
+
+	-- Create a path lookup table scoped to the target feature
+	_spec._varpath_tbl = setmetatable({}, {
 		__index = function(tbl, key)
 			-- local opt_val = _spec.opts[key]
 			-- if opt_val then
@@ -367,6 +409,7 @@ local function spec_Init(_spec, api)
 			end
 
 			-- Fallback to script env vars
+			-- (Also includes globals, to which the spec vars are added)
 			return environment[key]
 		end,
 		__newindex = function()
@@ -425,7 +468,7 @@ local module = setmetatable({
 	error = function()
 		return features.errormsg
 	end,
-	-- Unfortuante clash of feature/options APIs, we want to set this only
+	-- Unfortunate clash of feature/options APIs, we want to set this only
 	-- after the system_spec is ready to be retrieved from options
 	-- TODO: This should be fixable by moving the initialization call to the
 	-- option.process function (see system_spec = options[_system] in main file)

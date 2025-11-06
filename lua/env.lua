@@ -39,27 +39,33 @@ local environment = {
 	end
 }
 --
+local globals = {}
+--
 
 
-local _data = {}
+local _cache = {}
 return setmetatable(module, {
 	-- Metatable for 'JIT' variable resolution
 	__index = function(self, var)
-		if not _data[var] then
+		if not _cache[var] then
 			local gen = environment[var]
 			if not gen then
-				-- TODO: Might want to make this just a warning of sorts
-				-- error(string.format("No environment variable `%s` exists", var))
+				-- Defined environment vars stomp spec globals
+				return globals[var]
+
+			-- Run the generator function only once (caches in _cache)
 			elseif type(gen) == "function" then
-				_data[var] = gen()
+				_cache[var] = gen()
 			else
 				return gen
 			end
 		end
 
-		return _data[var]
+		return _cache[var]
 	end,
-	__newindex = function()
-		error("Environment vars module is read-only")
+	__newindex = function(self, var, value)
+		assert(not globals[var],
+			string.format("Redefinition of spec global `%s` (`%s`)", var, tostring(value)))
+		globals[var] = value
 	end
 })

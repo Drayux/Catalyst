@@ -22,6 +22,12 @@ local spec = {
 		-- feature_config = "$feature_root/config", -- Override if defined (should be rare; must be abs path)
 	},
 
+	-- Spec-defined values that can be used by other features
+	-- NOTE: Be smart about var names or they will clash! (TODO: Smart variable renaming??)
+	vars = {
+		zsh_zprofile_path = "/etc/zsh/zprofile", -- Example var (not actually used in any spec)
+	},
+
 	-- FILES TABLE RULES:
 	-- * If present, install_root always assumed to be a directory
 	-- ** Thus a directory at $install_root will be generated;

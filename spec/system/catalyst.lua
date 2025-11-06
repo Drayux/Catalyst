@@ -21,6 +21,11 @@ local spec = {
 	-- takeaway of this TODO.)
 
 	exclude_features = { },
+
+	-- TODO: System-level spec vars (all features inherit these variables)
+	-- NOTE: When implementing, I will need some way to define fallback values
+
+	spec_vars = { },
 }
 
 return spec
