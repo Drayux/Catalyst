@@ -16,9 +16,10 @@ local path_utils = require("lua.path") -- TODO: remove this dependency
 
 -- Filesystem function interface
 local _api = {}
-
 local _tree = {} -- Filesystem internal storage
-local _data = {} -- Final install contents (array)
+
+local edit_data = {} -- Edits staged for generation (table)
+local file_data = {} -- Final file install contents (array)
 
 -- Nomrally source is the link target (aka the "source" file w/in the repo)
 -- For copy operations, source refers to the the "copy from" file
@@ -70,13 +71,44 @@ function _api.AddFile(install_path, source, type)
 		type = type, -- Link, copy, etc.
 	}
 
-	table.insert(_data, contents) -- Append contents obj to final install array
+	table.insert(file_data, contents) -- Append contents obj to final install array
 	data_ptr[final_segment] = source:String() -- TREE[install_path] = source (aka link target)
 end
 
 -- System configuration edits are staged in their own table for processing once
 -- the staging tree is verified
-function _api.AddEdit(system_path, edit_spec)
+function _api.AddEdit(edit_uid, edit_spec)
+	--[[ `edit_spec` input format example (probably, may be out of date)
+		{
+			file = "/etc/profile.d/zdotdir.sh",
+			syntax = "shell",
+			create = true, -- Do not error if original file is not found
+			access = "0644", -- file / user: read/write / group: read / other: read
+			sequence = {
+				"zdotdir",
+				-- Any additional edits to apply
+			}
+		} -- ]]
+
+	-- Retrieve the staged edit to modify or create a new entry
+	staged_edit = edit_data[edit_uid]
+	if not staged_edit then
+		staged_edit = {}
+		edit_data[edit_uid] = staged_edit
+	end
+
+	-- Check the specified filepath
+	-- Multiple features may request edits to the same sysconfig, however the
+	-- flexible config format allows the user to specify that an target files
+	-- are stored at different locations. This is not necessarily an error, but
+	-- certainly an unlikely use case, so we want to warn before taking action.
+	local target_path = staged_edit[file]
+	if not (target_path
+		and string.match(target_path, edit_spec[file] or ".*")
+	then
+		-- sad warning path
+	end
+
 end
 
 -- Pretty output of the target filesystem
@@ -195,10 +227,10 @@ return setmetatable(module, {
 	end,
 	-- Iterator over final install contents
 	__pairs = function(self)
-		local iter = ipairs(_data)
+		local iter = ipairs(file_data)
 		-- TODO: Test this (no idea if it works)
 		return function()
-			return iter(_data, ret)
+			return iter(file_data, ret)
 		end, nil, nil
 	end
 })

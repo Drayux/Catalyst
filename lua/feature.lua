@@ -188,7 +188,7 @@ function spec_ProcessEdits(spec, edits)
 	-- DEV NOTE: Multiple edits to the same file should NOT create multiple config
 	-- sections; it should be applied sequentially (in what order though?)
 
-	for edit_id, edit_spec in pairs(edits) do
+	for edit_name, edit_spec in pairs(edits) do
 		-- Edit staging indexes by filepath instead of internal name
 		-- Spec files should use variables for shared system-level files to
 		-- mitigate the chance of a system override generating extra system
@@ -196,11 +196,13 @@ function spec_ProcessEdits(spec, edits)
 		local edit_file = path(edit_spec.file, spec._varpath_tbl)
 		edit_spec.file = edit_file:Absolute()
 
-		-- TODO: We need something more creative than just the filename
-		local name = edit_file:Filename()
-		staging:AddEdit(name, edit_spec)
+		-- TODO: We need something more creative than just the filename....probably?
+		-- If not, the same filename in multiple locations could raise a warning, which
+		-- I anticipate is likely to be helpful (most sysconfig filenames are better than simply 'config')
+		local edit_uid = edit_file:Filename()
+		staging:AddEdit(edit_uid, edit_spec)
 
-		-- NOTE: We need a staging:AddFile(edit_file, "install/edits/" .. name, staging.COPY)
+		-- NOTE: We need a staging:AddFile(edit_file, "<repo/install/edits/" .. name, staging.COPY)
 		-- but we can't add it here or multiple callouts to the same file will conflict.
 		-- It must be added during the generation, perhaps after each file successful builds?
 	end
