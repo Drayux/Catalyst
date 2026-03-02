@@ -6,58 +6,46 @@
 
 -- 
 
-local options = require("lua.options")
-local features = require("lua.feature")
-
--- Exit early if bad script env
-if features.error() then
-	print(features.error())
-	return
-end
-
--- TODO: This should move but I don't know of the best place to put it yet
-local function output_Usage()
-	print("USAGE: catalyst <mode> [-t system] [-f features] [-d] [-s]")
-	for k, v in pairs(options) do
-		print("\n     * ", k .. " -- (default: " .. tostring(v.default) .. ")")
-		print("", v.desc.summary)
-	end
-end
+local options = require("lua.option")
+-- local features = require("lua.feature")
 
 -- Exit early if bad script params
-if options.__error then
-	print(options.__error)
-	output_Usage()
+local options_err = options:Error()
+if not options_err then
+	_, options_err = options:Verify()
+end
+if options_err then
+	print(options_err)
+	options:Usage()
 	return
 end
+
+-- Exit early if bad script env
+-- if features.error() then
+	-- print(features.error())
+	-- return
+-- end
 
 --
 
+-- Script env good to go!
 print("└── >>> CATALYST CONFIG HELPER\n")
 -- print("───────────────────────────────────")
-options:print()
+options:Dump()
 
--- OPTIONS USAGE NOTE
--- This isn't an perfect design. At first it was a couple different tables;
--- when I merged them, I didn't handle the metatable API very intuitively.
--- Thus, the way to actually get a script argument is options[options.<option>]
--- where <option> refers to the actual name of the option (mode, system, etc.)
-
-local _mode = options.mode
-local _features = options.features
-local _system = options.system
-local _debug = options.debug
-local _script = options.script
-
--- Check for early-exit modes
-if options[_mode] == "USAGE" then
+-- Check for additional early-exit conditions
+if options.mode == "USAGE" then
 	print("───────────────────────────────────")
-	output_Usage()
+	options:Usage()
 	return
-elseif options[_mode] == "TEST" then
+elseif options.mode == "TEST" then
+	print("───────────────────────────────────")
 	require("lua.test")
 	return
 end
+
+print("reminder to myself that the main file is truncated!!")
+do return end
 
 -- A config target should be known for a full check/install
 -- Specifying only common config is possible by setting the target to NONE

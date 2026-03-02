@@ -1,5 +1,5 @@
 --- TEST GLOBALS ---
-TEST_OUTPUT = true
+TEST_OUTPUT = false
 ---
 
 local test_result = true
