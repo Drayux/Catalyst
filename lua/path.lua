@@ -1,24 +1,46 @@
--- Filesystem path utilites
+--- path.lua - Filesystem path utilites
 
--- Filepaths need to be manipulated and interpreted in muliple ways throughout
--- this script, primarily in the translation of config spec to actual
--- installation commands. Paths in this script also should support some form
--- of variable definition. Thus, the challenge becomes how to best represent a
--- path that can be in multiple states: Raw string with variables, raw string
--- with variables resolved, relative path, absolute path, table of directories,
--- etc.
+-- USAGE: Create managed path objects from raw path strings
+-- STATE: Values held by individual instances
+-- RTYPE: Class (closure -> path object instance)
+-- NOTES --
+--	  > Filepaths need to be manipulated and interpreted in a multitude of ways
+--		during the lifetime of this utility, most notably during the
+--		translation of configuration spec to installation commands where extra
+--		functionality for variables are essential.
+--	  > Thus the design challenge was how to handle the many "states" a path
+--	  	representation could have: Raw string with unparsed variables / with
+--	  	variables resolved, relative path, absolute path, table of directories,
+--	  	etc.
 
--- This module provides an interface such that each path can be instantiated as
--- its own object. Therefore accessing any form of its state becomes a function
--- call to the respective method.
+--- CLASS API ---
+local Class = { type = "Path" }
+Class.__index = function(self, key)
+	-- Special functionality to ensure the path is indexed when the
+	-- file flag is checked
+	if key == "file" then
+		local file_val = not Class.Search(self)
+		rawset(self, "file", file_val)
+		return file_val
 
-local api = {}
+	-- Standard class-like MT otherwise
+	else
+		return Class[key]
+	end
+end
+Class.__newindex = function()
+	-- Not rigorous here, just for help tracking dev mistakes
+	error("Attempt to add new member to `Path` class")
+end
+Class.__tostring = function(self)
+	return self:String()
+end
 
--- Creates and returns a path obj table only
--- Copies data from ref, if provided
-local function _new(path_ref)
+-- Copies a reference path object and creates a new path instance
+-- If path_ref is nil, create an "empty" path object instead
+local function create_copy(path_ref)
 	local obj = {
-		_vars = false, -- Placeholder so __newindex doesn't error (_vars set after _build() in brand new path obj)
+		_vars = false, -- Placeholder so __newindex doesn't error (_vars set after create_new() in brand new path obj)
 		_data = {}, -- Array containing raw splits (each named step is an element)
 		_pref = 0, -- Count of leading parent refs (i.e. ../../../dir -> 3)
 		_contents = false, -- Contains path search data (placeholder, false or table)
@@ -39,42 +61,26 @@ local function _new(path_ref)
 		-- (Do not copy _contents or file flag)
 	end
 
-	return setmetatable(obj, {
-		__index = function(self, key)
-			-- Special functionality to ensure the path is indexed when the
-			-- file flag is checked
-			if key == "file" then
-				local file_val = not api.Search(self)
-				rawset(self, "file", file_val)
-				return file_val
-
-			-- Standard class-like MT otherwise
-			else
-				return api[key]
-			end
-		end,
-		__newindex = function()
-			-- Not rigorous here, just for help tracking dev mistakes
-			error("Attempt to add new member to path table")
-		end,
-		__tostring = function(self)
-			return self:String()
-		end
-	})
+	return setmetatable(obj, Class)
 end
 
--- Build outputs a new table object always
--- path_obj is a reference to a path to copy or nil
--- > Formally, _build traverses a list of splits, handling/extracting relative
--- > parent paths (../) and appends this to a reference path or {}
+-- Creates a new path object instance
+-- - path_obj is a reference to a path to copy or nil
+-- - path_splits is a preprocessed path string (output of process_input())
+-- The new path is created by appending a path string onto a path table:
+-- Thus, no path object treats the path string as the entire path; no path
+-- string spawns a copy of the path object; neither of both spawns an empty obj
 -- NOTE: This could make checks with [if path_obj.file] but assertions would
 -- > only apply to paths already indexed, so we perform none
-local function _build(path_obj, path_splits)
-	local _copy = _new(path_obj)
+local function create_new(path_obj, path_splits)
+	local _copy = create_copy(path_obj)
 	local _warning = false -- For helpful output (only)
 
 	if not path_splits then
 		-- Return right away if nothing to append (path:Append() symmetry)
+		if (not path_obj) then
+			print("Warning: created an empty path object")
+		end
 		return _copy
 	end
 	
@@ -121,9 +127,9 @@ local function _build(path_obj, path_splits)
 	return _copy
 end
 
--- Prepares a path for use with _build()
--- (Path to table converstion with varpath lookup)
-local function _split(path_str, varpath_tbl, append_mode)
+-- Preprocess a raw path string for use with create_new()
+-- Performs string processing and path variable (varpath) lookup
+local function process_input(path_str, varpath_tbl, append_mode)
 	-- path_str already validated; don't validate varpath_tbl until first lookup
 
 	local splits = {}
@@ -135,7 +141,9 @@ local function _split(path_str, varpath_tbl, append_mode)
 			error("Variable path split maximum recursion depth reached")
 		end
 
-		-- Check if path is relative, make for an easier gmatch later
+		-- Split string into (front)(/the/rest) and handle `front`
+		-- Checks if path is relative, makes for an easier gmatch later
+		-- AKA If the path is `/front/the/rest` then the splits are ()(/front/the/rest)
 		local path_start, path_end = _path:match("^([^/]+)(.-)$")
 		if path_start then
 			local varpath_key = path_start:match("^%$(.*)$")
@@ -248,7 +256,7 @@ entries would be returned and linked.
 
 -- Search for conents matching the query (see above)
 -- Return nil if path is a file, string if exact match, or table of matches
-function api.Search(self, query)
+function Class.Search(self, query)
 	-- The index (contents) is a filtered list of all children that are files
 	-- (It is the result of `find` with the original search path omitted)
 	local contents = self._contents
@@ -288,23 +296,23 @@ function api.Search(self, query)
 	return result
 end
 
-function api.Length(self)
+function Class.Length(self)
 	-- TODO: Test that this actually works
 	return #self._data + self._pref
 end
 
-function api.Filename(self)
+function Class.Filename(self)
 	-- TODO: Consider variation that asserts this is a file
 	-- ^^Would possibly allow for a Dirname variation
 	return self._data[#self._data]
 end
 
-function api.String(self)
+function Class.String(self)
 	local path_str = table.concat(self._data, "/")
 
 	if self.absolute then
 		-- Tack on leading /
-		-- _build asserts that _pref is 0 when absolute is true
+		-- create_new() asserts that _pref is 0 when absolute is true
 		return "/" .. path_str
 	elseif self._pref > 0 then
 		-- Build up the parent path string
@@ -328,19 +336,19 @@ function api.String(self)
 end
 
 -- Copies and returns a modified path
-function api.Append(self, subpath_str)
-	local split_data = subpath_str and _split(subpath_str, self._vars, true)
-		or nil
-	return _build(self, split_data)
+function Class.Append(self, subpath_str)
+	local split_data = subpath_str
+		and process_input(subpath_str, self._vars, true)
+	return create_new(self, split_data or nil)
 end
 
 -- NOTE: For now, this function always creates a new path object
 -- There is not yet a specific use case for this, but it may prove helpful
 -- Notably, if searching a path, we will need to generate a new index anyway
 -- NOTE: Working directory always assumed $install_root from the varpath LUT
-function api.Absolute(self)
+function Class.Absolute(self)
 	if self.absolute then
-		return _new(self)
+		return create_copy(self)
 	end
 
 	-- The only point at which we would need to infer an absolute path anyway
@@ -352,8 +360,8 @@ function api.Absolute(self)
 
 	-- Get the working directory from the current path lookup table
 	local pwd_str = self._vars.install_root
-	local pwd_splits = _split(pwd_str, self._vars, false)
-	-- local pwd_splits = _split("$install_root", self._vars, false) -- Also works
+	local pwd_splits = process_input(pwd_str, self._vars, false)
+	-- local pwd_splits = _split("$install_root", self._vars, false) -- Current implementation equivalent to this
 
 	-- Manually build some splits from the original path object
 	for idx = 1, self._pref do
@@ -363,34 +371,51 @@ function api.Absolute(self)
 		table.insert(pwd_splits, segment)
 	end
 	
-	return _build(nil, pwd_splits)
+	return create_new(nil, pwd_splits)
 end
 
-return setmetatable({}, {
-	__newindex = function()
-		error("Path utilites module is read-only")
-	end,
-	__ipairs = function(self)
-		-- TODO: It may be prudent to change how this works
-		-- For now, the only use case of ipairs() is config file staging, which
-		-- necessarily demands an absolute path, thus the following retval...
-		return ipairs(self:Absolute()._data)
-	end,
-	__call = function(_, path_str, varpath_tbl)
-		assert(type(path_str) == "string", "Path must be instantiated with a string")
-		assert(#path_str > 0, "Path cannot be an empty string")
-		
-		-- Paths are stored as arrays of splits
-		local split_data, err = _split(path_str, varpath_tbl, false)
-		if err then
-			error(err)
-		end
+--
 
-		local path_obj = _build(nil, split_data)
-		if varpath_tbl then
-			path_obj._vars = varpath_tbl
-		end
+-- TODO: Why module? Can't I just return the function closure??
+-- ^^ Likely just obsolete...but I could use the table for stateless options
+-- (i.e. "resolve_parent_reference", "absolute_paths_only" etc.) (TODO?)
 
-		return path_obj
+--- MODULE API ---
+local Module = {}
+Module.__index = {
+	-- Enum-like installation 'types'
+	FILE = {}, -- Path install (absolute symbolic link, default for dotfiles)
+	LINK = {}, -- Relative symbolic link (usually for hidden file fixup)
+	HARD = {}, -- Hard link to dotfile (rare, but supported)
+	COPY = {}, -- File copy (used by edit installs)
+}
+Module.__newindex = function()
+	error("Path utilites module is read-only")
+end
+-- Instantiate a new path object with path("str/as/path/val")
+Module.__call = function(_, path_str, varpath_tbl)
+	assert(type(path_str) == "string", "Path must be instantiated with a string")
+	assert(#path_str > 0, "Path cannot be an empty string")
+	
+	-- Paths are stored as arrays of splits
+	local split_data, err = process_input(path_str, varpath_tbl, false)
+	if err then
+		error(err)
 	end
-})
+
+	local path_obj = create_new(nil, split_data)
+	if varpath_tbl then
+		path_obj._vars = varpath_tbl
+	end
+
+	return path_obj
+end
+-- I originally had an __ipairs on here but it makes no sense?? (TODO)
+-- __ipairs = function(self)
+	-- TODO: It may be prudent to change how this works
+	-- For now, the only use case of ipairs() is config file staging, which
+	-- necessarily demands an absolute path, thus the following retval...
+	-- return ipairs(self:Absolute()._data)
+-- end,
+
+return setmetatable({}, Module)

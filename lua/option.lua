@@ -1,9 +1,9 @@
 --- option.lua - Script argument processing
 
 -- USAGE: Parses script arguments from a pre-defined structure (see __options)
--- STATE: Singleton instance; values are associated with this module
+-- STATE: Singleton instance; values held by this module
 -- RTYPE: Module (API table -> instance)
--- NOTES:
+-- NOTES --
 --	  > I'm itching to refactor this... The bones feel great: modular
 -- 		definitions, rigid API, etc. But the parsing is limited, and the API
 -- 		seems clunky. I keep imaginging the return value of this module is just
@@ -23,7 +23,7 @@ local __types = setmetatable({
 				-- Developer error
 				error("[option.lua] Bad use of String type; range is not a table")
 			elseif (range == nil) then
-				-- Fallback to any value so long as its a non-empty string
+				-- Fallback to any value so long as it's a non-empty string
 				return setmetatable({}, {
 					__index = { type = "String" },
 					__call = function(input)
@@ -91,52 +91,6 @@ local __types = setmetatable({
 		end
 })
 
--- TODO: Maybe move me
--- Some options may require additional processing (i.e. system "AUTO")
-local function process_System(initial_target)
-	local systems = require("lua.dirload")("spec/system")
-	local target_system = nil
-
-	if initial_target == "AUTO" then
-		-- Figure out what system we're installing to
-		-- NOTE: Relatively lazy heuristic, score better than a 4 for a system to
-		-- be a valid candidate
-		local best_score = 4
-		for sys, spec in pairs(systems) do
-			if type(spec.score) == "function" then
-				local score = spec.score()
-				if score > best_score then
-					best_score = score
-					target_system = sys
-				end
-			end
-		end
-
-		if target_system then
-			print("Detected " .. target_system:upper() .. " as the target system")
-		else
-			print("Target system could not be determined")
-			-- TODO: Consider prompting the user if they want to quit
-		end
-		print() -- Useless formatting
-
-	elseif initial_target ~= "NONE" then
-		-- TODO: This lower() is a side effect of the current options parsing
-		target_system = initial_target:lower()
-	end
-
-	if target_system then
-		-- return target_system, systems[target_system]
-		local spec = systems[target_system]
-		spec.name = target_system
-		return spec
-	else
-		-- Don't like this; Needed to return a non-string non-nil value so that
-		-- the processed option does not fallback to "AUTO"
-		return true
-	end
-end
-
 -- Available script options
 local __options = {
 	-- <OPTION (proper name)>
@@ -174,19 +128,15 @@ local __options = {
 		}
 	},
 	system = {
-		-- TODO: Instead of checking an enum, build possible options from the
-		-- spec/system directory (systems would become case-sensitive, would
-		-- feel more like feature selection)
 		-- Auto means try to detect the system, none means select no
 		-- system-specific config
-		range = __types.Enum({ "AUTO", "NONE", "CATALYST", "CHITIN", "WORK" }),
+		range = __types.String(),
 		default = "AUTO",
-		process = process_System,
 		-- count = 1, (refactor pending: implied by Enum type)
 		flagchar = "t",
 		desc = {
 			name = "system",
-			summary = "Target system for unagnostic configuration entries.",
+			summary = "Target system for unagnostic configuration entries (also AUTO, NONE.)",
 		}
 	},
 	script = {
@@ -237,12 +187,12 @@ local __state = {
 --- MODULE API ---
 local Module = {}
 Module.__index = function(_, key)
-	local f = Module[key]
-	if f then
-		return f
+	local fn = Module[key]
+	if fn then
+		return fn
 	end
 
-	local msg_on_error = string.format("[option.lua] Reference to undefined option: `%s`", key)
+	local msg_on_error = string.format("[option.lua] Reference to undefined option `%s`", key)
 	local index = __options[key] -- Technically should be __map[key] but I haven't exactly worked out flags yet
 
 	assert(index, msg_on_error)
@@ -401,7 +351,7 @@ function Module.Error(_)
 	return __state.ERROR
 end
 
-function Module:Usage(_)
+function Module.Usage(_)
 	print("USAGE: catalyst <mode> [-t system] [-f features] [-p] [-s]")
 	for k, v in pairs(__options) do
 		print("\n     * ", k .. " -- (default: " .. tostring(v.default) .. ")")

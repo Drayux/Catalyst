@@ -1,47 +1,98 @@
--- Represent an arbitrary filesystem with lua tables
--- This can be used to track directory merges and file conflicts
+--- staging.lua - Shallow filesystem tree via lua tables
 
--- NOTE: This is not meant to be a recreation of the global filesystem. This
--- structure is used to prepare the selected feature configs for installation;
--- used to check for conflicts and determine what directories to create.
+-- USAGE: Track directory merges and file conflicts for spec installs
+-- STATE: Singleton instance; values held by this module
+-- RTYPE: Module (API table -> instance)
+-- NOTES: --
+--    >	This is not meant to be a recreation of the global filesystem. This
+-- 		structure is used to prepare the selected feature configs for installation;
+-- 		used to check for conflicts and determine what directories to create.
+--    >	Currently defined as a singleton since only one instance will be used
+-- 		per invocation of this script. That known, this logic would otherwise be
+-- 		well-suited for repurpose in an object-oriented architecture.
 
--- NOTE: Currently defined as a singleton since only one instance will be used
--- per invocation of this script. That known, this logic would otherwise be
--- well-suited for repurpose in an object-oriented architecture.
 
+-- TODO: Pending updates to the staging tree (part of the API rework)
 --
+-- At the end of the day, installing is as simple as making a bunch of links/
+-- copying files, uninstalling should be as simple as deleting those.
+--
+-- The challenge arises when tracking what gets installed.
+--
+-- Generally, the flow might be to mock up what feature would install which
+-- files, and then compare that with the existing filesystem.
+-- If there are no conflicts: Install right away
+-- If there are conflicts with "known" files, delete/install overtop 
+-- If any conflict is not known, then we might want to abort*
+--
+-- What constitutes a known file?
+--
+-- If an install cache exists and the file matches, then we know it came from
+-- catalyst.
+-- If the file matches but is newer that the cache, we should WARN and update
+-- the timestamp (take ownership again)
+-- If the cache does not exist but the file matches staging, we should WARN and
+-- update ownership
+--  >>> Those are the easy cases, then we can delete and recreate if the new
+-- config changes from the cached install <<<
+-- If the file does not match staging or cached, we should ABORT.
 
 
-local path_utils = require("lua.path") -- TODO: remove this dependency 
+local path = require("lua.path") -- File tree composed of path types
 
--- Filesystem function interface
-local _api = {}
-local _tree = {} -- Filesystem internal storage
+-- Staging tree internal storage
+local __tree = {}
 
-local edit_data = {} -- Edits staged for generation (table)
-local file_data = {} -- Final file install contents (array)
+--- MODULE API ---
+local Module = {
+	edit_data = {}, -- Edits staged for generation (table)
+	file_data = {}, -- Final file install contents (array)
+}
+Module.__index = function(self, key)
+	local fn = Module[key]
+	if fn then
+		return fn
+	end
+	-- TODO: Previously I asserted that the function was invoked with `:` and
+	-- saved the closure, do I want to do this? (question of consistency/style)
+	error(string.format("[staging.lua] No such method `%s`", key))
+end
+Module.__newindex = function()
+	error("[staging.lua] Bad access; module is read-only")
+end
+Module.__pairs = function(self)
+	-- Iterator over final install contents (only works in lua >= 5.2)
+	local iter = ipairs(Module.file_data)
+	return function() -- TODO: Test this (no idea if it works)
+		return iter(Module.file_data, ret)
+	end, nil, nil
+end
 
 -- Nomrally source is the link target (aka the "source" file w/in the repo)
 -- For copy operations, source refers to the the "copy from" file
-function _api.AddFile(install_path, source, type)
-	-- TODO: Consider assertion that both inputs are path objects
-	install_path = install_path:Absolute()
-	type = type or _api.LINK -- Allow symlink as default install type
+function Module.AddFile(_, install_path, source_path, type)
+	local msg_on_error = "[staging.lua] Could not stage; `%s` not a valid `Path` class"
+	assert(install_path.type == "Path", string.format(msg_on_error, tostring(install_path))
+	assert(source_path.type == "Path", string.format(msg_on_error, tostring(source_path))
 
+	install_path = install_path:Absolute()
+	type = type or path.LINK -- Allow symlink as default install type
+
+	local data_ptr = __tree
 	local final_segment
 	local target_depth = install_path:Length()
-	local data_ptr = _tree
+	local path_str = install_path:String()
 
 	-- Traverse the install tree or create directories as we go
-	-- TODO: for depth, segment in ipairs(install_path) do
-	for depth, segment in ipairs(install_path._tree) do
+	-- TODO: `for depth, segment in ipairs(install_path) do`
+	for depth, segment in ipairs(install_path._data) do
 		if depth == target_depth then
-			-- Push the last segment up in scope and break
+			-- Last segment is the file to add
 			final_segment = segment
 			break
 		end
 
-		-- Create new directory if necessary
+		-- Create new pseudo-directory if necessary
 		if not data_ptr[segment] then
 			data_ptr[segment] = {}
 		end
@@ -49,35 +100,36 @@ function _api.AddFile(install_path, source, type)
 		-- Traverse filetree
 		data_ptr = data_ptr[segment]
 		assert(type(data_ptr) == "table",
-			string.format("Spec conflict; `%s` already exists", install_path:String()))
+			string.format("Spec conflict; `%s` already exists", path_str))
 	end
 
 	-- Should only trigger if install_path was empty (probably?)
 	assert(final_segment,
-		string.format("Attempted to add invalid install path `%s`", install_path:String()))
-
+		string.format("Attempted to add invalid install path `%s`", path_str))
 	-- Error on any conflict, even if it's a directory
 	-- (This deviates from classical unix behavior that puts the new file inside the dir)
+	-- TODO: Maybe I want to continue if it's the same file?
 	assert(not data_ptr[final_segment],
-		string.format("Spec conflict; `%s` already exists", install_path:String()))
+		string.format("Spec conflict; `%s` already exists", path_str))
 
 	-- Create final file object for staging
-	if type ~= _api.LINK then
-		source = source:Absolute()
+	if type ~= path.LINK then
+		source_path = source_path:Absolute()
 	end
-	local contents = {
-		source = source, -- The data origin of the staged file
+	local staged_file = {
+		source = source_path, -- The data origin of the staged file
 		location = install_path -- The path that the new file is created
 		type = type, -- Link, copy, etc.
 	}
 
-	table.insert(file_data, contents) -- Append contents obj to final install array
-	data_ptr[final_segment] = source:String() -- TREE[install_path] = source (aka link target)
+	data_ptr[final_segment] = source_path:String() -- TREE[install_path] = source (aka link target)
+	table.insert(Module.file_data, staged_file) -- Append contents obj to final install array
 end
 
 -- System configuration edits are staged in their own table for processing once
 -- the staging tree is verified
-function _api.AddEdit(edit_uid, edit_spec)
+-- TODO: It appears I left this function as a stub, so uh..finish it!
+function Module.AddEdit(_, edit_uid, edit_spec)
 	--[[ `edit_spec` input format example (probably, may be out of date)
 		{
 			file = "/etc/profile.d/zdotdir.sh",
@@ -91,10 +143,10 @@ function _api.AddEdit(edit_uid, edit_spec)
 		} -- ]]
 
 	-- Retrieve the staged edit to modify or create a new entry
-	staged_edit = edit_data[edit_uid]
+	staged_edit = Module.edit_data[edit_uid]
 	if not staged_edit then
 		staged_edit = {}
-		edit_data[edit_uid] = staged_edit
+		Module.edit_data[edit_uid] = staged_edit
 	end
 
 	-- Check the specified filepath
@@ -114,7 +166,7 @@ end
 -- Pretty output of the target filesystem
 -- Each directory will output itself, recurse on its child directories, and
 -- finally output its remaining children (which are not recursed)
-function _api.Print()
+function Module.Print()
 	local output = {}
 	local indent_inc = " │ "
 	local indent_fin = " └ "
@@ -170,7 +222,7 @@ function _api.Print()
 					-- Special case so the last item uses the L symbol
 					-- Note that we call out the original indent value
 					local _indent = (alt or indent)
-					_worker(_out, _subdir, _subcontents, _indent .. indent_fin, _indent ..indent_alt)
+					_worker(_out, _subdir, _subcontents, _indent .. indent_fin, _indent .. indent_alt)
 				else
 					_worker(_out, _subdir, _subcontents, new_indent, nil)
 				end
@@ -193,44 +245,8 @@ function _api.Print()
 		end
 	end
 
-	_worker(output, "<< root >>", _tree, "", nil)
+	_worker(output, "<< root >>", __tree, "", nil)
 	print(table.concat(output))
 end
 
--- Module proxy table
-local module = {
-	-- Enum-like installation 'types'
-	PATH = {}, -- Path install (absolute symbolic link, default for dotfiles)
-	COPY = {}, -- File copy (used by edit installs)
-	HARD = {}, -- Hard link to dotfile (rare, but supported)
-	LINK = {}, -- Relative symbolic link (usually for hidden file fixup)
-}
-
-return setmetatable(module, {
-	__index = function(self, key)
-		local _fn = _api[key]
-		assert(_fn, string.format("No method %s exists for staging module", key))
-
-		-- Since this is a singleton module, we don't actually need to invoke with 'self'
-		local closure = function(self, ...)
-			assert(self == module,
-				"Object method must be invoked as object (use `:` instead of `.`)")
-			return _fn(...)
-		end
-
-		rawset(self, key, closure)
-		return closure
-	end,
-	-- Trivial read-only
-	__newindex = function()
-		error("Staging filetree module is read-only")
-	end,
-	-- Iterator over final install contents
-	__pairs = function(self)
-		local iter = ipairs(file_data)
-		-- TODO: Test this (no idea if it works)
-		return function()
-			return iter(file_data, ret)
-		end, nil, nil
-	end
-})
+return setmetatable({}, Module)

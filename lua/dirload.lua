@@ -1,5 +1,11 @@
--- Require a directory all at once; helper for spec files
--- Adapted from: https://github.com/Nikaoto/dirload.lua
+--- dirload.lua - Require a directory all at once; helper for spec files
+
+-- USAGE: Parses script arguments from a pre-defined structure (see __options)
+-- STATE: Stateless
+-- RTYPE: Closure [String, Table -> Table { <filename>: <chunk> }]
+-- NOTES:
+-- 	  >	Adapted from: https://github.com/Nikaoto/dirload.lua
+--    >	Support options: ignore, on_load, on_error
 
 -- Require all .lua files from a given directory.
 -- Does not traverse directories inside of directories.
@@ -30,7 +36,7 @@ local function get_directory_items(path)
 	return contents
 end
 
-local function dirload(path, opts)
+return function(path, opts)
 	opts = opts or {}
 
 	-- Fixup path for concatenation
@@ -90,5 +96,3 @@ local function dirload(path, opts)
 
 	return index
 end
-
-return dirload
