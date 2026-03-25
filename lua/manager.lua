@@ -1,3 +1,6 @@
+local staging = require("lua.staging") -- Maintains install-related data structures
+
+local __features
 local __state = {
 	SYSTEM = nil
 }
@@ -8,26 +11,28 @@ Module.__newindex = function()
 	error("[manager.lua] Bad access; module is read-only")
 end
 
+-- TODO (maybe?) Update the selection list when this is called (right now it's
+-- just a rewrite of what used to be in the options parser)
 function Module.SetSystem(_, target_system)
+	-- Input validation
+	if target_system == nil then
+		-- Leave as-is (assume AUTO already handled)
+		return
+	elseif type(target_system) ~= "string" then
+		error("[manager.lua] Bad call to SetSystem; Must be string (or nil)")
+	end
 	if __state.SYSTEM then
-		if target_system == nil then
-			-- Leave as-is (assume AUTO already handled)
-			return
-		elseif type(target_system) == "string" then
-			-- Otherwise probably developer error, not fatal though
-			print(string.format("[manager.lua] Target system already set, but changing to `%s`", target_system))
-		else
-			-- Wrong type is fatal, however
-			error("[manager.lua] Bad call to SetSystem; Must be string or nil")
-		end
+		-- Possible developer error if system already set, not fatal though
+		print(string.format("Target system already set, but changing to `%s`", target_system))
 	end
 
+	__state.SYSTEM = nil -- Fallback to none
 	local available_systems = require("lua.dirload")("spec/system")
 
 	if target_system == "AUTO" then
 		-- Figure out what system we're installing to
-		-- NOTE: Relatively lazy heuristic, score better than a 4 for a system to
-		-- be a valid candidate
+		-- NOTE: Relatively lazy heuristic, score better than a 4 for a system
+		-- to be a valid candidate
 		local best_score = 4
 		for system, spec in pairs(available_systems) do
 			if type(spec.score) == "function" then
@@ -46,73 +51,20 @@ function Module.SetSystem(_, target_system)
 			-- TODO: Consider prompting the user if they want to quit
 		end
 		print() -- Silly formatting
-		return
+
 	elseif target_system ~= "NONE" then
-		-- TODO: Verify selection
-		__state.SYSTEM = target_system
-	end
-
-	__state.SYSTEM = nil -- Fallback to none
-end
-
--- TODO: Move non-spec stuff from spec.lua (originally feature.lua) into here
--- I might want to rename this again, but I think it's reasonable that this
--- handles all of the logic for user interactive stuff
--- TODO: Should it also handle the actual spec generator? I'm tempted to
--- say that this is better suited for the main file, else it's mostly empty
--- with one inconspicuous "go" type of function
-
---- TODO: Moving this over from options! Options should just be responsible for
--- getting this from the command line, features should actually handle what
--- system (and subsequently features) that that maps to
-
--- Some options may require additional processing (i.e. system "AUTO")
-local function process_System(initial_target)
-
-
-	if target_system then
-		-- return target_system, systems[target_system]
-		local spec = systems[target_system]
-		spec.name = target_system
-		return spec
-	else
-		-- Don't like this; Needed to return a non-string non-nil value so that
-		-- the processed option does not fallback to "AUTO"
-		return true
-	end
-end
-
----
-
---- FEATURES LIST API ---
-local features = {
-	selected = nil,
-	feat_count = 0,
-	error_msg = nil,
-}
-
--- Make a simple table of [feature_name] = true/false
-function features.GenerateSelectionList(self)
-	if self.selected then
-		-- TODO: Didn't give this a lot of thought, just wanted a warning because this
-		-- shouldn't happen in the current implementation
-		error("Bad use of features_GenerateSelectionList; Selection list already generated")
-	end
-
-	self.selected = {}
-
-	for feat, _ in pairs(self.spec_list or {}) do
-		self.selected[feat] = false
-		self.feat_count = self.feat_count + 1
-	end
-
-	setmetatable(self.selected, {
-		__newindex = function(_, feat)
-			error("Bad write to selected features; no spec for " .. feat)
+		-- TODO: Currently assuming all spec names are lowercase!
+		local spec = available_systems[target_system:lower()]
+		if spec then
+			__state.SYSTEM = target_system
+		else
+			print(string.format("No such system with name `%s`", target_system))
 		end
-	})
-	return self.feat_count
+	end
 end
+
+
+
 
 -- Parse an input string and apply changes to the selected features list
 function features.ModifySelectionList(self, input_str)
@@ -208,18 +160,6 @@ end
 ---
 
 --- MODULE API (initialization) ---
--- Spec list is a basic map of setmetatable(spec_entry, spec_api)
-features.spec_list = (function(t, f, ...)
-	local ret = {}
-	for k, v in pairs(t) do
-		ret[k] = f(v, ...)
-	end
-	return ret
-
--- TODO: Consider tweaking dirload such that the error message can be saved
--- here and then output can be deferred later (doesn't really matter, just a
--- possible nice-to-have)
-end)(require("lua.dirload")("spec/feature"), spec_Init, Class)
 
 if not env_status then
 	-- TODO: Consider the location of this; Current rationale is that some
@@ -283,4 +223,42 @@ local module = setmetatable({
 	end,
 })
 
-return module
+local Instance = setmetatable({
+	-- Not a metamethod! I've chosen this naming convention to indicate its unusual
+	-- usage. Notably that __init should only be called once "automagically"
+	__init = function(self)
+		assert(__features == nil, "[manager.lua] Invalid reinit of module")
+		self.__init = nil
+
+		setmetatable(self, Module)
+
+		-- >>> Perform the module state initialization steps <<<
+		-- Load the feature specs from the filesystem
+		-- Spec list is a basic map of setmetatable(spec_entry, spec_api)
+		-- TODO: Make this readable
+		__features = {}
+		for filename, spec in pairs(require("lua.dirload")("spec/feature")) do
+			assert(not __features[filename], string.format("[manager.lua] Duplicate spec entry `%s`"), filename)
+			__features[filename] = {
+				selected = false,
+				spec = setmetatable(spec, api), -- TODO: use dirload on_load,
+				-- which will then call _feature: Module.new() (see path for reference)
+			}
+		end
+
+		setmetatable(__features, {
+			__newindex = function(_, feat)
+				error(string.format("[manager.lua] No spec available for feature `%s`", feat))
+			end })
+	end
+}, {
+	__index = function(self, key)
+		-- Initialize the module when first called
+		-- NOTE: Not 100% on this implementation, this could just go here directly
+		Instance:__init() 
+
+		-- Honor the original request
+		return Instance[key]
+	end
+})
+return Instance
