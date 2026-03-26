@@ -35,6 +35,9 @@ end
 Class.__tostring = function(self)
 	return self:String()
 end
+Class.__ipairs = function(self)
+	return ipairs(self._data)
+end
 
 -- Copies a reference path object and creates a new path instance
 -- If path_ref is nil, create an "empty" path object instead
@@ -97,13 +100,13 @@ local function create_new(path_obj, path_splits)
 		elseif split == ".." then
 			if accept_index > 0 then
 				-- Step backward up the filetree
+				data[accept_index] = nil
+				accept_index = accept_index - 1
+
 				-- TODO: This differs slightly from unix: where if a given path
 				-- is a symlink, then traversing back up will navigate into the
 				-- directory containing the target of the symlink instead. That
 				-- functionality is not reflected here. Should it be?
-
-				data[accept_index] = nil
-				accept_index = accept_index - 1
 
 				if not _warning then
 					print("Warning: it is advisable to avoid ../ within spec install paths")
@@ -204,7 +207,7 @@ local function process_input(path_str, varpath_tbl, append_mode)
 end
 
 -- NOTE: path_str should probably be absolute?
-local function _index(path_str)
+local function generate_path_index(path_str)
 	assert((type(path_str) == "string") and (#path_str > 0),
 		"Feature config path must be a non-empty string")
 
@@ -236,7 +239,7 @@ I finally remembered what the original structure of Search was. The index will
 run the unix 'find' command and then extract the results, so that the resulting
 string exactly matches what would be specified in a spec file. For example,
 with the path: /home/Projects/Catalyst/dotfiles/zsh/config
-After the index function, the contents would become
+After the generate_path_index function, the contents would become
 {
 	config
 	logout
@@ -262,7 +265,7 @@ function Class.Search(self, query)
 	local contents = self._contents
 	if not contents then
 		local path_str = self:Absolute():String()
-		contents = _index(path_str)
+		contents = generate_path_index(path_str)
 
 		self._contents = contents
 	end
@@ -376,9 +379,12 @@ end
 
 --
 
--- TODO: Why module? Can't I just return the function closure??
--- ^^ Likely just obsolete...but I could use the table for stateless options
--- (i.e. "resolve_parent_reference", "absolute_paths_only" etc.) (TODO?)
+-- NOTE: Alternative class formats would be to return just the closure for
+-- "new()" rather than a module where module.__call is "new()"
+-- I could also just return the class MT if I trust the developer not to modify
+-- it; then it could be assigned to a table (probably only well-suited to
+-- unique cases like the feature spec)
+-- > (not the best place to put this note, but alas)
 
 --- MODULE API ---
 local Module = {}
@@ -390,7 +396,7 @@ Module.__index = {
 	COPY = {}, -- File copy (used by edit installs)
 }
 Module.__newindex = function()
-	error("Path utilites module is read-only")
+	error("[path.lua] Bad access; Module is read-only")
 end
 -- Instantiate a new path object with path("str/as/path/val")
 Module.__call = function(_, path_str, varpath_tbl)
@@ -410,12 +416,5 @@ Module.__call = function(_, path_str, varpath_tbl)
 
 	return path_obj
 end
--- I originally had an __ipairs on here but it makes no sense?? (TODO)
--- __ipairs = function(self)
-	-- TODO: It may be prudent to change how this works
-	-- For now, the only use case of ipairs() is config file staging, which
-	-- necessarily demands an absolute path, thus the following retval...
-	-- return ipairs(self:Absolute()._data)
--- end,
 
 return setmetatable({}, Module)

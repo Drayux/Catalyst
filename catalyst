@@ -9,7 +9,7 @@
 local options = require("lua.option")
 
 -- Exit early if bad script params (show usage blob)
-local options_err = options:Error()
+local _, options_err = options:GetError()
 if not options_err then
 	_, options_err = options:Verify()
 end
@@ -49,37 +49,29 @@ elseif options.mode == "TEST" then
 end
 
 local manager = require("lua.manager")
-
-print("reminder to myself that the main file is truncated!!")
-do return end
-
--- A config target should be known for a full check/install
--- Specifying only common config is possible by setting the target to NONE
-local system_spec = options[_system]
-
 -- Current use case means that any other option will at least build a feature
 -- list and check the setup of those features
--- TODO: Move this to option.process (like system; line becomes the following)
--- > local features = options[_features]
-features(options[_features]) -- Perform the initial list modification (per script argument)
-features.system(system_spec) -- (see TODO above function def in feature.lua)
+manager:SetSystem(options.system) -- NOTE: Specify only common features by setting the target system to NONE
+manager:ModifySelected(options.features) -- Perform the initial list modification (per script argument)
 
-if options[_script] then
-	features.print()
-	print() -- Useless formatting
+if options.script then
+	manager:PrintSelected()
+	print() -- Formatting
 else
 	-- Prompt user for modifications
-	features.interactive()
+	manager:InteractiveSelect()
 end
 
 -- 
 
 -- CORE "ACTUALLY DOES THE THING" LOOP
 
--- NOTE: Not the best place for this, but with regard to implementing copy
--- Uninstall should assume links or sys edits always. The presence of a link
--- makes cleanup easy. The only use case for copy is a system where I want
--- to edit the config crazy style anyway.
+for feat_name, feat_spec in manager:GetSelected() do
+	manager:ProcessFeature(feat_spec)
+end
+
+print("reminder to myself that the main file is truncated!!")
+do return end
 
 local did_something = false -- Just for friendly output
 for feat, spec in pairs(features) do

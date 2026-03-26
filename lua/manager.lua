@@ -1,8 +1,17 @@
+-- NOTE: Not the best place for this, but with regard to implementing copy
+-- Uninstall should assume links or sys edits always. The presence of a link
+-- makes cleanup easy. The only use case for copy is a system where I want
+-- to edit the config crazy style anyway.
+
 local staging = require("lua.staging") -- Maintains install-related data structures
+
+local FeatureSpec = require("lua.spec").Feature
+-- local SystemSpec = require("lua.spec").System
 
 local __features
 local __state = {
-	SYSTEM = nil
+	SYSTEM = nil,
+	ERROR = nil,
 }
 
 local Module = {}
@@ -11,8 +20,96 @@ Module.__newindex = function()
 	error("[manager.lua] Bad access; module is read-only")
 end
 
+-- Returns an iterator (i.e. `for k, v in <Module>:GetSelected() do ... end`)
+-- TODO: Actually test this with multiple defined features
+function Module.GetSelected()
+	local k
+	return function()
+		repeat k, v = next(__features, k)
+			if not k then return end
+		until __features[k].selected
+		return k, v
+	end, nil, nil
+end
+
+function Module.GetError()
+	if type(__state.ERROR) == "string" then
+		return true, __state.ERROR
+	end
+	return false, nil
+end
+
+-- Pretty formats the selected feature list for CLI output
+-- NOTE: Originally OutputSelectionList (delete this note once refactor complete)
+function Module.PrintSelected()
+	local _esc = string.char(27, 91)
+	local enabled_text = _esc .. "32mINSTALL" .. _esc .. "0m"
+	local disabled_text = _esc .. "31mSKIP" .. _esc .. "0m"
+
+	print("Selected features:")
+	for feat_name, feat_state in pairs(__features) do
+		print(" │    >", feat_name, feat_state.selected and enabled_text or disabled_text)
+	end
+end
+
+-- Parse an input string and apply changes to the selected features list
+function Module.ModifySelected(_, input_str)
+	if (not input_str) or (#input_str == 0) then
+		return true -- User is done making modifications
+	end
+
+	-- Parse the input string
+	for minus, target_feature in input_str:gmatch("(%-?)([%w]+)") do
+		-- TODO: Special rules for USER, SYSTEM, etc.
+		-- (not sure how exactly I want these to behave just yet)
+		-- TODO: Skip features unsupported by the set system (also TODO, this
+		-- condition needs a definition)
+		if target_feature == "ALL" then
+			for feat_name, _ in pairs(__features) do
+				__features[feat_name].selected = true
+			end
+
+		-- SELECT means "opt-in selection" aka deselect everything
+		-- (May not be intuitive, implemented for command line parsing convenience)
+		elseif target_feature == "SELECT" then
+			for feat_name, _ in pairs(__features) do
+				__features[feat_name].selected = false
+			end
+
+		else
+			if __features[target_feature] == nil then
+				print("Unrecognized feature: " .. target_feature)
+			else
+				local feat_enabled = (#minus == 0)
+				__features[target_feature].selected = feat_enabled
+			end
+		end
+	end
+end
+
+-- NOTE: Previously features.interactive() (delete note once refactor complete)
+function Module.InteractiveSelect(self)
+	local user_response = ""
+	local first_time = true
+	repeat
+		-- Prompt the user for input
+		self:PrintSelected()
+		if first_time then -- Show extra helper prompt
+			first_time = false
+			print(" │ Select or deselect via space-seperated list, press ENTER to accept")
+			print(" │ (ex. SYSTEM -zsh hyprland)")
+		end
+		io.write(" └ ")
+		user_response = io.read("*l")
+		print() -- Useless formatting
+	until self:ModifySelected(user_response)
+end
+
 -- TODO (maybe?) Update the selection list when this is called (right now it's
 -- just a rewrite of what used to be in the options parser)
+-- I *also* don't like that this funciton is only relevant before any processing
+-- > i.e. if it's called, then features may need to be processed again to handle
+-- > alternative system-specific overrides
 function Module.SetSystem(_, target_system)
 	-- Input validation
 	if target_system == nil then
@@ -49,216 +146,88 @@ function Module.SetSystem(_, target_system)
 		else
 			print("Target system could not be determined")
 			-- TODO: Consider prompting the user if they want to quit
+			-- TODO: Consider if this should set __state.ERROR
 		end
 		print() -- Silly formatting
 
 	elseif target_system ~= "NONE" then
-		-- TODO: Currently assuming all spec names are lowercase!
+		-- TODO: Currently assuming all spec names are lowercase (but probably shouldn't)
 		local spec = available_systems[target_system:lower()]
 		if spec then
 			__state.SYSTEM = target_system
 		else
 			print(string.format("No such system with name `%s`", target_system))
+			-- TODO: Consider if this should set __state.ERROR
 		end
 	end
 end
 
-
-
-
--- Parse an input string and apply changes to the selected features list
-function features.ModifySelectionList(self, input_str)
-	if (not input_str) or (#input_str == 0) then
-		return true -- User is done making modifications
+-- feature_data is the value component of __features (table of selected, spec_data, and file_data)
+function Module.ProcessFeature(_, feature_data)
+	assert(type(feature_data) == "table", "[manager.lua] Bad param for ProcessFeature")
+	if feature_data.files then
+		print(string.format("Feature %s may have already been processed, skipping", feature_data.spec.feature))
+		return
 	end
 
-	-- Parse the input string
-	for minus, feature in input_str:gmatch("(%-?)([%w]+)") do
-		-- TODO: Special rules for USER, SYSTEM, etc.
-		-- (not sure how exactly I want these to behave just yet)
-		if feature == "ALL" then
-			for _feature, _ in pairs(self.selected) do
-				self.selected[_feature] = true
-			end
-
-		-- NOTE: May not be intuitive, this is here mostly for symmetry
-		elseif feature == "SELECT" then
-			for _feature, _ in pairs(self.selected) do
-				self.selected[_feature] = false
-			end
-
-		else
-			if self.selected[feature] == nil then
-				print("Unrecognized feature: " .. feature)
-			else
-				self.selected[feature] = (#minus == 0)
-			end
-		end
-	end
+	feature_data.files = feature_data.spec:Process()
+	
+	-- TODO: >>> the rest <<<
 end
 
--- Pretty formats the selected feature list for CLI output
-function features.OutputSelectionList(self)
-	local _esc = string.char(27, 91)
-	local enabled_text = _esc .. "32mINSTALL" .. _esc .. "0m"
-	local disabled_text = _esc .. "31mSKIP" .. _esc .. "0m"
+--
 
-	print("Selected features:")
-	for feat, en in pairs(self.selected) do
-		print(" │    >", feat, en and enabled_text or disabled_text)
-	end
-end
+-- TODO (for upcoming development session!)
+-- manager:SetSystem() in its current form should be the call responsible for
+-- the first-round processing all of the spec files. First round processing
+-- should be to iterate every available feature, and handle the overrides ONLY.
+-- Because it is possible to change the system again later, this should be
+-- placed into temporary tables, rather than overriding in-place.
+-- (From here, I probably want to move SetSystem to a name like VerifySystem,
+-- and then the ProcessAll functionality becomes it's own routine.)
+-- Finally, the manager will handle the second stage of processing (essentially
+-- the staging and filesystem shenanigans)
 
-local spec_varpath_def = {
-	install_root = Class.GetInstallRoot,
-	feature_root = Class.GetFeatureRoot,
-	feature_config = Class.GetFeatureConfig,
-	feature_edits = Class.GetFeatureEdits,
-	feature_overrides = Class.GetFeatureOverrides,
-}
-local function spec_Init(_spec, api)
-	assert(type(_spec.feature) == "string") -- Feature name must be defined
-	-- ^^TODO: Instead of asserting, consider instead just setting this value
-	-- on init, the same way as we do for for system spec files
-
-	-- Add the spec vars to the global table (managed by env.lua)
-	-- TODO: We might want to ONLY do this if the feature is selected!!
-	-- ^^If so, move the following to the top of spec_obj:Process()
-	for var, value in pairs(_spec.vars or {}) do
-		environment[var] = value
-	end
-
-	-- Create a path lookup table scoped to the target feature
-	_spec._varpath_tbl = setmetatable({}, {
-		__index = function(tbl, key)
-			-- local opt_val = _spec.opts[key]
-			-- if opt_val then
-				-- return opt_val
-			-- end
-
-			local fn = spec_varpath_def[key]
-			if fn then
-				local varpath_val = fn(_spec)
-				rawset(tbl, key, varpath_val)
-				return varpath_val
-			end
-
-			-- Fallback to script env vars
-			-- (Also includes globals, to which the spec vars are added)
-			return environment[key]
-		end,
-		__newindex = function()
-			-- No reason we couldn't support this; developer mistake for now though
-			error("Spec vars table is read-only")
-		end
-	})
-
-	-- Attach the API metatable to the new feature spec
-	return setmetatable(_spec, { __index = api })
-end
-
----
-
---- MODULE API (initialization) ---
-
-if not env_status then
-	-- TODO: Consider the location of this; Current rationale is that some
-	-- script operations work with the wrong environment, but features
-	-- certainly cannot be installed without it
-	features.errormsg = "Failed to determine script environment"
-elseif features:GenerateSelectionList() == 0 then
-	features.errormsg = "No features available (is <catalyst>/spec/feature empty?)"
-end
-
-local module = setmetatable({
-	interactive = function()
-		local user_response = ""
-		local first_time = true
-		repeat
-			-- Prompt the user for input
-			features:OutputSelectionList(selected)
-			if first_time then -- Show extra helper prompt
-				first_time = false
-				print(" │ Select or deselect via space-seperated list, press ENTER to accept")
-				print(" │ (ex. SYSTEM -zsh hyprland)")
-			end
-			io.write(" └ ")
-			user_response = io.read("*l")
-			print() -- Useless formatting
-		until features:ModifySelectionList(user_response)
-	end,
-	print = function()
-		features:OutputSelectionList()
-	end,
-	error = function()
-		return features.errormsg
-	end,
-	-- Unfortunate clash of feature/options APIs, we want to set this only
-	-- after the system_spec is ready to be retrieved from options
-	-- TODO: This should be fixable by moving the initialization call to the
-	-- option.process function (see system_spec = options[_system] in main file)
-	system = function(target_system)
-		if features.system then
-			-- Developer error
-			error("Bad use of features_SetSystem; system spec already set")
-		end
-		features.system = target_system
-	end
-}, {
-	__newindex = function()
-		error("Bad write to features module; module is read-only")
-	end,
-	-- Will not work in lua < 5.2! (does nothing)
-	__pairs = function()
-		local k
-		return function()
-			repeat k, v = next(features.selected, k)
-				if not k then return end
-			until features.selected[k]
-			return k, features.spec_list[k]
-		end, nil, nil
-	end,
-	__call = function(_, input)
-		features:ModifySelectionList(input)
-	end,
-})
-
-local Instance = setmetatable({
+--- MODULE API ---
+return setmetatable({
 	-- Not a metamethod! I've chosen this naming convention to indicate its unusual
-	-- usage. Notably that __init should only be called once "automagically"
+	-- usage; Notably that __init should only be called once "automagically"
+	-- This is necessary so that the call to dirload may be deferred until the
+	-- script environment is verified
 	__init = function(self)
+		assert(type(self) == "table", "[manager.lua] Bad call to init (did you use `:` ?)")
 		assert(__features == nil, "[manager.lua] Invalid reinit of module")
-		self.__init = nil
 
+		self.__init = nil
 		setmetatable(self, Module)
 
-		-- >>> Perform the module state initialization steps <<<
-		-- Load the feature specs from the filesystem
-		-- Spec list is a basic map of setmetatable(spec_entry, spec_api)
-		-- TODO: Make this readable
+		-- >>> Begin initialization of the module state  <<<
+
 		__features = {}
-		for filename, spec in pairs(require("lua.dirload")("spec/feature")) do
-			assert(not __features[filename], string.format("[manager.lua] Duplicate spec entry `%s`"), filename)
+		for filename, spec_data in pairs(require("lua.dirload")("spec/feature")) do
+			assert(not __features[filename], string.format("[manager.lua] Duplicate spec entry `%s`", filename))
 			__features[filename] = {
 				selected = false,
-				spec = setmetatable(spec, api), -- TODO: use dirload on_load,
-				-- which will then call _feature: Module.new() (see path for reference)
+				spec = FeatureSpec(spec_data) -- *TODO: maybe use dirload's on_load option instead
+				-- files = {} -- Map of target_path <Path> : source_path <Path>; init as nil
+				-- ^^NOTE: Instances of Path are unique, thus collisions are checked later
 			}
+		end
+		if #__features == 0 then
+			__state.ERROR = "No features available (is <catalyst>/spec/feature empty?)"
 		end
 
 		setmetatable(__features, {
-			__newindex = function(_, feat)
-				error(string.format("[manager.lua] No spec available for feature `%s`", feat))
-			end })
+			__newindex = function(_, feat_name)
+				error(string.format("[manager.lua] No spec available for feature `%s`", feat_name))
+			end
+		})
 	end
 }, {
 	__index = function(self, key)
 		-- Initialize the module when first called
-		-- NOTE: Not 100% on this implementation, this could just go here directly
-		Instance:__init() 
-
-		-- Honor the original request
-		return Instance[key]
+		-- NOTE: Not 100% on this implementation, this could be done without a call
+		self:__init() 
+		return self[key] -- Honor the original request
 	end
 })
-return Instance

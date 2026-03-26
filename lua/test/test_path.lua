@@ -4,6 +4,7 @@ TEST_OUTPUT = false
 
 local test_result = true
 local path = require("lua.path")
+-- ^^TODO: Consider making this uppercase (i.e. Path) since it is a class type?
 
 --- BASE MODULE TEST ---
 

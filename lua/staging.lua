@@ -39,6 +39,7 @@
 
 
 local path = require("lua.path") -- File tree composed of path types
+-- ^^TODO: Consider making this uppercase (i.e. Path) since it is a class type?
 
 -- Staging tree internal storage
 local __tree = {}
@@ -72,8 +73,8 @@ end
 -- For copy operations, source refers to the the "copy from" file
 function Module.AddFile(_, install_path, source_path, type)
 	local msg_on_error = "[staging.lua] Could not stage; `%s` not a valid `Path` class"
-	assert(install_path.type == "Path", string.format(msg_on_error, tostring(install_path))
-	assert(source_path.type == "Path", string.format(msg_on_error, tostring(source_path))
+	assert(install_path.type == "Path", string.format(msg_on_error, tostring(install_path)))
+	assert(source_path.type == "Path", string.format(msg_on_error, tostring(source_path)))
 
 	install_path = install_path:Absolute()
 	type = type or path.LINK -- Allow symlink as default install type
@@ -118,7 +119,7 @@ function Module.AddFile(_, install_path, source_path, type)
 	end
 	local staged_file = {
 		source = source_path, -- The data origin of the staged file
-		location = install_path -- The path that the new file is created
+		location = install_path, -- The path that the new file is created
 		type = type, -- Link, copy, etc.
 	}
 
@@ -156,9 +157,10 @@ function Module.AddEdit(_, edit_uid, edit_spec)
 	-- certainly an unlikely use case, so we want to warn before taking action.
 	local target_path = staged_edit[file]
 	if not (target_path
-		and string.match(target_path, edit_spec[file] or ".*")
+		and string.match(target_path, edit_spec[file] or ".*"))
 	then
-		-- sad warning path
+		-- sad warning path (TODO I'm not sure I actually have the message correct)
+		print(string.format("Multiple features requesting edits to `%s`", target_path))
 	end
 
 end

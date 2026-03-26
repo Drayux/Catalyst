@@ -13,9 +13,11 @@
 --		spec is part of the spec API, and everything else should be handled by
 --		the feature list API. (TODO: This note might be obsolete.)
 
-local env_status, environment = pcall(require, "lua.env")
+local env = require("lua.env")
+local staging = require("lua.staging") -- TODO: This should no longer be needed in this module
+
 local path = require("lua.path")
-local staging = require("lua.staging")
+-- ^^TODO: Consider making this uppercase (i.e. Path) since it is a class type?
 
 --- CLASS API ---
 local Class = { type = "Spec:Feature" }
@@ -171,13 +173,13 @@ local function stage_edits(spec, edits)
 end
 
 -- Process spec config (call only once)
+-- TODO: I'm tempted to move this to the initialization step, but that presents
+-- a problem: any global varpaths first need all the specs loaded
+-- Supporting this would need a change in path.lua where we could defer the
+-- processing of varpaths (I would load the *final* varpath table in the next
+-- step where we simulate the filesystem and check for spec clashes)
 function Class.Process(self, system_name)
 	assert(not self._processed, string.format("Feature %s has already been processed", self.feature))
-	self._processed = true
-
-	-- NOTE: Spec-defined variables are added to globals during init, BUT if it
-	-- becomes prudent to only add the vars of *selected* spec files, then that
-	-- must move here-ish (specifically, before staging any files)
 
 	local files = self.files
 	local links = self.links
@@ -225,19 +227,20 @@ function Class.Process(self, system_name)
 
 	if not (files or links) then
 		-- Simple install; symlink to root
-		local install_path = path("$install_root", self.vars)
-		local link_target = path("$feature_config", self.vars)
-		staging:AddFile(install_path, link_target, staging.PATH)
-	else
-		stage_files(self, files)
-		stage_links(self, links)
+		local install_path = path("$install_root", self.vars) -- installed file location
+		local link_target = path("$feature_config", self.vars) -- source location (where the link points)
+		-- staging:AddFile(install_path, link_target, staging.PATH)
+		-- print(string.format("at %s, a link pointing to %s would be installed", install_path, link_target))
+	-- else
+		-- stage_files(self, files)
+		-- stage_links(self, links)
 	end
 
-	if edits then
-		stage_edits(self, edits)
-	end
+	-- if edits then
+		-- stage_edits(self, edits)
+	-- end
 
-	staging:Print()
+	-- staging:Print()
 end
 
 -- Path string getters; generally intended for varpath resolution
@@ -257,7 +260,7 @@ end
 function Class.GetFeatureRoot(self)
 	local root = self.opts.feature_root
 	if not root then
-		root = string.format("%s/%s", environment.dotfile_root, self.feature)
+		root = string.format("%s/%s", env.dotfile_root, self.feature)
 		self.opts.feature = root
 	end
 	return root
@@ -289,7 +292,6 @@ function Class.GetFeatureOverrides(self)
 	end
 	return overrides
 end
-
 
 -- FOR NEXT TIME (TODO OLD - Just some thoughts at this point)
 -- I shouldn't need this if I actually work on this when I should be but....
@@ -340,3 +342,74 @@ end
 --  > If nothing installed, EASY PEASY
 --  > If installed but NEW covers OLD, also easy
 --  > ???
+
+-- Used in instance initialization
+local spec_varpath_tbl = {
+	install_root = Class.GetInstallRoot,
+	feature_root = Class.GetFeatureRoot,
+	feature_config = Class.GetFeatureConfig,
+	feature_edits = Class.GetFeatureEdits,
+	feature_overrides = Class.GetFeatureOverrides,
+}
+local function spec_varpath__index(spec_data)
+	return function(proxy, key)
+		-- local opt_val = _spec.opts[key]
+		-- if opt_val then
+			-- return opt_val
+		-- end
+
+		local fn = spec_varpath_tbl[key]
+		if fn then
+			local varpath_val = fn(spec_data)
+			rawset(proxy, key, varpath_val)
+			return varpath_val
+		end
+
+		-- Fallback to script env vars + spec-defined globals
+		return env[key]
+	end
+end
+-- TODO: I don't love that one is a closure generator and the other is just a function
+local function spec_varpath__newindex()
+	-- No reason we couldn't support this; developer mistake for now though
+	error("[feature.lua] Bad access; Vars table is read-only")
+end
+
+local Module = {}
+-- Module.__index = nil
+Module.__newindex = function()
+	error("[feature.lua] Bad access; Module is read-only")
+end
+Module.__call = function(_, spec_data)
+	local errmsg = "[feature.lua] Spec:Feature must be initialized with a well-formed feature spec table"
+	assert(type(spec_data) == "table", errmsg)
+	assert(not getmetatable(spec_data), errmsg)
+	assert((type(spec_data.feature) == "string")
+		and (#spec_data.feature > 0), errmsg)
+	-- ^^TODO: Instead of asserting, consider instead just setting this value
+	-- on init, the same way as we do for for system spec files
+
+	spec_data.vars = spec_data.vars or {}
+	for var, value in pairs(spec_data.vars) do
+		-- TODO: Add the spec vars to the global table (managed by env.lua)
+		-- (taken WIP from the original spec processing - we only want to do this
+		-- once the spec is selected and we begin processing them all; AKA this
+		-- processing will not take place here like it used to)
+		-- TODO: (Also) consider a preceeding underscore to mean "local only" and
+		-- skip adding it to globals
+		-- > env[var] = value
+
+		if spec_varpath_tbl[var] then
+			print(string.format("Careful! Feature `%s` overrides a well-known variable `%s`",
+				spec_data.feature, var))
+		end
+	end
+	setmetatable(spec_data.vars, {
+		__index = spec_varpath__index(spec_data),
+		__newindex = spec_varpath__newindex,
+	})
+
+	return setmetatable(spec_data, Class)
+end
+
+return setmetatable({}, Module)

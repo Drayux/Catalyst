@@ -51,9 +51,9 @@ local spec = {
 		-- ["config"] = ".", 
 		-- ["logout"] = true,
 		--
-		-- ["explicit_path"] = "~/.config/crazy_style",  -- ~/.config/crazy_style/explicit_path
-		-- ["folder_config"] = "~/.config/",              -- ~/.config/entry_1, ~/.config/entry_2, ...
-		-- ["bad_target"] = "", -- (Throws error)
+		-- ["explicit_path"] = "~/.config/crazy_style", -- ~/.config/crazy_style/explicit_path
+		-- ["folder_config"] = "~/.config/",            -- ~/.config/entry_1, ~/.config/entry_2, ...
+		-- ["bad_target"] = "",							-- (Throws error)
 		--
 		-- One can specify a rename with the following value format
 		-- ["rename_me"] = { "$xdg_config", "new_name" }, -- ~/.config/new_name

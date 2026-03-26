@@ -26,7 +26,7 @@ local __types = setmetatable({
 				-- Fallback to any value so long as it's a non-empty string
 				return setmetatable({}, {
 					__index = { type = "String" },
-					__call = function(input)
+					__call = function(_, input)
 						local key = tostring(input):upper()
 						return (#key > 0) and key or nil
 					end })
@@ -34,8 +34,8 @@ local __types = setmetatable({
 
 			-- Returns str_val if in range, else nil
 			return setmetatable(range, {
-				__index = { type = "Enum" },
-				__call = function(input)
+				__index = { type = "String" },
+				__call = function(_, input)
 						local str_input = tostring(input)
 						local valid = true
 						-- Minimum string length (incl)
@@ -58,8 +58,6 @@ local __types = setmetatable({
 				error("[option.lua] Bad use of Enum type; range is not a table")
 			elseif (range == nil) then
 				-- Fallback to string type with no bounds
-				-- (This works because thus chunk is only executed when calling
-				-- __types.Enum() so __types.String() also must exist already.)
 				return __types.String()
 			end
 
@@ -80,6 +78,11 @@ local __types = setmetatable({
 						if (type(_k) == "number" and _v == enum_val) then
 							return _v, _k
 						end
+						-- ^^Alternative idea, would allow enums to have a pattern string
+						-- if (type(_k) == "number" and string.match(enum_val, string.format("^%s$", _v))) then ... end
+					end
+					if range.wildcard then
+						return input:lower()
 					end
 					-- implied `return nil`
 				end })
@@ -130,7 +133,7 @@ local __options = {
 	system = {
 		-- Auto means try to detect the system, none means select no
 		-- system-specific config
-		range = __types.String(),
+		range = __types.Enum({ "AUTO", "NONE", wildcard = true }),
 		default = "AUTO",
 		-- count = 1, (refactor pending: implied by Enum type)
 		flagchar = "t",
@@ -180,7 +183,7 @@ for opt, data in pairs(__options) do
 end
 
 local __state = {
-	ERROR = TRUE, -- True while DATA is nil, resets to false when parse called
+	ERROR = true, -- True while DATA is nil, resets to false when parse called
 	DATA = nil -- Key is the option spec table, value is the dynamic option data
 }
 
@@ -230,7 +233,7 @@ function Module.Parse(_, input)
 	end
 	assert(type(input) == "table", "[option.lua] Error getting script arguments")
 	-- Reset module state
-	__state.ERROR = false
+	__state.ERROR = nil
 	__state.DATA = {}
 
 	local optqueue = {}
@@ -347,8 +350,12 @@ function Module.Dump(_)
 end
 
 -- Error flag getter (set during a parse error, not a failed range validation)
-function Module.Error(_)
-	return __state.ERROR
+function Module.GetError(_)
+	if type(__state.ERROR) == "string" then
+		return true, __state.ERROR
+	end
+	-- __state.ERROR can be boolean or string; normalize return value to <bool>, <str/nil>
+	return (__state.ERROR == true) or false, nil
 end
 
 function Module.Usage(_)
