@@ -108,6 +108,12 @@ local function create_new(path_obj, path_splits)
 				-- directory containing the target of the symlink instead. That
 				-- functionality is not reflected here. Should it be?
 
+				-- ^^Thinking NO on following symlinks. Consider two clashing
+				-- features. If running the script twice to install one and
+				-- then the other, the second feature would follow the symlink
+				-- of the first and ultimately duplicate config files into the
+				-- git repo.
+
 				if not _warning then
 					print("Warning: it is advisable to avoid ../ within spec install paths")
 					_warning = true

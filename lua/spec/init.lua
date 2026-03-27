@@ -2,6 +2,7 @@
 
 local Module = {
 	Feature = require("lua.spec._feature"),
+	System = require("lua.spec._system"),
 }
 Module.__index = Module
 Module.__newindex = function()

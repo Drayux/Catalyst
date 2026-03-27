@@ -172,12 +172,8 @@ local function stage_edits(spec, edits)
 	end
 end
 
+-- TODO: This is being moved to Class.Load() ; Remove once no longer needed for reference
 -- Process spec config (call only once)
--- TODO: I'm tempted to move this to the initialization step, but that presents
--- a problem: any global varpaths first need all the specs loaded
--- Supporting this would need a change in path.lua where we could defer the
--- processing of varpaths (I would load the *final* varpath table in the next
--- step where we simulate the filesystem and check for spec clashes)
 function Class.Process(self, system_name)
 	assert(not self._processed, string.format("Feature %s has already been processed", self.feature))
 
@@ -241,6 +237,38 @@ function Class.Process(self, system_name)
 	-- end
 
 	-- staging:Print()
+end
+
+-- 
+function Class.LoadFiles(self, system_spec)
+	local system_ovr = nil
+	if system_spec then
+		assert((type(system_spec) == "table") and (system_spec.type == "Spec:System"),
+			"System spec must be initialized via its class")
+		system_ovr = self.system and self.system[system_spec._name]
+	end
+
+	local files_list = {} -- retval
+
+	-- Tentative format of files_list^^
+	--[[
+	["filename_in_dotfiles_repo"] = {
+		install_rename = <`nil` unless rename format is explicitly given>
+		install_location = Path(install_location) -- just the directory, not the complete path
+		source = Path(source_location_in_dotfiles_repo)
+		type = path.FILE / path.LINK / path.HARD / path.COPY
+	}
+	]]
+
+	
+	return files_list
+end
+
+function Class.LoadEdits(self, system_spec)
+	print("TODO: feature::LoadEdits")
+	-- I was doing something with sequencing and the like...so the structure is
+	-- not the same as files
+	return {}
 end
 
 -- Path string getters; generally intended for varpath resolution
@@ -369,10 +397,13 @@ local function spec_varpath__index(spec_data)
 		return env[key]
 	end
 end
--- TODO: I don't love that one is a closure generator and the other is just a function
-local function spec_varpath__newindex()
-	-- No reason we couldn't support this; developer mistake for now though
-	error("[feature.lua] Bad access; Vars table is read-only")
+local function spec_varpath__newindex(spec_data)
+	return function(self, key, value)
+		-- This would be invoked if a system override tried to introduce a new variable
+		-- that was not present in the original table. This could be okay, but for now
+		-- we'll assert it as an error.
+		error(string.format("Spec %s has no such variable %s", spec_data.feature, key))
+	end
 end
 
 local Module = {}
@@ -400,13 +431,13 @@ Module.__call = function(_, spec_data)
 		-- > env[var] = value
 
 		if spec_varpath_tbl[var] then
-			print(string.format("Careful! Feature `%s` overrides a well-known variable `%s`",
+			print(string.format("Warning: Feature `%s` overrides well-known variable `%s`",
 				spec_data.feature, var))
 		end
 	end
 	setmetatable(spec_data.vars, {
 		__index = spec_varpath__index(spec_data),
-		__newindex = spec_varpath__newindex,
+		__newindex = spec_varpath__newindex(spec_data),
 	})
 
 	return setmetatable(spec_data, Class)

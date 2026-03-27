@@ -51,7 +51,7 @@ end
 local manager = require("lua.manager")
 -- Current use case means that any other option will at least build a feature
 -- list and check the setup of those features
-manager:SetSystem(options.system) -- NOTE: Specify only common features by setting the target system to NONE
+manager:ProcessSystem(options.system) -- NOTE: Specify only common features by setting the target system to NONE
 manager:ModifySelected(options.features) -- Perform the initial list modification (per script argument)
 
 if options.script then
@@ -65,10 +65,6 @@ end
 -- 
 
 -- CORE "ACTUALLY DOES THE THING" LOOP
-
-for feat_name, feat_spec in manager:GetSelected() do
-	manager:ProcessFeature(feat_spec)
-end
 
 print("reminder to myself that the main file is truncated!!")
 do return end
