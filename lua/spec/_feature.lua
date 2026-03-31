@@ -16,8 +16,7 @@
 local env = require("lua.env")
 local staging = require("lua.staging") -- TODO: This should no longer be needed in this module
 
-local path = require("lua.path")
--- ^^TODO: Consider making this uppercase (i.e. Path) since it is a class type?
+local Path = require("lua.path")
 
 --- CLASS API ---
 local Class = { type = "Spec:Feature" }
@@ -50,7 +49,7 @@ local function stage_files(spec, files)
 		error("Bad call to feature::stage_files, files is not a table")
 	end
 
-	local feature_config = path(spec:GetFeatureConfig()):Absolute()
+	local feature_config = Path(spec:GetFeatureConfig()):Absolute()
 
 	-- For each entry, search for it below
 	-- > if file (string), then install
@@ -136,7 +135,7 @@ local function stage_links(spec, links)
 		-- This association is much simpler than files, links will be generated
 		-- almost exactly as they appear in the spec
 
-		install_path = path("$install_root", spec._varpath_tbl):Append(link_filename)
+		install_path = Path("$install_root", spec._varpath_tbl):Append(link_filename)
 		target_path = path(link_target, spec._varpath_tbl)
 
 		staging:AddFile(install_path, target_path, staging.LINK)
@@ -157,7 +156,7 @@ local function stage_edits(spec, edits)
 		-- Spec files should use variables for shared system-level files to
 		-- mitigate the chance of a system override generating extra system
 		-- files by mistake.
-		local edit_file = path(edit_spec.file, spec._varpath_tbl)
+		local edit_file = Path(edit_spec.file, spec._varpath_tbl)
 		edit_spec.file = edit_file:Absolute()
 
 		-- TODO: We need something more creative than just the filename....probably?
@@ -222,9 +221,9 @@ function Class.Process(self, system_name)
 	end
 
 	if not (files or links) then
-		-- Simple install; symlink to root
-		local install_path = path("$install_root", self.vars) -- installed file location
-		local link_target = path("$feature_config", self.vars) -- source location (where the link points)
+		-- Simple install; symlink to install root
+		local install_path = Path("$install_root", self.vars) -- installed file location
+		local link_target = Path("$feature_config", self.vars) -- source location (where the link points)
 		-- staging:AddFile(install_path, link_target, staging.PATH)
 		-- print(string.format("at %s, a link pointing to %s would be installed", install_path, link_target))
 	-- else
@@ -240,6 +239,20 @@ function Class.Process(self, system_name)
 end
 
 -- 
+
+-- Special iterator to merge ipairs and pairs types
+local function files_iterator(files_spec)
+	return function(tbl)
+		key, value = next(tbl, key)
+		if type(key) == "number" then
+			return value, "$install_root"
+		elseif type(key) == "table" then
+			error("Bad spec format, target file cannot be a table")
+		end
+		return key, value
+	end, files_spec, nil
+end
+
 function Class.LoadFiles(self, system_spec)
 	local system_ovr = nil
 	if system_spec then
@@ -248,18 +261,26 @@ function Class.LoadFiles(self, system_spec)
 		system_ovr = self.system and self.system[system_spec._name]
 	end
 
+	--[[ >>> Data format of `files_list` <<<
+		["filename_in_dotfiles_repo"] = {
+			install_rename = <`nil` unless rename format is explicitly given>
+			install_location = Path(install_location) -- just the directory, not the complete path
+			source = Path(source_location_in_dotfiles_repo)
+			type = path.FILE / path.LINK / path.HARD / path.COPY
+		} ]]
 	local files_list = {} -- retval
 
-	-- Tentative format of files_list^^
-	--[[
-	["filename_in_dotfiles_repo"] = {
-		install_rename = <`nil` unless rename format is explicitly given>
-		install_location = Path(install_location) -- just the directory, not the complete path
-		source = Path(source_location_in_dotfiles_repo)
-		type = path.FILE / path.LINK / path.HARD / path.COPY
-	}
-	]]
-
+	-- For each entry, search for it below
+	-- > if file (string), then install
+	-- > if directory (table), then install children
+	local feature_config_path = Path(spec:GetFeatureConfig()):Absolute()
+	for config_filename, directory in pairs(files) do
+		local search_result = feature_config:Search(config_filename)
+		local dir_install = false
+		if type(search_result) == "string" then
+			search_result = { config_filename }
+			dir_install = true
+		end
 	
 	return files_list
 end
