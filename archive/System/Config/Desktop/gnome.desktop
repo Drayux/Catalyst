@@ -1,8 +1,0 @@
-[Desktop Entry]
-Name=gnome
-Comment=GNOME Desktop Environment
-Exec=/usr/bin/gnome-session 2> $HOME/.cache/ly/desktop/gnome.log
-TryExec=/usr/bin/gnome-session
-Type=Application
-DesktopNames=GNOME
-X-GDM-SessionRegisters=true

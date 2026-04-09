@@ -1,2 +1,0 @@
--- Load the audio routing configuration
--- load_script("../custom/routing.lua")

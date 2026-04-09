@@ -1,1 +1,0 @@
-> ### TODO: portage cheatsheet stub
