@@ -79,7 +79,32 @@ local spec = {
 	"nvim-telescope/telescope.nvim",	
 	cond = condCORE,
 	cmd = { "Telescope" },
-	dependencies = { 'nvim-lua/plenary.nvim' },
+	dependencies = {
+		"nvim-lua/plenary.nvim",
+		"nvim-telescope/telescope-ui-select.nvim", -- Setup sets vim.ui.select
+		-- { "nvim-telescope/telescope-ui-select.nvim", -- Setup sets vim.ui.select
+			-- cmd = { "CopilotChatModels" },
+			-- config = function(_, opts)
+				-- require("telescope").load_extension("ui-select")
+			-- end
+		-- },
+	},
+	opts = {
+		-- This doesn't appear to work in this format: I'm not sure what to tweak just yet
+		-- extensions = {
+			-- "directory",
+			-- "projections",
+			-- "file_browser",
+			-- "themes",
+			-- "ui_select", -- nvim-telescope/telescope-ui-select.nvim
+		-- },
+		defaults = {
+			mappings = {
+				-- Close immediately on escape (rather than the weird double-escape by default)
+				i = { ["<Esc>"] = "close" }
+			}
+		}
+	},
 	init = function()
 		vim.g.telescope_enabled = true
 
@@ -89,6 +114,15 @@ local spec = {
 
 		require("editor.binds").set("n", "<leader>ff", ffplus)
 		require("editor.binds").set("n", "<leader>fg", lgplus)
+		require("editor.binds").set({ "n", "v" }, "\"", "<cmd>Telescope registers<cr>")
+
+		vim.ui.select = function(items, opts, on_choice)
+			-- Initiate telescope load
+			require("telescope").load_extension("ui-select")
+
+			-- Forward the params to the actual function
+			vim.ui.select(items, opts, on_choice)
+		end
 	end,
 	config = function(_, opts)
 		-- Load plugin integrations
@@ -101,11 +135,12 @@ local spec = {
 		end
 
 		-- Load extensions early so that their autocompletes are generated
-		-- opts = { extensions = { "directory", "projections", "file_browser", "themes" }}
-		-- telescope.load_extension(ext)
+		-- https://github.com/nvim-telescope/telescope.nvim?tab=readme-ov-file#loading-extensions
 
 		-- Projections
 		-- vim.keymap.set('n', '<leader>fp', "<cmd>Telescope projections<cr>")
+
+		require("telescope").setup(opts)
 	end
 }
 

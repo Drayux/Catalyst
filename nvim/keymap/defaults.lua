@@ -103,6 +103,7 @@ local rowHome = function()
 		-- > indicator that the current configuration rebinds these keys elsewhere
 		binds.set(EDITOR, "D", "0k%")
 		binds.set(EDITOR, "<C-d>", "<esc>vip")
+		binds.set(EDITOR, "\"", [["p :reg <bar> exec 'normal! "'.input('Paste >> ').'p'<CR>]]) -- List register contents
 	end
 	binds.set(NORMAL, "d", "%") -- Match paren
 	binds.set(VISUAL, "d", "o")
@@ -139,7 +140,6 @@ local rowHome = function()
 	-- > ': Register access
 	binds.set(EDITOR, "'", "\"")
 	binds.set(EDITOR, "''", "\"+") -- Shortcut to use system clipboard (plus register)
-	binds.set(EDITOR, "\"", [["p :reg <bar> exec 'normal! "'.input('Paste >> ').'p'<CR>]]) -- List register contents
 	-- > Enter: No-Op
 	binds.disable(EDITOR, "<enter>")
 end
