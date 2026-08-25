@@ -12,6 +12,7 @@ local spec = {
 		user_default_options = { names = false }
 	},
 	config = function(_, opts)
+		vim.o.termguicolors = true
 		require("colorizer").setup(opts)
 		vim.defer_fn(function()
 			require("colorizer").attach_to_buffer(0)

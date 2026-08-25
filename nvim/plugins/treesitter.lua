@@ -30,6 +30,7 @@ local spec = {
 	cond = condCORE,
 	lazy = false,
 	dependencies = {
+		"neovim-treesitter/treesitter-parser-registry",
 		"nvim-treesitter/nvim-treesitter-textobjects",
 		-- Repo archived and probably no longer works with current version of TS
 		-- { "ziontee113/syntax-tree-surfer",
