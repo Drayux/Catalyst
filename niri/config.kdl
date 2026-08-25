@@ -1,0 +1,369 @@
+// Stuff for screenshots (save for later)
+// slurp | grim -g - - | wl-copy
+// slurp | grim -g - /home/_screenshot.png
+
+// DESKTOP - Left (vertical) monitor
+output "DP-3" {
+    mode "2560x1440"
+    transform "270"
+    position x=-1440 y=-480
+	variable-refresh-rate
+}
+
+// DESKTOP - Right (twitch chat) monitor
+output "HDMI-A-1" {
+    mode "1920x860"
+    transform "90"
+    position x=3440 y=144
+    scale 1.6667
+}
+
+// DESKTOP - Center (main) monitor
+output "DP-2" {
+    mode "3440x1440@144"
+    transform "normal"
+    position x=0 y=0
+	focus-at-startup
+	variable-refresh-rate
+	layout {
+		always-center-single-column
+		empty-workspace-above-first
+		center-focused-column "never"
+		preset-column-widths {
+			// proportion 1.0
+			proportion 0.66667
+			proportion 0.5
+			proportion 0.33333
+			proportion 0.25
+		}
+		default-column-width { proportion 0.33333; }
+	}
+}
+
+// LAPTOP - Built-in display
+output "eDP-1" { // https://niri-wm.github.io/niri/Configuration:-Outputs
+	focus-at-startup
+	variable-refresh-rate
+	layout {
+		always-center-single-column
+		empty-workspace-above-first
+		center-focused-column "never"
+		preset-column-widths {
+			proportion 1.0
+			proportion 0.66667
+			proportion 0.33333
+		}
+		default-column-width { proportion 0.66667; } // Window-driven initial size
+	}
+}
+
+input { // https://github.com/niri-wm/niri/wiki/Configuration:-Input
+	focus-follows-mouse max-scroll-amount="34%"
+    // warp-mouse-to-focus
+    touchpad {
+        tap
+        scroll-method "two-finger"
+    }
+	tablet {
+		// UNTESTED: This *should* map the touchscreen to only the main display if an external display is attached
+		// See /sys/class/drm if I got the wrong name
+		map-to-output "eDP-1"
+
+		// Also todo, on desktop, I want this to be HDMI-A-1
+	}
+}
+
+layout { // https://niri-wm.github.io/niri/Configuration:-Layout
+    gaps 12
+	background-color "#cfaaff70"
+	center-focused-column "never"
+	preset-column-widths {
+		proportion 1.0
+		proportion 0.66667
+	}
+	default-column-width { proportion 1.0; }
+    border {
+		// off // Tragically draws to the entire window space
+        active-gradient from="#93cee9" to="#cfaaff" angle=180
+        inactive-color "#393552"
+        // inactive-color "transparent"
+        urgent-color "#cb253b"
+        width 3
+    }
+    focus-ring {
+		off
+        // active-gradient from="#80c8ffa0" to="#cfaaffa0" angle=45
+        // inactive-color "#505050"
+        // inactive-color "transparent"
+        // urgent-color "#cb253b"
+        // width 3
+    }
+    shadow {
+		off
+    }
+    struts {
+        // left 64
+        // right 64
+        // top 64
+        // bottom 64
+    }
+}
+
+cursor {
+	xcursor-theme "Adwaita"
+	xcursor-size 24
+
+	hide-when-typing
+	hide-after-inactive-ms 20000
+}
+
+blur {
+    passes 1
+    offset 3.0
+    noise 0.05
+    saturation 1.0
+}
+
+gestures {
+	hot-corners {
+		off
+	}
+}
+
+// Unofficial global behavior section
+
+// prefer-no-csd
+screenshot-path "~/media/screenshots/%Y-%m-%d_%H%M%S.png"
+hotkey-overlay {
+    skip-at-startup
+}
+
+// spawn-sh-at-startup "/usr/bin/swaybg -i /home/.config/niri/miku.jpg -m fill"
+spawn-sh-at-startup "sleep 2; kacau-wall" // TODO: create ebuild for this!!
+	// (right now the binary is just copied to /usr/local/bin)
+	// Also the sleep is only just so I see the transition effect when niri loads
+// spawn-sh-at-startup "/usr/bin/swayosd-server" // Opt depend: `swayosd-libinput-backend` for kbd montioring
+spawn-sh-at-startup "/usr/local/bin/audio-exec"
+
+// Unofficial window rules section
+// https://niri-wm.github.io/niri/Configuration:-Window-Rules
+
+// Global match for "normal" windows
+window-rule {
+    geometry-corner-radius 12
+    clip-to-geometry true
+}
+
+// I like obsidian fullscreen and in its own workspace
+workspace "notes"
+window-rule {
+	match app-id="obsidian"
+
+	open-on-workspace "notes"
+	open-maximized-to-edges true
+	open-focused true
+}
+
+// Special rendering to waybar
+layer-rule {
+	match namespace="waybar"
+	match namespace="quickshell"
+	// opacity 1.0
+	background-effect {
+		blur true
+	}
+}
+
+// Example WR to blur kitty, but I kinda like the clear transparent better
+window-rule {
+	match app-id="kitty"
+	// exclude is-focused=false
+	draw-border-with-background false
+	opacity 0.94
+	// background-effect {
+        // xray true
+        // blur true
+        // noise 0.05
+        // saturation 1.25
+    // }
+}
+window-rule { // Kitty when active!
+	match app-id="kitty"
+	exclude is-focused=false
+	opacity 0.98
+	// draw-border-with-background true
+    // border {
+        // active-gradient from="#80c8ff40" to="#cfaaff40" angle=45
+        // inactive-color "#50505080"
+    // }
+}
+
+/-window-rule { // Open picture-in-picture player as floating (firefox)
+    // This app-id regular expression will work for both:
+    // - host Firefox (app-id is "firefox")
+    // - Flatpak Firefox (app-id is "org.mozilla.firefox")
+    match app-id=r#"firefox$"# title="^Picture-in-Picture$"
+    open-floating true
+}
+
+// Example: block out two password managers from screen capture.
+// (This example rule is commented out with a "/-" in front.)
+/-window-rule {
+    match app-id=r#"^org\.keepassxc\.KeePassXC$"#
+    match app-id=r#"^org\.gnome\.World\.Secrets$"#
+    block-out-from "screen-capture"
+    // Use this instead if you want them visible on third-party screenshot tools.
+    // block-out-from "screencast"
+}
+
+switch-events {
+	lid-close { spawn "power-state" "sleep"; }
+}
+
+binds {
+    // Binds for essential functions
+    Super+Space repeat=false { toggle-overview; }
+    Alt+Space hotkey-overlay-title="Run an Application: rofi" { spawn-sh "rofi -show drun"; }
+    Super+Escape repeat=false { close-window; }
+    Super+Shift+Escape repeat=false { quit; } // Exit WM (w/ prompt)
+    Mod+Shift+Slash { show-hotkey-overlay; }
+
+	// Binds for core applications
+    Super+T hotkey-overlay-title="Spawn Terminal" { spawn "kitty"; }
+    Super+B hotkey-overlay-title="Launch Web Browser" { spawn "librewolf"; }
+    Super+N hotkey-overlay-title="Open Notes" { spawn-sh "flatpak run md.obsidian.Obsidian"; }
+    Super+L hotkey-overlay-title="Lock the Screen" { spawn "swaylock"; }
+
+    // Example brightness key mappings for brightnessctl.
+    XF86MonBrightnessUp allow-when-locked=true { spawn "brightnessctl" "set" "+4%"; }
+    XF86MonBrightnessDown allow-when-locked=true { spawn "brightnessctl" "set" "4%-"; }
+
+    // Example volume keys mappings for PipeWire & WirePlumber
+    XF86AudioRaiseVolume allow-when-locked=true { spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SINK@ 0.1+ -l 1.0"; }
+    XF86AudioLowerVolume allow-when-locked=true { spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SINK@ 0.1-"; }
+    XF86AudioMute        allow-when-locked=true { spawn-sh "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"; }
+    XF86AudioMicMute     allow-when-locked=true { spawn-sh "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"; }
+
+    // Example media keys mapping using playerctl.
+    XF86AudioPlay        allow-when-locked=true { spawn-sh "playerctl play-pause"; }
+    XF86AudioStop        allow-when-locked=true { spawn-sh "playerctl stop"; }
+    XF86AudioPrev        allow-when-locked=true { spawn-sh "playerctl previous"; }
+    XF86AudioNext        allow-when-locked=true { spawn-sh "playerctl next"; }
+
+	// Window altering binds
+    // > Cycle through widths set in preset-column-widths [F1]
+    Super+P { switch-preset-column-width; }
+    // Super+Shift+P { switch-preset-column-width-back; } // no work :(
+	// Maximize window (no gaps) [F11]
+	// XF86Launch2	{ maximize-window-to-edges; } // no work
+	F1	{ maximize-window-to-edges; }
+    F11 { fullscreen-window; }
+	Super+Shift+S { toggle-window-floating; } // [ F12 ]
+
+	// Window manager binds **(WIP)**
+    Mod+Left  { focus-column-left; }
+    Mod+Down  { focus-window-or-workspace-down; }
+    Mod+Up    { focus-window-or-workspace-up; }
+    Mod+Right { focus-column-right; }
+    // Mod+H     { focus-column-left; }
+    // Mod+J     { focus-window-down; }
+    // Mod+K     { focus-window-up; }
+    // Mod+L     { focus-column-right; }
+
+    Mod+Period       { focus-column-right; }
+    Mod+Comma        { focus-column-left; }
+
+    Mod+Ctrl+Period  { consume-or-expel-window-right; }
+    Mod+Ctrl+Comma   { consume-or-expel-window-left; }
+    // Mod+Ctrl+Comma  { consume-window-into-column; }
+    // Mod+Ctrl+Period { expel-window-from-column; }
+
+    Mod+Alt+Left  { move-column-left; }
+    Mod+Alt+Down  { move-window-down; }
+    Mod+Alt+Up    { move-window-up; }
+    Mod+Alt+Right { move-column-right; }
+    Mod+Alt+H     { move-column-left; }
+    Mod+Alt+J     { move-window-down; }
+    Mod+Alt+K     { move-window-up; }
+    Mod+Alt+L     { move-column-right; }
+
+    Mod+Home { focus-column-first; }
+    Mod+End  { focus-column-last; }
+    Mod+Ctrl+Home { move-column-to-first; }
+    Mod+Ctrl+End  { move-column-to-last; }
+
+    Mod+Shift+Left  { focus-monitor-left; }
+    Mod+Shift+Down  { focus-monitor-down; }
+    Mod+Shift+Up    { focus-monitor-up; }
+    Mod+Shift+Right { focus-monitor-right; }
+    Mod+Shift+H     { focus-monitor-left; }
+    Mod+Shift+J     { focus-monitor-down; }
+    Mod+Shift+K     { focus-monitor-up; }
+    Mod+Shift+L     { focus-monitor-right; }
+
+    Mod+Shift+Ctrl+Left  { move-column-to-monitor-left; }
+    Mod+Shift+Ctrl+Down  { move-column-to-monitor-down; }
+    Mod+Shift+Ctrl+Up    { move-column-to-monitor-up; }
+    Mod+Shift+Ctrl+Right { move-column-to-monitor-right; }
+    Mod+Shift+Ctrl+H     { move-column-to-monitor-left; }
+    Mod+Shift+Ctrl+J     { move-column-to-monitor-down; }
+    Mod+Shift+Ctrl+K     { move-column-to-monitor-up; }
+    Mod+Shift+Ctrl+L     { move-column-to-monitor-right; }
+
+    Mod+Ctrl+Down { move-column-to-workspace-down; }
+    Mod+Ctrl+Up   { move-column-to-workspace-up; }
+
+    Mod+WheelScrollUp        cooldown-ms=150 { focus-column-left; }
+    Mod+WheelScrollDown      cooldown-ms=150 { focus-column-right; }
+    Mod+Alt+WheelScrollDown  cooldown-ms=150 { focus-workspace-down; }
+    Mod+Alt+WheelScrollUp    cooldown-ms=150 { focus-workspace-up; }
+    // Mod+Ctrl+WheelScrollDown cooldown-ms=150 { move-column-to-workspace-down; }
+    // Mod+Ctrl+WheelScrollUp   cooldown-ms=150 { move-column-to-workspace-up; }
+
+    Mod+WheelScrollRight      { focus-column-right; }
+    Mod+WheelScrollLeft       { focus-column-left; }
+    Mod+Ctrl+WheelScrollRight { move-column-right; }
+    Mod+Ctrl+WheelScrollLeft  { move-column-left; }
+
+    Mod+Shift+WheelScrollDown      { focus-column-right; }
+    Mod+Shift+WheelScrollUp        { focus-column-left; }
+    Mod+Ctrl+Shift+WheelScrollDown { move-column-right; }
+    Mod+Ctrl+Shift+WheelScrollUp   { move-column-left; }
+
+    Mod+1 { focus-workspace 1; }
+    Mod+2 { focus-workspace 2; }
+    Mod+3 { focus-workspace 3; }
+    Mod+4 { focus-workspace 4; }
+    Mod+5 { focus-workspace 5; }
+    Mod+6 { focus-workspace 6; }
+    Mod+7 { focus-workspace 7; }
+    Mod+8 { focus-workspace 8; }
+    Mod+9 { focus-workspace 9; }
+    Mod+Ctrl+1 { move-column-to-workspace 1; }
+    Mod+Ctrl+2 { move-column-to-workspace 2; }
+    Mod+Ctrl+3 { move-column-to-workspace 3; }
+    Mod+Ctrl+4 { move-column-to-workspace 4; }
+    Mod+Ctrl+5 { move-column-to-workspace 5; }
+    Mod+Ctrl+6 { move-column-to-workspace 6; }
+    Mod+Ctrl+7 { move-column-to-workspace 7; }
+    Mod+Ctrl+8 { move-column-to-workspace 8; }
+    Mod+Ctrl+9 { move-column-to-workspace 9; }
+
+	Mod+M { center-column; }
+    Mod+Shift+M { maximize-column; }
+    Mod+W { toggle-column-tabbed-display; }
+    Mod+C { center-column; }
+    Mod+Ctrl+C { center-visible-columns; }
+
+    Mod+Ctrl+Shift+R { switch-preset-window-height; }
+    Mod+Ctrl+R { reset-window-height; }
+
+    Print { screenshot; }
+    Ctrl+Print { screenshot-screen; }
+    Alt+Print { screenshot-window; }
+
+	// Failsafe if an app breaks keybinds
+    // The allow-inhibiting=false property can be applied to other binds as well,
+    // which ensures niri always processes them, even when an inhibitor is active.
+    Super+Backspace allow-inhibiting=false { toggle-keyboard-shortcuts-inhibit; }
+}
