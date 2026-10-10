@@ -15,7 +15,7 @@ Singleton {
 	/* bar -- The base quickshell panel */
 	readonly property   int bar_Height: 38           // maximum effective height of any bar widget
 	readonly property   int bar_EdgeMargin: 12       // spacing from edge of screen
-	readonly property   int bar_BackgroundOffset: 24 // shift the vertical center of the gif bg
+	readonly property   int bar_BackgroundOffset: 20 // shift the vertical center of the gif bg
 	readonly property  real bar_BackgroundOpacity: 0.80
 	readonly property   int bar_BorderWidth: 3      // match niri config
 	readonly property  real bar_GifBackgroundOpacity: 0.70

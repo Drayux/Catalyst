@@ -4,16 +4,22 @@ import QtQuick.Effects
 
 import Niri
 
-import "../components"
+import "./root"
 import "../vars"
 
 Scope {
-	required property var modelData // variants model is the target screen
+	required property var modelData
+
+	// TODO: This possibly might give us no main panel if the screens get weird.
+	// Consider defaulting to true and only setting false if both are defined.
+	property var mainScreen
+	readonly property bool mainPanel: mainScreen == modelData
 
 	Item {
 		id: _RO
 		readonly property real topRadius: OPTS.isTopBar? 0 : STYLE.g_MainBorderRadius
 		readonly property real bottomRadius: OPTS.isTopBar? STYLE.g_MainBorderRadius : 0
+		readonly property var screen: modelData
 	}
 
 	// TODO: I think the "singleton" portion is held by the plugin interally
@@ -30,123 +36,128 @@ Scope {
 
 	/* === VISIBLE COMPONENTS === */
 
-	PanelWindow {
-		id: panel_Root
+	Loader {
+		active: true
+		sourceComponent: PanelWindow {
+			id: panel_Root
 
-		// Added in v0.3.0, which has no ebuild yet, so this is so I can set it
-		// and forget it for when there eventually is one (hopefully)
-		// https://github.com/imiric/qml-niri
-		visible: service_Niri.overview? !service_Niri.overview.isOpen : true
-		color: "transparent"
-		margins {
-			left: STYLE.bar_EdgeMargin
-			right: STYLE.bar_EdgeMargin
-		}
-		anchors {
-			top: OPTS.isTopBar
-			left: true
-			right: true
-			bottom: !(OPTS.isTopBar)
-		}
-		implicitHeight: STYLE.bar_Height
-		screen: modelData
-
-		/* --- BASE --- */
-		Rectangle {
-			anchors.fill: parent
+			// Added in v0.3.0, which has no ebuild yet, so this is so I can set it
+			// and forget it for when there eventually is one (hopefully)
+			// https://github.com/imiric/qml-niri
+			visible: service_Niri.overview? !service_Niri.overview.isOpen : true
 			color: "transparent"
+			margins {
+				left: STYLE.bar_EdgeMargin
+				right: STYLE.bar_EdgeMargin
+			}
+			anchors {
+				top: OPTS.isTopBar
+				left: true
+				right: true
+				bottom: !(OPTS.isTopBar)
+			}
+			implicitHeight: STYLE.bar_Height
+			screen: _RO.screen
 
-			/* -- BACKGROUND -- */
-			MultiEffect {
-				// Base rect is rendered when gifBackground is FALSE
-				Rectangle {
-					id: obj_BackgroundShape
+			/* --- BASE --- */
+			Rectangle {
+				anchors.fill: parent
+				color: "transparent"
 
-					visible: false
+				/* -- BACKGROUND -- */
+				MultiEffect {
+					// Base rect is rendered when gifBackground is FALSE
+					Rectangle {
+						id: obj_BackgroundShape
+
+						visible: false
+						anchors.fill: parent
+						color: STYLE.color_Base
+						layer.enabled: true
+
+						topLeftRadius: _RO.topRadius
+						topRightRadius: _RO.topRadius
+						bottomLeftRadius: _RO.bottomRadius
+						bottomRightRadius: _RO.bottomRadius
+					}
+
+					// Loader item is rendered when gifBackground is TRUE
+					Loader {
+						id: obj_GifBackground
+
+						active: OPTS.gifBackground
+						anchors.fill: parent
+						visible: false
+
+						// Item wrapper to offset source gif before applying effects (corner mask)
+						sourceComponent: Item {
+							clip: true
+							AnimatedImage {
+								source: "../icons/cyber.gif"
+								width: parent.width
+								y: -STYLE.bar_BackgroundOffset
+								fillMode: Image.PreserveAspectCrop
+								smooth: false // source is pixel art so we want to keep the pixels
+								speed: 0.80
+							}
+						}
+					}
+
 					anchors.fill: parent
-					color: STYLE.color_Base
-					layer.enabled: true
+					opacity: OPTS.gifBackground?
+						STYLE.bar_GifBackgroundOpacity : STYLE.bar_BackgroundOpacity
+
+					maskEnabled: OPTS.gifBackground
+					source: OPTS.gifBackground?
+						obj_GifBackground : obj_BackgroundShape
+					maskSource: obj_BackgroundShape
+					maskThresholdMin: 0.5 // cleanup tiny bit of bg x border underhang
+					maskSpreadAtMin: 1.0
+				}
+
+				/* -- CONTENTS -- */
+				Dock {
+					// TODO: Special stuff for secondary screens
+					// visible: mainPanel
+					position: TYPES.TilePosition.Center
+					activeDisplay: panel_Root.screen.name
+				}
+
+				/* import "../tiles" // TODO: Remove this when done testing
+				ChipTile {
+					position: TYPES.TilePosition.Left
+					x: 30
+					color: "green"
+
+					height: parent.height
+					implicitWidth: 40
+
+					ChipTile {
+						color: "red"
+						position: parent.position
+						implicitWidth: 20
+						height: parent.height
+					}
+				} */
+
+				/* -- BORDER -- */
+				Rectangle {
+					anchors {
+						fill: parent
+						topMargin: OPTS.isTopBar? -STYLE.g_MainBorderRadius : 0
+						bottomMargin: OPTS.isTopBar? 0 : -STYLE.g_MainBorderRadius
+					}
+					color: "transparent"
 
 					topLeftRadius: _RO.topRadius
 					topRightRadius: _RO.topRadius
 					bottomLeftRadius: _RO.bottomRadius
 					bottomRightRadius: _RO.bottomRadius
-				}
 
-				// Loader item is rendered when gifBackground is TRUE
-				Loader {
-					id: obj_GifBackground
-
-					active: OPTS.gifBackground
-					anchors.fill: parent
-					visible: false
-
-					// Item wrapper to offset source gif before applying effects (corner mask)
-					sourceComponent: Item {
-						clip: true
-						AnimatedImage {
-							source: "../icons/cyber.gif"
-							width: parent.width
-							y: -STYLE.bar_BackgroundOffset
-							fillMode: Image.PreserveAspectCrop
-							smooth: false // source is pixel art so we want to keep the pixels
-							speed: 0.80
-						}
+					border {
+						color: STYLE.color_MainBorder
+						width: STYLE.bar_BorderWidth
 					}
-				}
-
-				anchors.fill: parent
-				opacity: OPTS.gifBackground?
-					STYLE.bar_GifBackgroundOpacity : STYLE.bar_BackgroundOpacity
-
-				maskEnabled: OPTS.gifBackground
-				source: OPTS.gifBackground?
-					obj_GifBackground : obj_BackgroundShape
-				maskSource: obj_BackgroundShape
-				maskThresholdMin: 0.5 // cleanup tiny bit of bg x border underhang
-				maskSpreadAtMin: 1.0
-			}
-
-			/* -- CONTENTS -- */
-			Dock {
-				position: TYPES.TilePosition.Center
-				activeDisplay: panel_Root.screen.name
-			}
-
-			/* import "../tiles" // TODO: Remove this when done testing
-			ChipTile {
-				position: TYPES.TilePosition.Left
-				x: 30
-				color: "green"
-
-				height: parent.height
-				implicitWidth: 40
-
-				ChipTile {
-					color: "red"
-					position: parent.position
-					implicitWidth: 20
-					height: parent.height
-				}
-			} */
-
-			/* -- BORDER -- */
-			Rectangle {
-				anchors {
-					fill: parent
-					topMargin: OPTS.isTopBar? -STYLE.g_MainBorderRadius : 0
-					bottomMargin: OPTS.isTopBar? 0 : -STYLE.g_MainBorderRadius
-				}
-				color: "transparent"
-
-				topLeftRadius: _RO.topRadius
-				topRightRadius: _RO.topRadius
-				bottomLeftRadius: _RO.bottomRadius
-				bottomRightRadius: _RO.bottomRadius
-
-				border {
-					color: STYLE.color_MainBorder
-					width: STYLE.bar_BorderWidth
 				}
 			}
 		}

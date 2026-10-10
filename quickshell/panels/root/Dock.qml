@@ -2,8 +2,8 @@ import Quickshell
 import QtQuick
 import QtQuick.Layouts
 
-import "../tiles"
-import "../vars"
+import "../../tiles"
+import "../../vars"
 
 Item {
 	id: component_Dock
@@ -59,11 +59,7 @@ Item {
 	 *
 	 * Thus, my chosen implementation is to set the component width to only
 	 * that of the clock, the tray and workspaces will overhang. This solution
-	 * feels scuffed, but it is also compatible with left / right alignments.
-	 * 	
-	 * Finally, we overwise with parent.height here because if the children
-	 * have mismatched heights, their anchor point would otherwise depend on
-	 * this component's anchor point to be positioned correctly. */
+	 * feels scuffed, but it is also compatible with left / right alignments. */
 	height: parent.height // height of root bar panel
 	width: obj_Clock.width
 	clip: false
@@ -81,7 +77,7 @@ Item {
 			topMargin: -_RO.trayBorder
 			bottom: OPTS.isTopBar? undefined : component_Dock.bottom
 			bottomMargin: -_RO.trayBorder
-			/// TODO: Considering making the above an option to show the border or not
+			/// TODO: Considering making the above into an option to show the border or not
 		}
 		position: (component_Dock.position == TYPES.TilePosition.Left) ?
 			TYPES.TilePosition.Right : TYPES.TilePosition.Left
@@ -142,7 +138,7 @@ Item {
 				model: service_Niri.windows
 				delegate: Item {
 					readonly property bool _sameScreen: {
-						// TODO if possible
+						// TODO if possible (??)
 						// https://github.com/imiric/qml-niri
 						// model.isFocused
 						true
@@ -176,6 +172,13 @@ Item {
 						}
 						transform: Shear {
 							xAngle: obj_Tray.skewAngle
+						}
+
+						Behavior on color.a {
+							PropertyAnimation {
+								duration: 150 /// TODO: another one ^^
+								easing.type: Easing.Linear
+							}
 						}
 
 						MouseArea {
@@ -307,6 +310,13 @@ Item {
 					}
 					transform: Shear {
 						xAngle: obj_Workspace.skewAngle
+					}
+
+					Behavior on color.a {
+						PropertyAnimation {
+							duration: 150 /// TODO: another one ^^
+							easing.type: Easing.Linear
+						}
 					}
 
 					Text {
