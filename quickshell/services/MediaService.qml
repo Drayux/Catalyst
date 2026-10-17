@@ -4,5 +4,5 @@ import QtQuick
 import Quickshell
 
 Singleton {
-	id: media_service
+	id: service_Media
 }

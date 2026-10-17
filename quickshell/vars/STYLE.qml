@@ -13,7 +13,7 @@ Singleton {
 	readonly property string g_FontName: "JetBrainsMono Nerd Font"
 
 	/* bar -- The base quickshell panel */
-	readonly property   int bar_Height: 38           // maximum effective height of any bar widget
+	readonly property   int bar_Height: 36           // maximum effective height of any bar widget
 	readonly property   int bar_EdgeMargin: 12       // spacing from edge of screen
 	readonly property   int bar_BackgroundOffset: 20 // shift the vertical center of the gif bg
 	readonly property  real bar_BackgroundOpacity: 0.80
@@ -21,7 +21,7 @@ Singleton {
 	readonly property  real bar_GifBackgroundOpacity: 0.70
 
 	/* dock -- Main bar widget, centered by default */
-	readonly property   int dock_ClockHeight: 32
+	readonly property   int dock_ClockHeight: 30
 	readonly property   int dock_TrayHeight: 26 
 	readonly property   int dock_ClockPadding: 32 // space around the time text
 	readonly property  real dock_ClockOpacity: 1.0
@@ -41,5 +41,6 @@ Singleton {
 	// above (internally)
 	readonly property color color_ClockBackground: "black" // "#121221"
 	readonly property color color_ClockBorder: "black" // "#93cee9"
+	// readonly property color color_Foreground: "#3F395D"
 	readonly property color color_TrayBackground: "#121221"
 }

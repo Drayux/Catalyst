@@ -117,9 +117,10 @@ Scope {
 
 				/* -- CONTENTS -- */
 				Dock {
-					// TODO: Special stuff for secondary screens
-					// visible: mainPanel
-					position: TYPES.TilePosition.Center
+					// TODO: Special positioning stuff for secondary screens
+					// position: TYPES.TilePosition.Center
+
+					position: TYPES.TilePosition.Right
 					activeDisplay: panel_Root.screen.name
 				}
 

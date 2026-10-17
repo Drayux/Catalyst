@@ -2,8 +2,11 @@ import Quickshell
 import QtQuick
 import QtQuick.Layouts
 
-import "../../tiles"
-import "../../vars"
+import "dock/"
+
+import "../../tiles/"
+import "../../vars/"
+import "../../services"
 
 Item {
 	id: component_Dock
@@ -48,8 +51,10 @@ Item {
 			parent.horizontalCenter : undefined
 		left: (position == TYPES.TilePosition.Left) ?
 			parent.left : undefined
+		leftMargin: 200 /// TODO: Should this be a variable? Calculated?
 		right: (position == TYPES.TilePosition.Right) ?
 			parent.right : undefined
+		rightMargin: 200 /// same as ^^
 	}
 
 	/* DEV NOTE:
@@ -64,9 +69,9 @@ Item {
 	width: obj_Clock.width
 	clip: false
 
-	/* --- TRAY --- */
-	ChipTile {
-		id: obj_Tray
+	/* --- POWER --- */
+	PowerButtonComponent {
+		id: obj_PowerButton
 
 		anchors {
 			right: position == TYPES.TilePosition.Left? obj_Clock.left : undefined
@@ -77,13 +82,47 @@ Item {
 			topMargin: -_RO.trayBorder
 			bottom: OPTS.isTopBar? undefined : component_Dock.bottom
 			bottomMargin: -_RO.trayBorder
+		}
+
+		visible: (component_Dock.position != TYPES.TilePosition.Center)
+		height: _RO.trayHeight + _RO.trayBorder
+		position: (component_Dock.position == TYPES.TilePosition.Left) ?
+			TYPES.TilePosition.Left : TYPES.TilePosition.Right
+		radius: _RO.trayRadius
+		outside: true
+	}
+	// PowerComponent {
+		// id: obj_PowerMenu
+		// master: false
+
+		// visible: (component_Dock.position != TYPES.TilePosition.Center)
+		// height: _RO.trayHeight + _RO.trayBorder
+		// position: (component_Dock.position == TYPES.TilePosition.Left) ?
+			// TYPES.TilePosition.Left : TYPES.TilePosition.Right
+		// radius: _RO.trayRadius
+		// outside: true
+	// }
+
+	/* --- TRAY --- */
+	ChipTile {
+		id: obj_Tray
+
+		anchors {
+			right: position == TYPES.TilePosition.Left? obj_Clock.left : undefined
+			// rightMargin: -_RO.clockBorder /// TODO: borders visible should be configurable
+			left: position == TYPES.TilePosition.Right? obj_Clock.right : undefined
+			// leftMargin: -_RO.clockBorder /// TODO: borders visible should be configurable
+			top: OPTS.isTopBar? component_Dock.top : undefined
+			topMargin: -_RO.trayBorder
+			bottom: OPTS.isTopBar? undefined : component_Dock.bottom
+			bottomMargin: -_RO.trayBorder
 			/// TODO: Considering making the above into an option to show the border or not
 		}
-		position: (component_Dock.position == TYPES.TilePosition.Left) ?
-			TYPES.TilePosition.Right : TYPES.TilePosition.Left
 
 		height: _RO.trayHeight + _RO.trayBorder
 		implicitWidth: 24 // relatively arbitrary (TODO)
+		position: (component_Dock.position == TYPES.TilePosition.Left) ?
+			TYPES.TilePosition.Right : TYPES.TilePosition.Left
 		radius: _RO.trayRadius
 		outside: true
 
@@ -96,138 +135,48 @@ Item {
 		borderColor: STYLE.color_AccentBorder
 		borderWidth: _RO.trayBorder
 
-		RowLayout {
-			height: parent.height /// TODO: does this or obj_Tray.height make more sense?
-			anchors {
-				// don't use fill, it skips calculating a width (and becomes 0)
-				left: parent._skewRight? parent.left : undefined
-				right: parent._skewLeft? parent.right : undefined
-				// leftMargin: -_RO.trayBorder // obsolete, using spacers instead
-				// rightMargin: -_RO.trayBorder
-			}
-			spacing: 10
-
-			/* NOTE (for future me)
-			 * The spacing is implemented slightly differently between the Tray
-			 * and Workspace components. This is mostly a result of not realizing
-			 * that Layout.<side>Margin is a thing. BUT, I think it's fine (at
-			 * least, the current implementation is not spaghetti.)
-			 *
-			 * Workspace doesn't necessarily pull the mouse, so keeping the overlap
-			 * is relatively intuitive. Extra click spacing is nice when it does
-			 * pull the mouse.
-			 *
-			 * The ideal is likely 0 spacing, item width is absolute, then the
-			 * "overlap" negative margins can be as well. Finally, squeeze into
-			 * the spacers with the aformentioned Layout property.
-			 * >> Alas, this is very low-priority right now */
-			ChipTile { // spacer
-				Layout.fillHeight: true
-				position: obj_Tray.position
-				implicitWidth: 4 /// TODO: Possible spot for a global style var
-				outside: true
-				radius: _RO.trayRadius
-				color {
-					r: STYLE.color_Accent.r
-					g: STYLE.color_Accent.g
-					b: STYLE.color_Accent.b
-					a: STYLE.dock_SpacerOpacity
+		/* -- CONTENTS -- */
+		Row {
+			height: parent.height
+			width: implicitWidth
+			spacing: 0
+			Behavior on width {
+				PropertyAnimation {
+					duration: 240
+					easing.amplitude: 2.0
+					easing.type: Easing.InOutQuart
 				}
 			}
-			Repeater {
-				model: service_Niri.windows
-				delegate: Item {
-					readonly property bool _sameScreen: {
-						// TODO if possible (??)
-						// https://github.com/imiric/qml-niri
-						// model.isFocused
-						true
-					}
-					visible: _sameScreen
 
-					height: parent.height - 2 // scale the icon down a tiny bit
-					width: parent.height + 4 /// TODO: here too ^^
-
-					Rectangle {
-						/* "Manual" (not ChipTile) skew so we need to do some extra math */
-						// offset by half of H*tan(skew)===W on either side to visually
-						readonly property real _shiftAmount: parent.height * -STYLE.g_SkewScalar * 0.5
-						/* *** */
-
-						anchors {
-							fill: parent
-							rightMargin: (obj_Tray._skewRight? -_shiftAmount : _shiftAmount)
-								- (2 * _RO.trayBorder)
-							leftMargin: (obj_Tray._skewLeft? -_shiftAmount : _shiftAmount)
-								- (2 * _RO.trayBorder)
-						}
-
-						antialiasing: true
-						radius: 2 /// TODO: here also? ^^
-						color {
-							r: STYLE.color_Accent.r
-							g: STYLE.color_Accent.g
-							b: STYLE.color_Accent.b
-							a: model.isFocused? 1.0 : 0.0 /// TODO: also here...if I ever want it ^^
-						}
-						transform: Shear {
-							xAngle: obj_Tray.skewAngle
-						}
-
-						Behavior on color.a {
-							PropertyAnimation {
-								duration: 150 /// TODO: another one ^^
-								easing.type: Easing.Linear
-							}
-						}
-
-						MouseArea {
-							anchors {
-								fill: parent
-								// slightly shrink the click zone
-								leftMargin: 4 /// TODO: here maybe? ^^
-								rightMargin: 4
-							}
-							cursorShape: Qt.PointingHandCursor
-							onClicked: service_Niri.focusWindow(model.id)
-						}
-					}
-					Rectangle { // fallback icon for missing icons
-						anchors {
-							top: parent.top
-							topMargin: 2
-							bottom: parent.bottom
-							bottomMargin: 2
-							horizontalCenter: parent.horizontalCenter
-						}
-						width: height
-						color: "magenta" /// TODO: actual icon, not just a color
-						visible: model.iconPath === ""
-						radius: 4
-					}
-					Image {
-						anchors {
-							fill: parent
-							topMargin: 2
-							bottomMargin: 2
-						}
-						source: model.iconPath ? "file://" + model.iconPath : ""
-						sourceSize.width: parent.height
-						sourceSize.height: parent.height
-						fillMode: Image.PreserveAspectFit
-						visible: model.iconPath !== ""
+			TrayComponent {
+				opacity: PowerService.menuActive? 0 : 1.0
+				width: PowerService.menuActive? 0 : implicitWidth
+				clip: true
+				Behavior on opacity {
+					PropertyAnimation {
+						duration: 240
 					}
 				}
 			}
-			ChipTile { // spacer
-				Layout.fillHeight: true
-				position: obj_Tray.position
-				implicitWidth: 4 /// TODO: another possible setting
-				color {
-					r: STYLE.color_Accent.r
-					g: STYLE.color_Accent.g
-					b: STYLE.color_Accent.b
-					a: STYLE.dock_SpacerOpacity
+			WorkspacesComponent {
+				opacity: PowerService.menuActive? 0 : 1.0
+				width: PowerService.menuActive? 0 : implicitWidth
+				refTile: obj_Tray 
+				inline: true
+				Behavior on opacity {
+					PropertyAnimation {
+						duration: 240
+					}
+				}
+			}
+			PowerMenuComponent {
+				opacity: PowerService.menuActive? 1.0 : 0
+				width: PowerService.menuActive? implicitWidth : 0
+				height: parent.height
+				Behavior on opacity {
+					PropertyAnimation {
+						duration: 240
+					}
 				}
 			}
 		}
@@ -249,10 +198,10 @@ Item {
 			bottomMargin: -_RO.trayBorder
 			/// TODO: Considering making the above an option to show the border or not
 		}
-		position: TYPES.TilePosition.Right
 
 		height: _RO.trayHeight + _RO.trayBorder
 		implicitWidth: 24 // relatively arbitrary since this should never be empty
+		position: TYPES.TilePosition.Right
 		radius: _RO.trayRadius
 		outside: true
 
@@ -265,101 +214,8 @@ Item {
 		borderColor: STYLE.color_AccentBorder
 		borderWidth: _RO.trayBorder
 
-		RowLayout {
-			height: parent.height /// TODO: does this or obj_Workspace.height make more sense?
-			anchors {
-				// don't use fill, it skips calculating a width (and becomes 0)
-				left: parent._skewRight? parent.left : undefined
-				right: parent._skewLeft? parent.right : undefined
-				// leftMargin: -_RO.trayBorder // obsolete, using spacers instead
-				// rightMargin: -_RO.trayBorder
-			}
-			spacing: -1.5
-
-			ChipTile { // spacer
-				Layout.fillHeight: true
-				Layout.rightMargin: 14
-				position: obj_Workspace.position
-				implicitWidth: 4 /// TODO: Possible spot for a global style var
-				color {
-					r: STYLE.color_Accent.r
-					g: STYLE.color_Accent.g
-					b: STYLE.color_Accent.b
-					a: STYLE.dock_SpacerOpacity
-				}
-			}
-			Repeater {
-				model: service_Niri.workspaces
-				delegate: Rectangle {
-					readonly property bool _sameScreen: model.output == component_Dock.activeDisplay
-
-					width: 36
-					height: parent.height
-
-					antialiasing: true
-					radius: 4 /// TODO: Possible config option, though it doesn't
-							  /// seem to visually match the tray rounding?
-
-					visible: !component_Dock.activeDisplay || !OPTS.onAllScreens || _sameScreen
-					opacity: _sameScreen? 1.0 : 0.5
-					color {
-						r: STYLE.color_Accent.r
-						g: STYLE.color_Accent.g
-						b: STYLE.color_Accent.b
-						a: model.isActive? 1.0 : 0.0 /// TODO: also here...if I ever want it ^^
-					}
-					transform: Shear {
-						xAngle: obj_Workspace.skewAngle
-					}
-
-					Behavior on color.a {
-						PropertyAnimation {
-							duration: 150 /// TODO: another one ^^
-							easing.type: Easing.Linear
-						}
-					}
-
-					Text {
-						anchors.centerIn: parent
-						anchors.horizontalCenterOffset: obj_Workspace._skewLeft? -2.75 : 1.75
-						text: model.index
-
-						color: model.isActive?
-							STYLE.color_SelectText : STYLE.color_ActiveText
-						font {
-							family: STYLE.g_FontName
-							/// TODO: Possible spot for a global style var
-							pixelSize: 17
-							weight: 800
-							letterSpacing: -0.20
-							///
-						}
-						transform: Shear {
-							// slightly unslant the text
-							xAngle: obj_Workspace.skewAngle / -2
-						}
-					}
-					MouseArea {
-						anchors.fill: parent
-						cursorShape: Qt.PointingHandCursor
-						onClicked: service_Niri.focusWorkspaceById(model.id)
-					}
-				}
-			}
-			ChipTile { // spacer
-				Layout.fillHeight: true
-				position: obj_Workspace.position
-				implicitWidth: 4 /// TODO: another possible setting
-				outside: true
-				radius: _RO.trayRadius
-				color {
-					r: STYLE.color_Accent.r
-					g: STYLE.color_Accent.g
-					b: STYLE.color_Accent.b
-					a: STYLE.dock_SpacerOpacity
-				}
-			}
-		}
+		/* --- CONTENTS --- */
+		WorkspacesComponent { }
 	}
 
 	/* --- CLOCK --- */
