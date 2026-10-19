@@ -43,7 +43,7 @@ Item {
 		anchors.verticalCenterOffset: STYLE.bar_BorderWidth / -2.0
 		width: implicitWidth
 		height: STYLE.status_ItemHeight
-		spacing: 8
+		spacing: 12
 
 		readonly property int position: TYPES.TilePosition.Left
 

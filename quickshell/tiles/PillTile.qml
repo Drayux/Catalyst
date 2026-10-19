@@ -75,8 +75,9 @@ Item {
 		Behavior on width {
 			PropertyAnimation {
 				duration: 240 /// TODO: style var
-				// easing.type: Easing.InOutCubic
-				easing.type: Easing.OutBack
+				// A bit of silliness here because if the width drops too low,
+				// the border shrinks past the content, which looks weird
+				easing.type: (obj_content.width > 24) ? Easing.OutBack : Easing.OutQuint
 			}
 		}
 
@@ -197,20 +198,21 @@ Item {
 	}
 
 	// TODO: Border around the whole thing!
-	// Rectangle {
-		// id: border
+	Rectangle {
+		id: border
 
-		// anchors.fill: parent
+		anchors.fill: parent
 
-		// topLeftRadius: parent.radius
-		// bottomLeftRadius: parent.radius
-		// topRightRadius: parent.radius
-		// bottomRightRadius: parent.radius
-		// color: "transparent"
-		// border {
-			// width: STYLE.g_AccentBorderWidth /// TODO: style var
+		topLeftRadius: parent.radius
+		bottomLeftRadius: parent.radius
+		topRightRadius: parent.radius
+		bottomRightRadius: parent.radius
+		color: "transparent"
+		border {
+			width: STYLE.g_AccentBorderWidth /// TODO: style var
 			// width: STYLE.g_MainBorderWidth /// TODO: style var
 			// color: STYLE.color_AccentBorder /// TODO: style var
-		// }
-	// }
+			color: "#93cee9"
+		}
+	}
 }
