@@ -20,13 +20,16 @@ Singleton {
 	readonly property   int bar_BorderWidth: 3      // match niri config
 	readonly property  real bar_GifBackgroundOpacity: 0.70
 
-	/* dock -- Main bar widget, centered by default */
+	/* dock -- Main bar widget, right-aligned by default */
 	readonly property   int dock_ClockHeight: 30
 	readonly property   int dock_TrayHeight: 26 
 	readonly property   int dock_ClockPadding: 32 // space around the time text
 	readonly property  real dock_ClockOpacity: 1.0
 	readonly property  real dock_TrayOpacity: 0.75
 	readonly property  real dock_SpacerOpacity: 0.0
+
+	/* status -- System information widget, left-aligned by default */
+	readonly property   int status_ItemHeight: 26 
 
 	/* globalish colors */
 	readonly property color color_Base: "#232137"

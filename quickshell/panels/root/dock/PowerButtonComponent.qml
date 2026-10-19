@@ -1,9 +1,9 @@
 import Quickshell
 import QtQuick
 
+import "../../../services"
 import "../../../tiles"
 import "../../../vars"
-import "../../../services"
 
 ChipTile {
 	color {

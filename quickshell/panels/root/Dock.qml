@@ -11,6 +11,7 @@ import "../../services"
 Item {
 	id: component_Dock
 	required property int position
+	property int sideMargin
 	property var activeDisplay
 
 	Item {
@@ -51,10 +52,10 @@ Item {
 			parent.horizontalCenter : undefined
 		left: (position == TYPES.TilePosition.Left) ?
 			parent.left : undefined
-		leftMargin: 200 /// TODO: Should this be a variable? Calculated?
 		right: (position == TYPES.TilePosition.Right) ?
 			parent.right : undefined
-		rightMargin: 200 /// same as ^^
+		leftMargin: sideMargin
+		rightMargin: sideMargin
 	}
 
 	/* DEV NOTE:
@@ -136,30 +137,23 @@ Item {
 		borderWidth: _RO.trayBorder
 
 		/* -- CONTENTS -- */
-		Row {
+		Item {
 			height: parent.height
-			width: implicitWidth
-			spacing: 0
+			width: obj_TrayWindows.width + obj_TrayWorkspaces.width + obj_TrayPowerMenu.width
+
 			Behavior on width {
 				PropertyAnimation {
 					duration: 240
-					easing.amplitude: 2.0
-					easing.type: Easing.InOutQuart
+					// easing.type: Easing.InOutCubic
+					easing.type: Easing.OutBack
 				}
 			}
 
-			TrayComponent {
-				opacity: PowerService.menuActive? 0 : 1.0
-				width: PowerService.menuActive? 0 : implicitWidth
-				clip: true
-				Behavior on opacity {
-					PropertyAnimation {
-						duration: 240
-					}
-				}
-			}
 			WorkspacesComponent {
+				id: obj_TrayWorkspaces
 				opacity: PowerService.menuActive? 0 : 1.0
+
+				anchors.right: parent.right
 				width: PowerService.menuActive? 0 : implicitWidth
 				refTile: obj_Tray 
 				inline: true
@@ -169,8 +163,24 @@ Item {
 					}
 				}
 			}
+			TrayComponent {
+				id: obj_TrayWindows
+				opacity: PowerService.menuActive? 0 : 1.0
+
+				anchors.left: parent.left
+				width: PowerService.menuActive? 0 : implicitWidth
+				clip: true
+				Behavior on opacity {
+					PropertyAnimation {
+						duration: 240
+					}
+				}
+			}
 			PowerMenuComponent {
+				id: obj_TrayPowerMenu
 				opacity: PowerService.menuActive? 1.0 : 0
+
+				anchors.centerIn: parent
 				width: PowerService.menuActive? implicitWidth : 0
 				height: parent.height
 				Behavior on opacity {

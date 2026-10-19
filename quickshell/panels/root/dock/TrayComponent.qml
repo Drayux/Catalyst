@@ -59,6 +59,12 @@ RowLayout {
 			height: parent.height - 2 // scale the icon down a tiny bit
 			width: parent.height + 4 /// TODO: here too ^^
 
+			NumberAnimation on opacity {
+				from: 0; to: 1
+				duration: 240
+				easing.type: Easing.InOutQuart
+			}
+
 			Rectangle {
 				/* "Manual" (not ChipTile) skew so we need to do some extra math */
 				// offset by half of H*tan(skew)===W on either side to visually

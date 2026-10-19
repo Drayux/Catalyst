@@ -37,7 +37,7 @@ RowLayout {
 			height: parent.height
 
 			antialiasing: true
-			radius: 4 /// TODO: Possible config option, though it doesn't
+			// radius: 4 /// TODO: Possible config option, though it doesn't
 			/// seem to visually match the tray rounding?
 
 			visible: parent.inline? (!component_Dock.activeDisplay || _sameScreen)

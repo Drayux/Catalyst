@@ -4,7 +4,7 @@ import QtQuick.Effects
 
 import Niri
 
-import "./root"
+import "root/"
 import "../vars"
 
 Scope {
@@ -20,6 +20,7 @@ Scope {
 		readonly property real topRadius: OPTS.isTopBar? 0 : STYLE.g_MainBorderRadius
 		readonly property real bottomRadius: OPTS.isTopBar? STYLE.g_MainBorderRadius : 0
 		readonly property var screen: modelData
+		readonly property int sideMargin: 200
 	}
 
 	// TODO: I think the "singleton" portion is held by the plugin interally
@@ -116,11 +117,17 @@ Scope {
 				}
 
 				/* -- CONTENTS -- */
+				Status {
+					position: TYPES.TilePosition.Left
+					sideMargin: _RO.sideMargin
+				}
+
 				Dock {
 					// TODO: Special positioning stuff for secondary screens
 					// position: TYPES.TilePosition.Center
 
 					position: TYPES.TilePosition.Right
+					sideMargin: _RO.sideMargin
 					activeDisplay: panel_Root.screen.name
 				}
 
