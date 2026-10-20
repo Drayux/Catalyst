@@ -1,0 +1,31 @@
+# /etc/fstab: static file system information.
+
+# nvme1n1     259:0    0 931.5G  0 disk 
+# ├─nvme1n1p1 259:8    0     2G  0 part /boot
+# ├─nvme1n1p2 259:9    0    64G  0 part 
+# ├─nvme1n1p3 259:11   0   128G  0 part 
+# ├─nvme1n1p4 259:12   0   128G  0 part /
+# ├─nvme1n1p5 259:13   0   512G  0 part 
+# └─nvme1n1p6 259:14   0  97.5G  0 part /var/tmp
+# nvme0n1     259:4    0   1.8T  0 disk 
+# └─nvme0n1p1 259:2    0   1.8T  0 part 
+
+# /dev/nvme1n1p3: LABEL="OVERLAY" UUID="5a41230c-c262-4bdc-b2e2-e9dea12fb715" BLOCK_SIZE="4096" TYPE="ext4" PARTLABEL="OVERLAY" PARTUUID="421a0351-a522-41f8-8bae-fad15c8df6f8"
+
+# MOUNT POINTS
+
+# <fs>		<mount>		<type>	<opts>				<dump/pass>
+LABEL=BASE	/		btrfs	defaults,noatime,autodefrag	0 0		# BASE: /dev/nvme1n1p4 (always 0, 0 for btrfs!)
+LABEL=TMP	/var/tmp	ext4	defaults,noatime,mode=1777	0 0		# TMP: /dev/nvme1n1p6
+LABEL=HOME	/home		btrfs	defaults,noatime,autodefrag	0 0		# HOME: /dev/nvme1n1p5
+LABEL=LIBRARY	/var/games	btrfs	defaults,noatime,autodefrag	0 0		# (steam) LIBRARY: /dev/nvme0n1p1 (entirety of second drive!)
+UUID=31D7-9407	/boot		vfat	umask=0077,tz=UTC		0 2		# BOOT: /dev/nvme1n1p1
+
+UUID=96825890-c0a5-47d3-a603-b3dbdd63561b	none	swap	sw	0 0		# SWAP: /dev/nvme1n1p2 (max 64GB)
+
+# VIRTUALS
+
+# <fs>		<mount>		<type>	<opts>				<dump/pass>
+tmpfs		/tmp		tmpfs	size=32G,mode=1777		0 0		# Keep /tmp fully in memory
+
+# (overlayfs handled by startup scripts)

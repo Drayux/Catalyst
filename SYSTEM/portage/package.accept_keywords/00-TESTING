@@ -1,0 +1,25 @@
+# SYSTEM ADMINISTRATION
+=sys-apps/seedfiles-1.7 ~amd64
+=virtual/tmpfiles-0-r7 ~amd64 # Prior versions hard depend on systemd-utils tmpfiles
+=app-editors/micro-2.0.15 ~amd64
+
+# WINDOW MANAGER (niri)
+=gui-wm/niri-26.04 ~amd64
+=media-fonts/nerdfonts-3.4.0 ~amd64
+~gui-libs/gtk4-layer-shell-1.1.1 ~amd64 # For swayosd
+=gui-apps/swayosd-0.3.1 ~amd64 # TODO: I might surplant this with quickshell
+#=x11-themes/catppuccin-gtk-1.0.3 ~amd64
+#~gui-apps/aylurs-gtk-shell-1.8.2 ~amd64
+=gui-apps/quickshell-0.3.1 ~amd64
+=gui-libs/qml-niri-0.2.1 ~amd64
+
+# APPLICATIONS
+#=dev-libs/nss-3.125 ~amd64
+#=www-client/librewolf-152.0.6_p1 ~amd64
+=dev-libs/nss-3.128 ~amd64
+=media-libs/dav1d-1.5.4 ~amd64
+=www-client/librewolf-156.0_p1 ~amd64
+
+# LOCAL EBUILDS
+=sys-auth/pam_rundir-9999 ~amd64
+=sys-auth/pam-sleep-9999 ~amd64

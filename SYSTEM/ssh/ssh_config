@@ -1,0 +1,12 @@
+Include "/etc/ssh/ssh_config.d/*.conf"
+Include "${XDG_CONFIG_HOME}/ssh/conf.d/*.conf"
+
+# Make sure that all Host and Match options are below the Include statements!
+# I.E., if one were provided...
+
+# Host *
+#   ForwardAgent no
+#   ForwardX11 no
+#   PasswordAuthentication yes
+#   HostbasedAuthentication no
+#   ...

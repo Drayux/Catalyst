@@ -1,0 +1,7 @@
+sys-kernel/installkernel dracut uki grub
+sys-kernel/linux-firmware deduplicate unknown-license
+sys-boot/grub truetype -branding
+sys-auth/pambase minimal
+sys-apps/openrc newnet
+sys-apps/systemd-utils boot kernel-install -sysctl -tmpfiles # Strip this as much as possible: stub loader and udev only
+sys-apps/util-linux udev

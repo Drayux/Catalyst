@@ -1,0 +1,7 @@
+GRUB_DISTRIBUTOR="Gentoo"
+
+# Append parameters to the linux kernel command line for non-recovery entries
+GRUB_CMDLINE_LINUX_DEFAULT="quiet splash video=DP-2:3440x1440@60 video=DP-3:d video=HDMI-A-1:d"
+
+# Comment if you don't want GRUB to pass "root=PARTUUID=xxx" parameter to kernel
+GRUB_DISABLE_LINUX_PARTUUID=false

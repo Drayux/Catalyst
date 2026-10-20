@@ -1,0 +1,16 @@
+# List of /tmp directories we should clean up
+# Modified from original (/tmp) because /tmp is mounted as tmpfs so it's guaranteed empty on boot
+clean_tmp_dirs=""
+
+# Should we wipe the tmp paths completely or just selectively remove known
+# locks / files / etc... ?
+wipe_tmp="NO"
+
+# Write the initial dmesg log into /var/log/dmesg after boot
+# This may be useful if you need the kernel boot log afterwards
+log_dmesg="YES"
+
+# Save the previous dmesg log to dmesg.old
+# This may be useful if you need to compare the current boot to the
+# previous one.
+#previous_dmesg=no

@@ -1,0 +1,4 @@
+[Desktop Entry]
+Name=Niri
+Type=Application
+Exec=bash /etc/greetd/scripts/wrap_session.sh niri --session

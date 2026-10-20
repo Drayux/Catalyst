@@ -1,0 +1,4 @@
+[Desktop Entry]
+Name=Shell
+Type=Application
+Exec=bash /etc/greetd/scripts/wrap_session.sh fish

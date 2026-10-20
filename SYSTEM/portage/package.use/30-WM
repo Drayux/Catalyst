@@ -1,0 +1,45 @@
+# 30-GUI: For packages essential to the "Linux desktop experience" (i.e., WM, its main dependencies)
+
+# net-wireless/bluez cups # (NOTE: Start here if I want printer support at home! Also recommended to add `cups usb` and the cups-meta package. https://wiki.gentoo.org/wiki/Printing)
+
+net-wireless/bluez man
+x11-libs/cairo X # Cairo is a C library for vector graphics: X use flag lets it render directly to an XCB surface (aka like many games do but with openGL)
+dev-cpp/cairomm X # Up the deptree for waybar, enable so that cairo can keep X
+x11-libs/libxcb -xkb
+x11-libs/gtk+ wayland -X
+media-libs/freetype harfbuzz
+media-libs/gst-plugins-base -X
+media-libs/libglvnd X # Needed for mesa to support XCB surfaces
+media-libs/mesa lm-sensors opencl vaapi vulkan wayland
+media-sound/lame -frontend
+media-sound/mpg123-base -ipv6
+media-video/ffmpeg alsa cairo chromium kvazaar ladspa lame lv2 openh264 openssl opus pulseaudio v4l vaapi vorbis vulkan
+media-video/pipewire bluetooth dbus ffmpeg flatpak extra jack-sdk lv2 pipewire-alsa pulseaudio sound-server v4l
+sys-auth/seatd server
+
+media-fonts/nerdfonts hack jetbrainsmono mononoki noto terminus ubuntu ubuntumono ubuntusans
+media-libs/vulkan-loader wayland
+gui-apps/swaybg gdk-pixbuf
+gui-libs/gtk vulkan wayland -X
+x11-misc/rofi wayland
+x11-misc/dunst wayland -X
+app-text/xmlto text # for dunst
+
+# Waybar stuff...possibly target for removal
+dev-cpp/gtkmm wayland # for waybar
+dev-libs/libdbusmenu gtk3
+gui-apps/waybar network niri pipewire tray -logind
+
+# ~~The alternative... AGS~~
+net-libs/nodejs system-ssl -npm # Typescript would need this enabled
+gui-libs/gtk-layer-shell introspection
+
+# The other alternative... quickshell
+#x11-libs/libxkbcommon X
+dev-qt/qtbase wayland opengl vulkan -nls -X
+dev-qt/qttools opengl vulkan -assistant -linguist
+dev-qt/qtdeclarative opengl svg vulkan wayland -sql
+gui-apps/quickshell -crash-handler -hyprland -i3 -networkmanager -policykit -upower -X
+
+# Niri does not need weston, but I like it around for testing
+dev-libs/weston wayland-compositor kiosk -X

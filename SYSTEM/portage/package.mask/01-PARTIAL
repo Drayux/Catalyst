@@ -1,0 +1,2 @@
+# exclude dumb fuck packages where some depends require one version but others require another
+>=dev-lang/perl-5.44

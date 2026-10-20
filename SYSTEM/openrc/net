@@ -1,0 +1,2 @@
+config_eth0="dhcp"
+routes_eth0="default via 10.0.0.1"

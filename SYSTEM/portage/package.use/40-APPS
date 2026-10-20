@@ -1,0 +1,6 @@
+media-libs/libepoxy -X
+media-libs/libvpx postproc
+media-libs/libva wayland
+media-video/libva-utils wayland
+www-client/librewolf dbus hwaccel openh264 pulseaudio system-pipewire wasm-sandbox wayland -X
+x11-terms/kitty wayland -X

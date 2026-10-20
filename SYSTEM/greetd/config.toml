@@ -1,0 +1,10 @@
+[terminal]
+vt = 7
+
+[default_session]
+user = "greetd"
+
+# command = "agreety --cmd /bin/sh"
+command = "tuigreet --sessions /etc/greetd/sessions.d"
+
+# TODO: I need to configure the greeter sleep / shutdown commands to use SimpleSleep

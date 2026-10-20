@@ -1,0 +1,3 @@
+dev-lang/perl minimal
+dev-vcs/git highlight safe-directory webdav -pcre -perl
+net-misc/openssh security-key
