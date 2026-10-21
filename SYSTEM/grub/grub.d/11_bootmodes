@@ -1,0 +1,113 @@
+#! /bin/sh
+set -e
+
+
+### LLM DISCLOSURE ###
+
+# While I'd love for every line of my config to be hand-written and carefully
+# placed, it was quickly becoming apparent that a trivial part of the process
+# was growing way beyond scope. Thus, the majority of this logic is not my own.
+
+# That said, I've verified the generated code to the best of my ability by
+# cross-checking with the logic in 10_linux. I believe that the intended output
+# of this script is well-defined (verify the resulting menu entries in
+# /boot/grub/grub.cfg) so it is a reasonable case to me to improve this script
+# over time via a bit of trial-and-error.
+
+# In essence, I thought that deferring the work to an LLM to dynamically
+# generate menu entries in the "intended way" would be vastly preferable to
+# introducing a static config that requires manual intervention at every kernel
+# update.
+
+### -------------- ###
+
+
+prefix="/usr"
+exec_prefix="/usr"
+datarootdir="/usr/share"
+
+. "$pkgdatadir/grub-mkconfig_lib"
+# . /usr/share/grub/grub-mkconfig_lib
+
+BOOT_DEVICE="$(${grub_probe} --target=device /boot)"
+BASE_CMDLINE="${GRUB_CMDLINE_LINUX} ${GRUB_CMDLINE_LINUX_DEFAULT}"
+
+# TODO: verify me
+find_initramfs() {
+    local version="$1"
+    local versioned="/boot/initramfs-${version}.img"
+    local generic="/boot/initramfs.img"
+    if [ -f "$versioned" ]; then
+        echo "$versioned"
+    elif [ -f "$generic" ]; then
+        echo "$generic"
+    else
+        echo ""
+    fi
+}
+# Collect all kernels that have a matching initramfs, then sort by version
+declare -a VALID_VERSIONS=()
+for kernel in /boot/vmlinuz-*; do
+    [ -f "$kernel" ] || continue
+    version="${kernel#/boot/vmlinuz-}"
+    [ -n "$(find_initramfs "$version")" ] || continue
+    VALID_VERSIONS+=("$version")
+done
+
+# TODO: Is an exit okay here?
+[ "${#VALID_VERSIONS[@]}" -gt 0 ] || exit 0
+
+
+IFS=$'\n' SORTED=($(printf '%s\n' "${VALID_VERSIONS[@]}" | sort -V))
+unset IFS
+
+kernel_count="${#SORTED[@]}"
+DEFAULT_VERSION="${SORTED[$((kernel_count - 1))]}"
+OLDER_VERSIONS=("${SORTED[@]:0:$((kernel_count - 1))}")
+# ^^ appears to give oldest -> newest order (consider swapping this)
+
+emit_entries() {
+    local version="$1"
+    local indent="$2"
+    local initramfs rel_kernel rel_initramfs title rw_flag mode
+
+    initramfs="$(find_initramfs "$version")"
+    rel_kernel="/vmlinuz-${version}"
+    rel_initramfs="${initramfs#/boot}"
+
+    for mode in overlay snapshot live commit; do
+        case "$mode" in
+            overlay)  title="Overlay Mode";            rw_flag="ro" ;;
+            snapshot) title="Snapshot Mode";           rw_flag="ro" ;;
+            live)     title="Live Mode";               rw_flag="rw" ;;
+            commit)   title="Overlay Mode (COMMIT)";   rw_flag="rw" ;;
+        esac
+
+        echo "${indent}menuentry 'Gentoo -- ${title}' {"
+        prepare_grub_to_access_device "${BOOT_DEVICE}" | grub_add_tab | \
+            while IFS= read -r line; do echo "${indent}${line}"; done
+        echo "${indent}  echo 'Loading ${version} -- ${mode} mode'"
+        echo "${indent}  linux  ${rel_kernel} ${rw_flag} root=LABEL=BASE ${BASE_CMDLINE} bootmode=${mode}"
+        echo "${indent}  echo 'Loading initramfs'"
+        echo "${indent}  initrd ${rel_initramfs}"
+        echo "${indent}}"
+        echo ""
+    done
+}
+
+# Top-level entries use the newest kernel
+emit_entries "$DEFAULT_VERSION" ""
+
+# Submenu for older kernels, only emitted when more than one exists
+if [ "${#OLDER_VERSIONS[@]}" -gt 0 ]; then
+    echo "submenu 'Other kernel versions' {"
+    # Newest of the older versions first for natural ordering
+    for (( i=${#OLDER_VERSIONS[@]}-1; i>=0; i-- )); do
+        version="${OLDER_VERSIONS[$i]}"
+        echo "  submenu 'Gentoo ${version}' {"
+        emit_entries "$version" "    "
+        echo "  }"
+        echo ""
+    done
+    echo "}"
+fi

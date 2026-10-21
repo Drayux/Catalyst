@@ -6,3 +6,10 @@ backup/
 
 # OS-level garbo
 .DS_Store
+
+# Side-effect of symlinking nvim
+# Ignore for now and worry about them later
+nvim/lazy/
+nvim/log
+nvim/shada/
+nvim/swap/

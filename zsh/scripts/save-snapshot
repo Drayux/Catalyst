@@ -1,0 +1,109 @@
+#!/bin/bash
+set -euo pipefail
+
+
+## WIP SCRIPT FOR THE OVERLAYFS -- Just wanted to save it somewhere. ##
+## <Refer to SYSTEM/grub/grub.d/11_bootmodes for the LLM disclaimer> ##
+
+
+OVERLAY_DEV=/dev/disk/by-label/OVERLAY_PT
+OVERLAY_MNT=/mnt/overlay-save
+SNAP_DIR=/run/snapshot
+DIRS="usr etc var"
+
+verify_snapshot_mode() {
+    if ! findmnt -t overlay -n -o OPTIONS /usr | grep -q "upperdir=/run/snapshot"; then
+        echo "Error: system does not appear to be in snapshot mode." >&2
+        exit 1
+    fi
+}
+
+show_summary() {
+    local ram_upper="$SNAP_DIR/upper"
+    local disk_upper="$OVERLAY_MNT/upper"
+
+    local total_ram=0 total_disk=0
+    local total_add=0 total_del=0 total_mod=0
+
+    echo "  Summary of changes:"
+    echo ""
+    printf "  %-8s  %10s  %10s  %8s  %8s  %8s\n" \
+        "Dir" "RAM files" "Disk files" "Add" "Remove" "Modify"
+    printf "  %-8s  %10s  %10s  %8s  %8s  %8s\n" \
+        "---" "---------" "----------" "---" "------" "------"
+
+    for dir in $DIRS; do
+        local ram_dir="$ram_upper/$dir"
+        local disk_dir="$disk_upper/$dir"
+
+        # Count non-directory entries in each upper
+        local ram_count disk_count
+        ram_count=$(find "$ram_dir" -not -type d 2>/dev/null | wc -l)
+        disk_count=$(find "$disk_dir" -not -type d 2>/dev/null | wc -l)
+
+        # Dry-run rsync to get the delta between RAM upper and disk upper
+        local dry
+        dry=$(rsync -aAX --delete --dry-run --itemize-changes \
+                  "$ram_dir/" "$disk_dir/" 2>/dev/null)
+
+        local total_lines add del mod
+        total_lines=$(printf '%s\n' "$dry" | grep -cE '^[>*ch<]' || true)
+        add=$(printf '%s\n' "$dry" | grep -cE '^..\+' || true)
+        del=$(printf '%s\n' "$dry" | grep -c '^\*deleting' || true)
+        mod=$((total_lines - add - del))
+
+        printf "  %-8s  %10d  %10d  %8d  %8d  %8d\n" \
+            "$dir" "$ram_count" "$disk_count" "$add" "$del" "$mod"
+
+        total_ram=$((total_ram + ram_count))
+        total_disk=$((total_disk + disk_count))
+        total_add=$((total_add + add))
+        total_del=$((total_del + del))
+        total_mod=$((total_mod + mod))
+    done
+
+    echo ""
+    printf "  %-8s  %10d  %10d  %8d  %8d  %8d\n" \
+        "TOTAL" "$total_ram" "$total_disk" "$total_add" "$total_del" "$total_mod"
+    echo ""
+
+    if [ "$total_disk" -gt 0 ]; then
+        echo "  NOTE: overlay_pt already contains $total_disk files from a previous"
+        echo "  overlay session. These will be replaced entirely by the RAM snapshot."
+        echo "  Boot in overlay mode first if you want to review or commit them instead."
+        echo ""
+    fi
+
+    if [ "$total_ram" -eq 0 ]; then
+        echo "  WARNING: the RAM snapshot is empty. Nothing would be saved."
+        echo ""
+    fi
+}
+
+verify_snapshot_mode
+
+mkdir -p "$OVERLAY_MNT"
+mount -o ro "$OVERLAY_DEV" "$OVERLAY_MNT"
+
+echo ""
+show_summary
+
+umount "$OVERLAY_MNT"
+
+printf "  Replace overlay_pt with RAM snapshot? [y/N] "
+read -r confirm
+[[ "$confirm" =~ ^[Yy]$ ]] || { echo "Aborted."; exit 0; }
+
+mount "$OVERLAY_DEV" "$OVERLAY_MNT"
+
+for dir in $DIRS; do
+    rm -rf "${OVERLAY_MNT:?}/upper/$dir"
+    cp -a "$SNAP_DIR/upper/$dir" "$OVERLAY_MNT/upper/$dir"
+    rm -rf "${OVERLAY_MNT:?}/work/$dir"
+    mkdir -p "$OVERLAY_MNT/work/$dir"
+done
+
+umount "$OVERLAY_MNT"
+rmdir "$OVERLAY_MNT"
+
+echo "Done. Reboot in overlay mode to use the saved snapshot."
