@@ -13,14 +13,6 @@ set -e
 # introducing a static config that requires manual intervention at every kernel
 # update.
 
-# That said, I've verified the generated code to the best of my ability by
-# cross-checking with the logic in 10_linux. I believe that the intended output
-# of this script is well-defined (verify the resulting menu entries in
-# /boot/grub/grub.cfg) so it is a reasonable case to me to improve this script
-# over time via a bit of trial-and-error as necessary for my system(s).
-
-# ---
-
 # Of note, I've since put in great effort to merging this with that of the
 # default 10_linux, so at this point, the LLM disclaimer may be somewhat
 # obsolete.
@@ -173,16 +165,19 @@ generate_boot_entries() {
 
 	# TODO: Investigate the rw_flag, I'm not certain it is meaningful at this
 	# point in the process
-    for mode in overlay snapshot live recovery commit; do
+	# Also TODO: I wish to organize these into their own submenus to be a bit
+	# more intuitive, but I'm not quite sure what that looks like yet. Maybe a
+	# dedicated "options" for the maintenance operations?
+    for mode in overlay live snapshot recovery commit; do
         case "$mode" in
             overlay)  title="Overlay Mode";            rw_flag="ro" ;;
-            commit)   title="Overlay Mode (COMMIT)";   rw_flag="rw" ;;
             snapshot) title="Snapshot Mode";           rw_flag="ro" ;;
             live)     title="Live Mode";               rw_flag="rw" ;;
+            commit)   title="Commit overlay and boot"; rw_flag="rw" ;;
 			recovery)
 				# TODO: Make recovery even more """recovery"""
 				# Minimal loaded drivers, no udev...that sorta thing
-				title="Live Mode (RECOVERY)";
+				title="Recovery Mode (Live)";
 				rw_flag="rw"
 				commandline="${RECOVERY_CMDLINE}"
 				;;
@@ -225,7 +220,7 @@ generate_boot_entries() {
 		# title text? It seems quite similar to LINUX_ROOT_DEVICE. Not sure
 		# which I should be using here.
         echo "${indent}${tab}echo 'Loading ${version} -- ${mode} mode'"
-        echo "${indent}${tab}linux  ${rel_kernel} ${rw_flag} root=${LINUX_ROOT_DEVICE} ${BASE_CMDLINE} bootmode=${mode}"
+        echo "${indent}${tab}linux  ${rel_kernel} ${rw_flag} root=${LINUX_ROOT_DEVICE} ${BASE_CMDLINE} fsmode=${mode}"
         echo "${indent}${tab}echo 'Loading initramfs'"
         echo "${indent}${tab}initrd ${rel_initramfs}"
         echo "${indent}}"

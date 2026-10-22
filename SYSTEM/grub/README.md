@@ -13,6 +13,14 @@ This directory contains a single config file which appears to specify generic op
 
 _Drop-ins are also supported here via:_ `grub.d/*.conf`
 
+### `extra/`
+
+**SPECIAL DIRECTORY**
+
+Grub allows a custom background to be uploaded. This should be stored alongside the EFI binary, but I thought it unintuitive to make a separate SYSTEM config directory for it. The items in here are just visual, so quite optional, and should be installed to `/boot/grub` if desired.
+
 ### `grub.d/`
 
 I believe that this directory specifically indicates rules for menu entries. Thus, it contains our overlay snapshot menu entries.
+
+Note that I deliberately did not include the executable bit on the `11_bootmodes` script. It should be set only when inside of the appropriate system directory. This is a requisite manual step. To prevent "default" entries from showing up, similarly, remove the executable bit from `10_linux`.

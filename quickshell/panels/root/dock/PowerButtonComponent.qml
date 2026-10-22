@@ -34,6 +34,11 @@ ChipTile {
 					PowerService.invokeAction()
 				} else {
 					PowerService.menuActive = !PowerService.menuActive
+
+					// NOTE: I can't spot a flaw in my logic, so I shouldn't
+					// need this...but reset the selected button a second time
+					// to be sure it's in the right spot
+					PowerService.menuSelection = PowerService.PowerState.Persist
 				}
 			}
 		}
