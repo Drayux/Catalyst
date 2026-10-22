@@ -31,6 +31,25 @@ set -e
 # --- Identify any kernel version that seems to be installed ---
 #     Searches the boot partition for a binary and matching ramfs image.
 
+# Not preserved here, but from the original, initrd matched from a
+# relatively major search, we just do a simple one.
+# To use the original logic, I need to tweak the supplied path in order to
+# parse dirname, $linux from OG is the full path found
+find_initramfs() {
+    local version="$1"
+    local versioned="/boot/initramfs-${version}.img"
+    local generic="/boot/initramfs.img"
+    if [ -f "$versioned" ]; then
+        echo "$versioned"
+    elif [ -f "$generic" ]; then
+		# Unversioned fallback -- dracut is not currently configured to do this
+		# on my system, but it's a peace of mind to have
+        echo "$generic"
+    else
+        echo ""
+    fi
+}
+
 declare -a VALID_VERSIONS=()
 for kernel in /boot/vmlinuz-*; do
     [ -f "$kernel" ] || continue
@@ -135,30 +154,12 @@ esac
 
 # --- Create boot menu entries ---
 
-# Not preserved here, but from the original, initrd matched from a
-# relatively major search, we just do a simple one.
-# To use the original logic, I need to tweak the supplied path in order to
-# parse dirname, $linux from OG is the full path found
-find_initramfs() {
-    local version="$1"
-    local versioned="/boot/initramfs-${version}.img"
-    local generic="/boot/initramfs.img"
-    if [ -f "$versioned" ]; then
-        echo "$versioned"
-    elif [ -f "$generic" ]; then
-		# Unversioned fallback -- dracut is not currently configured to do this
-		# on my system, but it's a peace of mind to have
-        echo "$generic"
-    else
-        echo ""
-    fi
-}
-
 # Emits the menu entry for a single kernel image
 generate_boot_entries() {
     local version="$1"
     local indent="$2"
     local initramfs rel_kernel rel_initramfs title rw_flag mode
+	local tab='	'
 
 	commandline="${BASE_CMDLINE}"
     initramfs="$(find_initramfs "$version")"
@@ -170,6 +171,8 @@ generate_boot_entries() {
 	# root=UUID= / root=ZFS= can not work. My system always uses an initrd for
 	# the overlay system to work, so it's been skipped.
 
+	# TODO: Investigate the rw_flag, I'm not certain it is meaningful at this
+	# point in the process
     for mode in overlay snapshot live recovery commit; do
         case "$mode" in
             overlay)  title="Overlay Mode";            rw_flag="ro" ;;
@@ -177,33 +180,34 @@ generate_boot_entries() {
             snapshot) title="Snapshot Mode";           rw_flag="ro" ;;
             live)     title="Live Mode";               rw_flag="rw" ;;
 			recovery)
+				# TODO: Make recovery even more """recovery"""
+				# Minimal loaded drivers, no udev...that sorta thing
 				title="Live Mode (RECOVERY)";
 				rw_flag="rw"
 				commandline="${RECOVERY_CMDLINE}"
 				;;
         esac
 
-        echo "${indent}menuentry 'Gentoo -- ${title}' {"
+        echo "${indent}menuentry '${OS} -- ${title}' ${CLASS} {"
 
 		### Taken directly from 10_linux
 		# TODO: Merge the indentation with our own
-		submenu_indentation="$grub_tab"
 		if [ "x$GRUB_GFXPAYLOAD_LINUX" = x ]; then
-			echo "	load_video" | sed "s/^/$submenu_indentation/"
+			echo "	load_video" | sed "s/^/$indent/"
 			if grep -qx "CONFIG_FB_EFI=y" "${config}" 2> /dev/null \
 					&& grep -qx "CONFIG_VT_HW_CONSOLE_BINDING=y" "${config}" 2> /dev/null; then
-				echo '	if [ "x$grub_platform" = xefi ]; then' | sed "s/^/$submenu_indentation/"
-				echo "		set gfxpayload=keep" | sed "s/^/$submenu_indentation/"
-				echo '	fi' | sed "s/^/$submenu_indentation/"
+				echo '	if [ "x$grub_platform" = xefi ]; then' | sed "s/^/$indent/"
+				echo "		set gfxpayload=keep" | sed "s/^/$indent/"
+				echo '	fi' | sed "s/^/$indent/"
 			fi
 		else
 		if [ "x$GRUB_GFXPAYLOAD_LINUX" != xtext ]; then
-			echo "	load_video" | sed "s/^/$submenu_indentation/"
+			echo "	load_video" | sed "s/^/$indent/"
 		fi
-			echo "	set gfxpayload=$GRUB_GFXPAYLOAD_LINUX" | sed "s/^/$submenu_indentation/"
+			echo "	set gfxpayload=$GRUB_GFXPAYLOAD_LINUX" | sed "s/^/$indent/"
 		fi
 
-		echo "	insmod gzio" | sed "s/^/$submenu_indentation/"
+		echo "	insmod gzio" | sed "s/^/$indent/"
 		### ---
 
 		# TODO: This came from the LLM, I'm not 100% what it does. My current
@@ -220,10 +224,10 @@ generate_boot_entries() {
 		# TODO: boot_device_id from above only seems used for the menuentry
 		# title text? It seems quite similar to LINUX_ROOT_DEVICE. Not sure
 		# which I should be using here.
-        echo "${indent}  echo 'Loading ${version} -- ${mode} mode'"
-        echo "${indent}  linux  ${rel_kernel} ${rw_flag} root=${LINUX_ROOT_DEVICE} ${BASE_CMDLINE} bootmode=${mode}"
-        echo "${indent}  echo 'Loading initramfs'"
-        echo "${indent}  initrd ${rel_initramfs}"
+        echo "${indent}${tab}echo 'Loading ${version} -- ${mode} mode'"
+        echo "${indent}${tab}linux  ${rel_kernel} ${rw_flag} root=${LINUX_ROOT_DEVICE} ${BASE_CMDLINE} bootmode=${mode}"
+        echo "${indent}${tab}echo 'Loading initramfs'"
+        echo "${indent}${tab}initrd ${rel_initramfs}"
         echo "${indent}}"
         echo ""
     done
@@ -235,12 +239,13 @@ generate_boot_entries "$DEFAULT_VERSION" ""
 # Generate submenus for every older kernel found
 # (NGL: I like the generated logic better than the original for this...)
 if [ "${#OLDER_VERSIONS[@]}" -gt 0 ]; then
-    echo "submenu 'Other kernel versions' {"
+    echo "submenu 'Previous kernel versions' {"
     # Emit newest to oldest
     for (( i=${#OLDER_VERSIONS[@]}-1; i>=0; i-- )); do
         version="${OLDER_VERSIONS[$i]}"
-        echo "  submenu 'Gentoo ${version}' {"
-        generate_boot_entries "$version" "    "
+        echo "  submenu '${version}' {"
+		# second param is a tab char
+        generate_boot_entries "$version" "	"
         echo "  }"
         echo ""
     done
