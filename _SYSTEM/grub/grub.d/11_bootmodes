@@ -13,9 +13,8 @@ set -e
 # introducing a static config that requires manual intervention at every kernel
 # update.
 
-# Of note, I've since put in great effort to merging this with that of the
-# default 10_linux, so at this point, the LLM disclaimer may be somewhat
-# obsolete.
+# Of note, I've since put in great effort to merging this with that of 10_linux
+# and 05_uki, so at this point, the LLM disclaimer may be somewhat obsolete.
 
 ### -------------- ###
 
@@ -42,11 +41,14 @@ find_initramfs() {
     fi
 }
 
+# TODO: This was originally make assuming I wasn't using a UKI, since I am,
+# the only verification was skipped....it could stand to be revised (ensure
+# valid version number, for example, probably refer to 10_linux here.)
 declare -a VALID_VERSIONS=()
 for kernel in /boot/vmlinuz-*; do
     [ -f "$kernel" ] || continue
     version="${kernel#/boot/vmlinuz-}"
-    [ -n "$(find_initramfs "$version")" ] || continue
+    # [ -n "$(find_initramfs "$version")" ] || continue
     VALID_VERSIONS+=("$version")
 done
 # TODO: Verify, is an exit okay here?
@@ -150,18 +152,26 @@ esac
 generate_boot_entries() {
     local version="$1"
     local indent="$2"
-    local initramfs rel_kernel rel_initramfs title rw_flag mode
 	local tab='	'
+    local initramfs rel_kernel rel_initramfs title rw_flag mode root_uuid
 
 	commandline="${BASE_CMDLINE}"
     initramfs="$(find_initramfs "$version")"
     rel_kernel="/vmlinuz-${version}"
     rel_initramfs="${initramfs#/boot}"
-	# boot_device_id="$(grub_get_device_id "${GRUB_DEVICE}")"
+	root_uuid="${LINUX_ROOT_DEVICE}"
 
 	# Note of skipped original logic. If there is no initrd, then the
 	# root=UUID= / root=ZFS= can not work. My system always uses an initrd for
 	# the overlay system to work, so it's been skipped.
+
+	if [ "x$initramfs" = x ]; then
+		if [ "x${GRUB_DEVICE_PARTUUID}" = "x" ] || [ "x${GRUB_DISABLE_LINUX_PARTUUID}" = "xtrue" ]; then
+			root_uuid=${GRUB_DEVICE}
+		else
+			root_uuid=PARTUUID=${GRUB_DEVICE_PARTUUID}
+		fi
+	fi
 
 	# TODO: Investigate the rw_flag, I'm not certain it is meaningful at this
 	# point in the process
@@ -196,13 +206,17 @@ generate_boot_entries() {
 				echo '	fi' | sed "s/^/$indent/"
 			fi
 		else
-		if [ "x$GRUB_GFXPAYLOAD_LINUX" != xtext ]; then
-			echo "	load_video" | sed "s/^/$indent/"
-		fi
+			if [ "x$GRUB_GFXPAYLOAD_LINUX" != xtext ]; then
+				echo "	load_video" | sed "s/^/$indent/"
+			fi
 			echo "	set gfxpayload=$GRUB_GFXPAYLOAD_LINUX" | sed "s/^/$indent/"
 		fi
 
-		echo "	insmod gzio" | sed "s/^/$indent/"
+		if [ "x$initramfs" != x ]; then
+			echo "	insmod chain" | sed "s/^/$indent/" # needed for uki
+		else
+			echo "	insmod gzio" | sed "s/^/$indent/" # needed for initramfs img
+		fi
 		### ---
 
 		# TODO: This came from the LLM, I'm not 100% what it does. My current
@@ -213,18 +227,22 @@ generate_boot_entries() {
 		# equivalent placement from the original.
 		#
 		# Also TODO clean up the grub_add_tab that's some real vibe code shit
-        prepare_grub_to_access_device "${BOOT_DEVICE}" | grub_add_tab | \
-            while IFS= read -r line; do echo "${indent}${line}"; done
+		prepare_grub_to_access_device "${BOOT_DEVICE}" | grub_add_tab | \
+			while IFS= read -r line;
+				do echo "${indent}${line}";
+			done
 
-		# TODO: boot_device_id from above only seems used for the menuentry
-		# title text? It seems quite similar to LINUX_ROOT_DEVICE. Not sure
-		# which I should be using here.
-        echo "${indent}${tab}echo 'Loading ${version} -- ${mode} mode'"
-        echo "${indent}${tab}linux  ${rel_kernel} ${rw_flag} root=${LINUX_ROOT_DEVICE} ${BASE_CMDLINE} fsmode=${mode}"
-        echo "${indent}${tab}echo 'Loading initramfs'"
-        echo "${indent}${tab}initrd ${rel_initramfs}"
-        echo "${indent}}"
-        echo ""
+		# TODO: linux line is for regular kernel, chainloader is for UKI
+		echo "${indent}${tab}echo 'Loading ${version} -- ${mode} mode'"
+		# echo "${indent}${tab}linux  ${rel_kernel} ${rw_flag} root=${root_uuid} ${BASE_CMDLINE} fsmode=${mode}"
+		echo "${indent}${tab}chainloader ${rel_dirname}/${basename} root=${root_uuid} ${rw_flag} ${BASE_CMDLINE} fsmode=${mode}"
+		if [ "x$initramfs" != x ]; then
+			# ^^ skip if kernel is UKI
+			echo "${indent}${tab}echo 'Loading initramfs'"
+			echo "${indent}${tab}initrd ${rel_initramfs}"
+		fi
+		echo "${indent}}"
+		echo ""
     done
 }
 
