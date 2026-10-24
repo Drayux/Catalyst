@@ -1,0 +1,287 @@
+#! /bin/sh
+set -e
+
+
+# --- Prepare environment-specific variables ---
+
+# /usr/share/grub/grub-mkconfig_lib
+prefix="/usr"
+exec_prefix="/usr"
+datarootdir="/usr/share"
+. "$pkgdatadir/grub-mkconfig_lib"
+
+BOOT_DEVICE="$(${grub_probe} --target=device /boot)"
+BASE_CMDLINE="${GRUB_CMDLINE_LINUX} ${GRUB_CMDLINE_LINUX_DEFAULT}"
+RECOVERY_CMDLINE="${GRUB_CMDLINE_LINUX_RECOVERY} ${GRUB_CMDLINE_LINUX}"
+
+# Hard-coded version of name resolution
+# (was general-purpose for any distro, no need to preserve the logic)
+OS="Gentoo Linux"
+CLASS="--class gentoo --class gnu-linux --class gnu --class os"
+
+# Preserved, but likely not needed for my system: loop-AES arranges things so
+# that /dev/loop/X can be our root device, but the initrds don't like that
+case ${GRUB_DEVICE} in
+  /dev/loop/*|/dev/loop[0-9])
+    GRUB_DEVICE=`losetup ${GRUB_DEVICE} | sed -e "s/^[^(]*(\([^)]\+\)).*/\1/"`
+  ;;
+esac
+
+# Original script sets these as fallbacks, my use case will always generate
+# recovery mode and we do need partuuid for btrfs, so they're ignored here
+# : ${GRUB_CMDLINE_LINUX_RECOVERY:=single}
+# : ${GRUB_DISABLE_LINUX_PARTUUID=true}
+
+# btrfs may reside on multiple devices. We cannot pass them as value of root= parameter
+# and mounting btrfs requires user space scanning, so force UUID in this case.
+if ( [ "x${GRUB_DEVICE_UUID}" = "x" ] && [ "x${GRUB_DEVICE_PARTUUID}" = "x" ] ) \
+    || ( [ "x${GRUB_DISABLE_LINUX_UUID}" = "xtrue" ] \
+	&& [ "x${GRUB_DISABLE_LINUX_PARTUUID}" = "xtrue" ] ) \
+    || ( ! test -e "/dev/disk/by-uuid/${GRUB_DEVICE_UUID}" \
+	&& ! test -e "/dev/disk/by-partuuid/${GRUB_DEVICE_PARTUUID}" ) \
+    || ( test -e "${GRUB_DEVICE}" && uses_abstraction "${GRUB_DEVICE}" lvm ); then
+  LINUX_ROOT_DEVICE=${GRUB_DEVICE}
+elif [ "x${GRUB_DEVICE_UUID}" = "x" ] \
+    || [ "x${GRUB_DISABLE_LINUX_UUID}" = "xtrue" ]; then
+  LINUX_ROOT_DEVICE=PARTUUID=${GRUB_DEVICE_PARTUUID}
+else
+  LINUX_ROOT_DEVICE=UUID=${GRUB_DEVICE_UUID}
+fi
+
+case x"$GRUB_FS" in
+    xbtrfs)
+	rootsubvol="`make_system_path_relative_to_its_root /`"
+	rootsubvol="${rootsubvol#/}"
+	if [ "x${rootsubvol}" != x ]; then
+	    GRUB_CMDLINE_LINUX="rootflags=subvol=${rootsubvol} ${GRUB_CMDLINE_LINUX}"
+	fi;;
+    xzfs)
+	rpool=`${grub_probe} --device ${GRUB_DEVICE} --target=fs_label 2>/dev/null || zdb -l ${GRUB_DEVICE} | awk -F \' '/ name/ { print $2 }'`
+	bootfs="`make_system_path_relative_to_its_root / | sed -e "s,@$,,"`"
+	LINUX_ROOT_DEVICE="ZFS=${rpool}${bootfs%/}"
+	;;
+esac
+
+
+# --- Identify any kernel version that seems to be installed ---
+
+declare -a UKI_PATHS=()
+declare -a KERNEL_PATHS=()
+
+# NOTE: I'm hard-coding the ESP path here (per my install steps) so this is
+# not a perfectly universal setup, but relatively trivial to tweak!
+UKI_ROOT='/boot/EFI/Linux'
+for uki_img in $UKI_ROOT/*.efi; do
+	# Skip any -old.efi entry for sorting, check for it again later (TODO)
+	[[ $uki_img == *-old.efi ]] && continue
+
+    [ -f "$uki_img" ] || continue
+	if grub_file_is_not_garbage "$uki_img"; then
+		UKI_PATHS+=("$uki_img")
+	fi
+done
+
+# Look for kernels in the kernel + initrd* directory
+# Similarly, this is assumed (TODO: I'd swear grub has a variable for this?)
+INITRD_ROOT='/boot'
+for kernel in $INITRD_ROOT/vmlinuz-*; do
+	# Skip any .old entry for sorting, check for it again later (TODO)
+	[[ $kernel == *.old ]] && continue
+
+    [ -f "$kernel" ] || continue
+	if grub_file_is_not_garbage "$kernel"; then
+		KERNEL_PATHS+=("$kernel")
+	fi
+done
+
+# Nothing to do if we didn't find any kernels
+# TODO: Verify, is an exit okay here?
+[ "${#UKI_PATHS[@]}" -gt 0 ] \
+	|| [ "${#KERNEL_PATHS[@]}" -gt 0 ] \
+	|| (echo 'Failed to find any kernels to boot :(' && exit 0)
+
+# TODO: Ensure no blank entry if one of these lists is empty 
+mapfile -t uki_sorted  < <(printf '%s\n' "${UKI_PATHS[@]}"  | sort -V)
+mapfile -t kernel_sorted < <(printf '%s\n' "${KERNEL_PATHS[@]}" | sort -V)
+
+# Ordered from oldest -> newest; put UKI at the end to start there
+ALL_ENTRIES=( "${kernel_sorted[@]}" "${uki_sorted[@]}" )
+
+entry_count="${#ALL_ENTRIES[@]}"
+CURRENT="${ALL_ENTRIES[$((entry_count - 1))]}"
+ENTRIES=("${ALL_ENTRIES[@]:0:$((entry_count - 1))}")
+
+
+# --- Helpers for emitting the actual menu entries ---
+
+get_version() {
+	local path="$1"
+
+	# local version="${path#/boot/vmlinuz-}"
+	# if [ -z "$version" ]; then
+		# version=`basename $path | sed -e "s,^[^0-9]*-,,g"`
+	# fi
+
+	version=`basename $path | sed -e "s,^[^0-9]*-,,g"`
+	echo "$version"
+}
+
+# Not preserved here, but from the original, initrd matched from a
+# relatively major search, we just do a simple one.
+# To use the original logic, I need to tweak the supplied path in order to
+# parse dirname, $linux from OG is the full path found
+find_initrd() {
+    local version="$1"
+
+	# The path that might exist if we have a matching initrd
+    local initrd_path="/boot/initramfs-${version}.img"
+    local initrd_path_generic="/boot/initramfs.img"
+
+    if [ -f "$initrd_path" ]; then
+        echo "$initrd_path"
+    elif [ -f "$initrd_path_generic" ]; then
+		# Unversioned fallback -- dracut is not currently configured to do this
+		# on my system, but it's a peace of mind to have
+        echo "$initrd_path_generic"
+    else
+        echo ""
+    fi
+}
+
+# Emits the menu entry for a single kernel image
+generate_entry() {
+    local path="$1"
+    local indent="$2"
+
+    basename=`basename $path`
+    dirname=`dirname $path`
+    rel_dirname=`make_system_path_relative_to_its_root $dirname`
+	rel_target="${rel_dirname}/${basename}"
+	version=`get_version $path`
+	version_num=${version%%-*}
+
+	commandline="${BASE_CMDLINE}"
+	root_uuid="${LINUX_ROOT_DEVICE}"
+
+	local uki initrd title subtitle rw_flag overlay_mode
+
+	if [[ $basename == *.efi ]]; then
+		# Filter the gibberish name entries
+		[[ $basename == gentoo-* ]] || continue
+		uki=$basename
+	else
+		initrd=`find_initrd $version`
+	fi
+    gettext_printf "Found kernel: %s\n" "$path" >&2
+
+	# Note of skipped original logic. If there is no initrd, then the
+	# root=UUID= / root=ZFS= can not work. My system always uses an initrd for
+	# the overlay system to work, so it's been skipped.
+
+	if [ "x$initrd" = x ]; then
+		if [ "x${GRUB_DEVICE_PARTUUID}" = "x" ] || [ "x${GRUB_DISABLE_LINUX_PARTUUID}" = "xtrue" ]; then
+			root_uuid=${GRUB_DEVICE}
+		else
+			root_uuid=PARTUUID=${GRUB_DEVICE_PARTUUID}
+		fi
+	fi
+
+	# TODO: Investigate the rw_flag, I'm not certain it is meaningful at this
+	# point in the process
+	# Also TODO: I wish to organize these into their own submenus to be a bit
+	# more intuitive, but I'm not quite sure what that looks like yet. Maybe a
+	# dedicated "options" for the maintenance operations?
+    for mode in overlay live snapshot recovery commit; do
+        case "$mode" in
+			overlay)  title="[ OVERLAY ]";             rw_flag="ro" ;;
+            snapshot) title="[ SNAPSHOT ]";            rw_flag="ro" ;;
+            live)     title="[ LIVE ]";                rw_flag="rw" ;;
+            commit)
+				title="[ OVERLAY ]";
+				subtitle=" (Commit changes)";
+				rw_flag="rw"
+				;;
+			recovery)
+				# TODO: Make recovery even more """recovery"""
+				# Minimal loaded drivers, no udev...that sorta thing
+				title="[ LIVE ]";
+				subtitle=" (Recovery)"
+				rw_flag="rw"
+				commandline="${RECOVERY_CMDLINE}"
+				;;
+        esac
+
+        echo "${indent}menuentry '${title} ${OS} -- ${version_num}${subtitle}' ${CLASS} {"
+		if [ "x$GRUB_GFXPAYLOAD_LINUX" = x ]; then
+			echo "	load_video" | sed "s/^/$indent/"
+			if grep -qx "CONFIG_FB_EFI=y" "${config}" 2> /dev/null \
+					&& grep -qx "CONFIG_VT_HW_CONSOLE_BINDING=y" "${config}" 2> /dev/null; then
+				echo '	if [ "x$grub_platform" = xefi ]; then' | sed "s/^/$indent/"
+				echo "		set gfxpayload=keep" | sed "s/^/$indent/"
+				echo '	fi' | sed "s/^/$indent/"
+			fi
+		else
+			if [ "x$GRUB_GFXPAYLOAD_LINUX" != xtext ]; then
+				echo "	load_video" | sed "s/^/$indent/"
+			fi
+			echo "	set gfxpayload=$GRUB_GFXPAYLOAD_LINUX" | sed "s/^/$indent/"
+		fi
+
+		# TODO: This came from the LLM, I'm not 100% what it does. My current
+		# guess (pending testing, the todo) is that it emits the appropriate
+		# > insmod ff_type
+		# lines necessary for whereever BOOT_DEVICE points.
+		# It also looks to emit the "search" directive, thus this is the
+		# equivalent placement from the original.
+		prepare_grub_to_access_device "${BOOT_DEVICE}" | grub_add_tab | \
+			while IFS= read -r line;
+				do echo "${indent}${line}";
+			done
+
+		if [ "x$uki" != x ]; then
+			# UKI STUFF
+			echo "	insmod chain" | sed "s/^/$indent/" # needed for uki
+			echo "${indent}${tab}echo 'Loading UKI ${version} (fsmode=${mode})'"
+			echo "${indent}${tab}chainloader ${rel_target} root=${root_uuid} ${rw_flag} ${BASE_CMDLINE} fsmode=${mode}"
+		else
+			# REGULAR IMAGE STUFF
+			if [ "x$initrd" != x ]; then
+				echo "	insmod gzio" | sed "s/^/$indent/" # needed for initramfs img
+			fi
+			echo "${indent}${tab}echo 'Loading kernel ${version} (fsmode=${mode})'"
+			echo "${indent}${tab}linux  ${rel_target} ${rw_flag} root=${root_uuid} ${BASE_CMDLINE} fsmode=${mode}"
+			# echo "${indent}${tab}linux  /vmlinuz-${version} ${rw_flag} root=${root_uuid} ${BASE_CMDLINE} fsmode=${mode}"
+			if [ "x$initrd" != x ]; then
+				echo "${indent}${tab}echo 'Loading initramfs'"
+				echo "${indent}${tab}initrd ${initrd}"
+			fi
+		fi
+		echo "${indent}}"
+		echo ""
+    done
+}
+
+
+# --- Create boot menu entries ---
+
+tab=$'\t'
+
+# Run once for newest kernel version to appear at the root menu level
+generate_entry "$CURRENT" ""
+
+# Generate submenus for every older kernel found
+if [ "${#ENTRIES[@]}" -gt 0 ]; then
+    echo "submenu 'Previous kernel versions' {"
+    # Emit newest to oldest
+    for (( i=${#ENTRIES[@]}-1; i>=0; i-- )); do
+        kernel="${ENTRIES[$i]}"
+		version=`get_version $kernel`
+
+        echo "${tab}submenu '${version}' {"
+        generate_entry "$kernel" "${tab}${tab}"
+
+        echo "${tab}}"
+        echo ""
+    done
+    echo "}"
+fi

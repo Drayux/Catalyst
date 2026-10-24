@@ -23,4 +23,4 @@ Grub allows a custom background to be uploaded. This should be stored alongside 
 
 I believe that this directory specifically indicates rules for menu entries. Thus, it contains our overlay snapshot menu entries.
 
-Note that I deliberately did not include the executable bit on the `11_bootmodes` script. It should be set only when inside of the appropriate system directory. This is a requisite manual step. To prevent "default" entries from showing up, similarly, remove the executable bit from `10_linux`.
+Note that I deliberately did not include the executable bit on the `08_overlay` script. It should be set only when inside of the appropriate system directory. This is a requisite manual step. To prevent "default" entries from showing up, similarly, remove the executable bit from `10_linux`. _(Portage also provides `05_uki` when using installkernel with the uki USE flag set, remove the exec bit from this script as well.)_

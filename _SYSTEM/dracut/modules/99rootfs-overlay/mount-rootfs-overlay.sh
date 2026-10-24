@@ -1,5 +1,21 @@
 #!/bin/sh
 
+### LLM DISCLOSURE ###
+
+# While I'd love for every line of my config to be hand-written and carefully
+# placed, it was quickly becoming apparent that a trivial part of the process
+# was growing way beyond scope. Thus, the majority of this logic is not my own.
+
+# This nature of this script's role means that it is quite difficult to test
+# small changes incrementally. I have a clear idea what the ultimate effect
+# should be (i.e., verifiable core commands to expect per each mode.) But with
+# my limited comfort in bash, deferring this task to an LLM to obtain a solid
+# base implementation to work from had the effect of saving me countless cycles
+# of "reboot and check the logs."
+
+### -------------- ###
+
+
 command -v getarg > /dev/null || . /lib/dracut-lib.sh
 
 FSMODE=$(getarg fsmode=)
