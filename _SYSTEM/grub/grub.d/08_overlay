@@ -171,8 +171,11 @@ generate_entry() {
 		uki=$basename
 	else
 		initrd=`find_initrd $version`
+		if [ x"$initrd" != x ]; then
+			initrd=`make_system_path_relative_to_its_root "$initrd"`
+		fi
 	fi
-    gettext_printf "Found kernel: %s\n" "$path" >&2
+	gettext_printf "Found kernel: %s %s\n" "$path" "$initrd" >&2
 
 	# Note of skipped original logic. If there is no initrd, then the
 	# root=UUID= / root=ZFS= can not work. My system always uses an initrd for
@@ -191,20 +194,24 @@ generate_entry() {
 	# Also TODO: I wish to organize these into their own submenus to be a bit
 	# more intuitive, but I'm not quite sure what that looks like yet. Maybe a
 	# dedicated "options" for the maintenance operations?
-    for mode in overlay live snapshot recovery commit; do
+	# Yet another TODO: Consider introducing a seperate clean mode as well.
+	# This would also be overlay, but it gives the same options list as live.
+	# (Rather, instead of commit mode, call it advanced/maintenance mode)
+    for mode in overlay advanced snapshot live recovery; do
+		subtitle="";
         case "$mode" in
-			overlay)  title="[ OVERLAY ]";             rw_flag="ro" ;;
-            snapshot) title="[ SNAPSHOT ]";            rw_flag="ro" ;;
-            live)     title="[ LIVE ]";                rw_flag="rw" ;;
-            commit)
-				title="[ OVERLAY ]";
-				subtitle=" (Commit changes)";
+			overlay)  title="[ OVERLAY ] ";             rw_flag="ro" ;;
+			snapshot) title="[ SNAPSHOT ]";             rw_flag="ro" ;;
+			live)     title="[ LIVE ]    ";             rw_flag="rw" ;;
+			advanced)
+				title="[ OVERLAY ] ";
+				subtitle=" (Advanced options...)";
 				rw_flag="rw"
 				;;
 			recovery)
 				# TODO: Make recovery even more """recovery"""
 				# Minimal loaded drivers, no udev...that sorta thing
-				title="[ LIVE ]";
+				title="[ LIVE ]    ";
 				subtitle=" (Recovery)"
 				rw_flag="rw"
 				commandline="${RECOVERY_CMDLINE}"
@@ -238,20 +245,19 @@ generate_entry() {
 				do echo "${indent}${line}";
 			done
 
-		if [ "x$uki" != x ]; then
+		if [ x"$uki" != x ]; then
 			# UKI STUFF
 			echo "	insmod chain" | sed "s/^/$indent/" # needed for uki
 			echo "${indent}${tab}echo 'Loading UKI ${version} (fsmode=${mode})'"
 			echo "${indent}${tab}chainloader ${rel_target} root=${root_uuid} ${rw_flag} ${BASE_CMDLINE} fsmode=${mode}"
 		else
 			# REGULAR IMAGE STUFF
-			if [ "x$initrd" != x ]; then
+			if [ x"$initrd" != x ]; then
 				echo "	insmod gzio" | sed "s/^/$indent/" # needed for initramfs img
 			fi
 			echo "${indent}${tab}echo 'Loading kernel ${version} (fsmode=${mode})'"
 			echo "${indent}${tab}linux  ${rel_target} ${rw_flag} root=${root_uuid} ${BASE_CMDLINE} fsmode=${mode}"
-			# echo "${indent}${tab}linux  /vmlinuz-${version} ${rw_flag} root=${root_uuid} ${BASE_CMDLINE} fsmode=${mode}"
-			if [ "x$initrd" != x ]; then
+			if [ x"$initrd" != x ]; then
 				echo "${indent}${tab}echo 'Loading initramfs'"
 				echo "${indent}${tab}initrd ${initrd}"
 			fi

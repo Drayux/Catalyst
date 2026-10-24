@@ -33,7 +33,11 @@
 command -v getarg > /dev/null || . /lib/dracut-lib.sh
 
 FSMODE=$(getarg fsmode=)
-FSMODE=${FSMODE:-overlay}
+if [[ -z "$FSMODE" ]]; then
+	# If I'm having issues, I can edit the GRUB entry to remove this param
+	# before booting to skip the script entirely
+	return
+fi
 
 PRE_PIVOT_ROOT=/sysroot
 OVERLAY_PT=/dev/disk/by-label/OVERLAY
@@ -107,16 +111,22 @@ timestamp_overlay() {
 # ── Functions for the real overlay ONLY! ──────────────────────────────────────
 
 get_overlay_age() {
-	timestamp_path="$OVERLAY_MOUNT_DIR"/.timestamp
-	[ -f $timestamp_path ] || (echo 'ages' && return)
+	local timestamp_path="$OVERLAY_MOUNT_DIR"/.timestamp
+	if [[ ! -f "$timestamp_path" ]]; then
+		printf '%s' 'ages'
+		return
+	fi
 
-	timestamp=$(<"$timestamp_path")
-	timestamp=${timestamp//[[:space:]]/}
+	local timestamp=$(<"$timestamp_path")
+
 	# TODO: Consider deleting the file if this triggers
-	[[ $timestamp =~ ^[0-9]+$ ]] || (echo 'ages' && return)
+	timestamp=${timestamp//[[:space:]]/}
+	if [[ ! "$timestamp" =~ ^[0-9]+$ ]]; then
+		printf '%s' 'ages'
+		return
+	fi
 
-	delta=$(( $(date +%s) - timestamp ))
-
+	local delta=$(( $(date +%s) - timestamp ))
 	local d=$(( delta / 86400 ))
 	local h=$(( delta % 86400 / 3600 ))
 	local m=$(( delta % 3600 / 60 ))
@@ -129,7 +139,7 @@ get_overlay_age() {
 	(( s || ${#out[@]} == 0 )) && out+=("${s}s")
 
 	local IFS=' '
-	printf '%s\n' "${out[*]}"
+	printf '%s' "${out[*]}"
 }
 
 commit_overlay() {
@@ -187,23 +197,21 @@ clean_overlay() {
 		rm -rf "${OVERLAY_MOUNT_DIR:?}/work/$dir"
 		mkdir -p "$OVERLAY_MOUNT_DIR/upper/$dir"
 		mkdir -p "$OVERLAY_MOUNT_DIR/work/$dir"
-
-		# Reset the timestamp (see timestamp_overlay())
-		date '+%s' > $"$OVERLAY_MOUNT_DIR"/timestamp
 	done
+	rm "$OVERLAY_MOUNT_DIR/.timestamp"
 }
 
 
 # ── Mode selection ────────────────────────────────────────────────────────────
 
-warn "Booting with overlay mode: '$FSMODE'"
+echo ""
+echo "Booting with overlay mode: $FSMODE"
 case "$FSMODE" in
 	# Live mode exits early
 	live)
 		mount_overlay
 
 		if overlay_is_dirty; then
-			echo ""
 			echo "NOTICE: uncommitted changes found in rootfs overlay."
 			echo "Booting live may produce a stale overlay cache."
 			echo "—— Last commit: `get_overlay_age` ago"
@@ -245,23 +253,23 @@ case "$FSMODE" in
 			done
 		fi
 		umount "$OVERLAY_MOUNT_DIR"
-		exit 0
 		;;
 
-	commit)
+	advanced)
+		# TODO: Add options for this instead of just commit mode
 		# Mounts handled within the commit function
 		commit_overlay
 		clean_overlay
 		timestamp_overlay
+		map_overlay_dirs
 		;;
 	overlay)
 		mount_overlay
 		timestamp_overlay
+		map_overlay_dirs
 		;;
 	snapshot)
 		mount_snapshot
+		map_overlay_dirs
 		;;
-
 esac
-
-map_overlay_dirs

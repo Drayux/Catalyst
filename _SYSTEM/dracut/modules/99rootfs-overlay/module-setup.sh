@@ -27,5 +27,5 @@ install() {
 	# ^^ should be: /usr/lib/dracut/modules.d/99rootfs-overlay/mount-rootfs-overlay.sh
 
 	# The overlay script depends on findmnt and rsync
-	dracut_install findmnt rsync
+	dracut_install date findmnt rsync
 }
