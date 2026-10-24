@@ -1,4 +1,13 @@
 # /etc/fstab: static file system information.
+#
+# See the manpage fstab(5) for more information.
+
+#LABEL=boot		/boot		ext4		defaults	1 2
+#UUID=58e72203-57d1-4497-81ad-97655bd56494		/		xfs		defaults		0 1
+#LABEL=swap		none		swap		sw		0 0
+#/dev/cdrom		/mnt/cdrom	auto		noauto,ro	0 0
+
+# ---
 
 # nvme1n1     259:0    0 931.5G  0 disk 
 # ├─nvme1n1p1 259:8    0     2G  0 part /boot
@@ -26,6 +35,7 @@ UUID=96825890-c0a5-47d3-a603-b3dbdd63561b	none	swap	sw	0 0		# SWAP: /dev/nvme1n1
 # VIRTUALS
 
 # <fs>		<mount>		<type>	<opts>				<dump/pass>
+# tmpfs		/tmp		tmpfs	size=32G,mode=1777,noexec	0 0		# Keep /tmp fully in memory
 tmpfs		/tmp		tmpfs	size=32G,mode=1777		0 0		# Keep /tmp fully in memory
 
 # (overlayfs handled by startup scripts)

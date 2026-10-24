@@ -23,7 +23,7 @@ install() {
 	# TBH no idea priority to use; guessing right in the middle unless it
 	# appears to cause me trouble
 
-	inst_hook pre-pivot 80 "$moddir/mount-rootfs-overlay.sh"
+	inst_hook pre-pivot 80 "$moddir/mount-overlay.sh"
 	# ^^ should be: /usr/lib/dracut/modules.d/99rootfs-overlay/mount-rootfs-overlay.sh
 
 	# The overlay script depends on findmnt and rsync
