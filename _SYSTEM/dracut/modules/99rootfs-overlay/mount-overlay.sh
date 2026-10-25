@@ -39,7 +39,7 @@ if [[ -z "$FSMODE" ]]; then
 	return
 fi
 
-PRE_PIVOT_ROOT=/sysroot
+PRE_PIVOT_ROOT="$NEWROOT"
 OVERLAY_PT=/dev/disk/by-label/OVERLAY
 OVERLAY_ROOT=
 
@@ -49,6 +49,8 @@ SNAPSHOT_MOUNT_DIR=/run/snapshot
 # TODO: Consider including opt in here
 MAP="usr etc var"
 
+# TODO: Maybe needs a better name -- this mounts the raw overlay data, NOT the
+# merged filesystem mapping (that's map_overlay_dirs)
 mount_overlay() {
 	OVERLAY_ROOT="$OVERLAY_MOUNT_DIR"
 	mkdir -p "$OVERLAY_ROOT"
@@ -84,9 +86,6 @@ map_overlay_dirs() {
 	done
 }
 
-# NOTE: This was originally intended as a safety-check to avoid a stale commit
-# However, I failed to realize how many items in the rootfs get modified during
-# a normal boot alone, so this triggers on EVERY overlay boot unless just wiped.
 overlay_is_dirty() {
 	for dir in $MAP; do
 		local upper="$OVERLAY_ROOT/upper/$dir"
@@ -97,18 +96,35 @@ overlay_is_dirty() {
 	return 1  # clean
 }
 
-# TODO: If I made an openrc service to create this timestamp instead after all
-# of the other files are updated (if this is the case) then I could create a
-# check that looks if the timestamp is the newest file in the partition or not
 # Creates a normal timestamp for the overlay, or in the case of snapshot mode,
 # this can be easily used by userspace to remind me that I'm in snapshot mode.
 timestamp_overlay() {
+	# TODO: If I made an openrc service to create this timestamp instead after
+	# all of the other files are updated (if this is the case) then I could
+	# create a if .timestamp is the newest file in the partition or not
+
 	timestamp_path="$OVERLAY_ROOT"/.timestamp
-	[ -f $timestamp_path ] || date '+%s' > $timestamp_path
+	[ -f "$timestamp_path" ] || overlay_is_dirty || date '+%s' > $timestamp_path
 }
 
 
 # ── Functions for the real overlay ONLY! ──────────────────────────────────────
+
+get_overlay_change_count() {
+	local total=0
+	local count
+	for dir in $MAP; do
+		local upper_dir="$OVERLAY_MOUNT_DIR/upper/$dir"
+		local lower_dir="$PRE_PIVOT_ROOT/${dir}"
+		if [ -d "$upper_dir" ]; then
+			count=`overlayfs-tools diff --lowerdir="$lower_dir" --upperdir="$upper_dir" | wc -l`
+		else
+			count=0
+		fi
+		total=$(( total + count ))
+	done
+	echo "$total"
+}
 
 get_overlay_age() {
 	local timestamp_path="$OVERLAY_MOUNT_DIR"/.timestamp
@@ -143,54 +159,51 @@ get_overlay_age() {
 }
 
 commit_overlay() {
-	mount_snapshot
+	# NOTE: This was only needed for the original (flawed) sequence:
+	#  > mount overlay, rsync the merged view
+	# mount_snapshot
 
-	# map_overlay_dirs -- TODO: For now, a sloppy copy to test the important bits
-	# The only difference is that instead of mounting overtop the rootfs, we
-	# map the merged overlay FS to the snapshot directory (to prepare for rsync)
 	for dir in $MAP; do
-		upperdir="$OVERLAY_MOUNT_DIR/upper/$dir"
-		workdir="$OVERLAY_MOUNT_DIR/work/$dir"
-		overlayfs_dir="$SNAPSHOT_MOUNT_DIR/$dir"
+		local upper_dir="$OVERLAY_MOUNT_DIR/upper/$dir"
+		local lower_dir="$PRE_PIVOT_ROOT/${dir}"
+		# local work_dir="$OVERLAY_MOUNT_DIR/work/$dir"
+		# mount_dir="$SNAPSHOT_MOUNT_DIR/$dir"
 
-		mkdir -p "$upperdir"
-		mkdir -p "$workdir"
-		mkdir -p "$overlayfs_dir"
-		mount -t overlay overlay \
-			-o lowerdir="$PRE_PIVOT_ROOT/$dir",upperdir="$upperdir",workdir="$workdir" \
-			"$overlayfs_dir"
+		# live_target="$lower_dir"
+		# rsync_target="$PRE_PIVOT_ROOT/.${dir}-sync"
+		# backup_target="$PRE_PIVOT_ROOT/.${dir}-backup"
 
-		# Any regular FS read to the "merged overlay view" ($overlayfs_dir)
-		# will show all files as though the overlayfs were as one. This is
-		# exactly the format we wish to replicate in the live system rootfs
+		echo ">>> Syncing $lower_dir >>>" > /dev/console
 
-		live_target="$SYSROOT/${dir}"
-		# rsync_target="$SYSROOT/.${dir}-sync"
-		# backup_target="$SYSROOT/.${dir}-backup"
+		# -r: use rsync to merge (faster across filesystems, which is the case)
+		# -f: auto-exec the generated worker scripts
+		overlayfs-tools merge -r -f --lowerdir="$lower_dir" --upperdir="$upper_dir"
+
+		# mkdir -p "$upperdir"
+		# mkdir -p "$workdir"
+		# mkdir -p "$mount_dir"
+		# mount -t overlay overlay \
+			# -o lowerdir="$PRE_PIVOT_ROOT/$dir",upperdir="$upperdir",workdir="$workdir" \
+			# "$mount_dir"
 
 		# DIRECT VERSION
-		# TODO: My atomic version is nice and secure, but runs the risk of
-		# exceeding available disk space. If that becomes a concern, this is
-		# definitively the method to use. But if not, the atomic version is
-		# just a bit safer -- ultimately I want to make this an option, I think.
-
 		# -a includes about all the stuff for a 'mirror' (like owner preservation)
-		# rsync -aAX --delete "$overlayfs_dir/" "$live_target/"
-		rsync -aAX --delete "$overlayfs_dir/" "$live_target/"
+		# rsync -aAX --delete "$mount_dir/" "$live_target/"
+		# umount "$mount_dir"
 
 		# ATOMIC VERSION
-		# rsync -aAX "$overlayfs_dir/" "$rsync_target/"
+		# rsync -aAX "$mount_dir/" "$rsync_target/"
 		# mv "$live_target" "$backup_target"
 		# mv "$rsync_target" "$live_target"
 		# rm -rf "$backup_target"
+		# umount "$mount_dir"
 
-		umount "$overlayfs_dir"
 	done
 
-	# Cleanup -- assert snapshor dir is empty after unmounting
-	# rmdir "$SNAPSHOT_MOUNT_DIR" # TODO: not included in UKI image
-	rm -rf "$SNAPSHOT_MOUNT_DIR"
-	OVERLAY_ROOT="$OVERLAY_MOUNT_DIR"
+	# NOTE: This was only needed for the original (flawed) sequence:
+	#  > mount overlay, rsync the merged view
+	# rm -rf "$SNAPSHOT_MOUNT_DIR"
+	# OVERLAY_ROOT="$OVERLAY_MOUNT_DIR"
 }
 
 clean_overlay() {
@@ -212,11 +225,11 @@ case "$FSMODE" in
 	# Live mode exits early
 	live)
 		mount_overlay
-
 		if overlay_is_dirty; then
 			echo ""
 			echo "NOTICE: uncommitted changes found in rootfs overlay."
 			echo "Booting live may produce a stale overlay cache."
+			echo "—— Changes: `get_overlay_change_count` files"
 			echo "—— Last commit: `get_overlay_age` ago"
 			echo ""
 			echo "  a — abort and return to GRUB"
@@ -241,11 +254,13 @@ case "$FSMODE" in
 					xd|xD)
 						echo "Delete: cleaning cached overlay"
 						clean_overlay
+						timestamp_overlay
 						break ;;
 					xc|xC)
 						echo "Commit: merging overlay with live"
 						commit_overlay
-						clean_overlay
+						# clean_overlay # Handled by overlayfs-tools
+						timestamp_overlay
 						break ;;
 					x|xx|xX)
 						echo "Continue boot: no overlay operation"
@@ -262,8 +277,10 @@ case "$FSMODE" in
 		;;
 
 	advanced)
+		mount_overlay
 		echo ""
 		echo "Maintenance options for rootfs overlay."
+		echo "—— Changes: `get_overlay_change_count` files"
 		echo "—— Last commit: `get_overlay_age` ago"
 		echo ""
 		echo "  a — abort and return to GRUB"
@@ -287,12 +304,10 @@ case "$FSMODE" in
 
 				xd)
 					echo "Delete: cleaning cached overlay"
-					mount_overlay
 					clean_overlay
 					break ;;
 				xD)
 					echo "Delete: cleaning cached overlay"
-					mount_overlay
 					clean_overlay
 					echo "Delete: done, rebooting to GRUB..."
 					sleep 2
@@ -301,15 +316,13 @@ case "$FSMODE" in
 
 				xc)
 					echo "Commit: merging overlay with live"
-					mount_overlay
 					commit_overlay
-					clean_overlay
+					# clean_overlay # Handled by overlayfs-tools in commit_overlay
 					break ;;
 				xC)
 					echo "Commit: merging overlay with live"
-					mount_overlay
 					commit_overlay
-					clean_overlay
+					# clean_overlay # Handled by overlayfs-tools in commit_overlay
 					echo "Commit: done, rebooting to GRUB..."
 					sleep 2
 					reboot -f
@@ -317,7 +330,6 @@ case "$FSMODE" in
 
 				x|xx|xX)
 					echo "Continue boot: no overlay operation"
-					mount_overlay
 					break ;;
 
 				*) echo "Unknown selection" ;;

@@ -4,4 +4,12 @@ GRUB_DISTRIBUTOR="Gentoo"
 GRUB_CMDLINE_LINUX_DEFAULT="quiet splash video=DP-2:3440x1440@60 video=DP-3:d video=HDMI-A-1:d"
 
 # Comment if you don't want GRUB to pass "root=PARTUUID=xxx" parameter to kernel
+# (I'm about 80% certain UKI doesn't work if this is true (aka no PARTUUID is used)
 GRUB_DISABLE_LINUX_PARTUUID=false
+
+# Theming stuff :)
+GRUB_GFXMODE=auto
+# GRUB_GFXMODE=3440x1440
+GRUB_COLOR_NORMAL="light-cyan/black"
+GRUB_BACKGROUND="/boot/extra/monika_21-9.png"
+# GRUB_THEME="/boot/extra/theme.txt"

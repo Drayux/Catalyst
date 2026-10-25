@@ -20,12 +20,12 @@ install() {
 	# pre-pivot is the last hook before the real FS goes "live"
 	# https://wiki.gentoo.org/wiki/Dracut#Hook_scripts
 
-	# TBH no idea priority to use; guessing right in the middle unless it
+	# TODO: TBH no idea priority to use; guessing right in the middle unless it
 	# appears to cause me trouble
-
 	inst_hook pre-pivot 80 "$moddir/mount-overlay.sh"
-	# ^^ should be: /usr/lib/dracut/modules.d/99rootfs-overlay/mount-rootfs-overlay.sh
+	inst_binary "$moddir/overlayfs-tools" /usr/bin/overlayfs-tools
 
-	# The overlay script depends on findmnt and rsync
-	dracut_install date findmnt rsync
+	# date and wc are not mandatory, but nice for helpful info
+	# rsync also optional (must remove -f from the call to overlayfs-tools)
+	dracut_install findmnt rmdir rsync date wc
 }
