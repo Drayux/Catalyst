@@ -144,18 +144,18 @@ get_overlay_age() {
 
 commit_overlay() {
 	mount_snapshot
-	mount_overlay
 
 	# map_overlay_dirs -- TODO: For now, a sloppy copy to test the important bits
 	# The only difference is that instead of mounting overtop the rootfs, we
 	# map the merged overlay FS to the snapshot directory (to prepare for rsync)
 	for dir in $MAP; do
-		upperdir="$OVERLAY_ROOT/upper/$dir"
-		workdir="$OVERLAY_ROOT/work/$dir"
+		upperdir="$OVERLAY_MOUNT_DIR/upper/$dir"
+		workdir="$OVERLAY_MOUNT_DIR/work/$dir"
 		overlayfs_dir="$SNAPSHOT_MOUNT_DIR/$dir"
 
 		mkdir -p "$upperdir"
 		mkdir -p "$workdir"
+		mkdir -p "$overlayfs_dir"
 		mount -t overlay overlay \
 			-o lowerdir="$PRE_PIVOT_ROOT/$dir",upperdir="$upperdir",workdir="$workdir" \
 			"$overlayfs_dir"
@@ -183,11 +183,14 @@ commit_overlay() {
 		# mv "$live_target" "$backup_target"
 		# mv "$rsync_target" "$live_target"
 		# rm -rf "$backup_target"
+
+		umount "$overlayfs_dir"
 	done
 
 	# Cleanup -- assert snapshor dir is empty after unmounting
-	umount "$SNAPSHOT_MOUNT_DIR"
-	rmdir "$SNAPSHOT_MOUNT_DIR"
+	# rmdir "$SNAPSHOT_MOUNT_DIR" # TODO: not included in UKI image
+	rm -rf "$SNAPSHOT_MOUNT_DIR"
+	OVERLAY_ROOT="$OVERLAY_MOUNT_DIR"
 }
 
 clean_overlay() {
@@ -198,20 +201,20 @@ clean_overlay() {
 		mkdir -p "$OVERLAY_MOUNT_DIR/upper/$dir"
 		mkdir -p "$OVERLAY_MOUNT_DIR/work/$dir"
 	done
-	rm "$OVERLAY_MOUNT_DIR/.timestamp"
+	[ -f "$OVERLAY_MOUNT_DIR/.timestamp" ] && rm "$OVERLAY_MOUNT_DIR/.timestamp"
 }
 
 
 # ── Mode selection ────────────────────────────────────────────────────────────
 
-echo ""
-echo "Booting with overlay mode: $FSMODE"
+echo "Booting with filesystem mode: $FSMODE"
 case "$FSMODE" in
 	# Live mode exits early
 	live)
 		mount_overlay
 
 		if overlay_is_dirty; then
+			echo ""
 			echo "NOTICE: uncommitted changes found in rootfs overlay."
 			echo "Booting live may produce a stale overlay cache."
 			echo "—— Last commit: `get_overlay_age` ago"
@@ -236,12 +239,13 @@ case "$FSMODE" in
 						;;
 
 					xd|xD)
-						echo "Delete: cleaning cached overlay..."
+						echo "Delete: cleaning cached overlay"
 						clean_overlay
 						break ;;
 					xc|xC)
-						echo "Commit: merging overlay with live..."
+						echo "Commit: merging overlay with live"
 						commit_overlay
+						clean_overlay
 						break ;;
 					x|xx|xX)
 						echo "Continue boot: no overlay operation"
@@ -253,23 +257,86 @@ case "$FSMODE" in
 			done
 		fi
 		umount "$OVERLAY_MOUNT_DIR"
+		# rmdir "$OVERLAY_MOUNT_DIR" # TODO: not included in UKI image
+		rm -rf "$OVERLAY_MOUNT_DIR"
 		;;
 
 	advanced)
-		# TODO: Add options for this instead of just commit mode
-		# Mounts handled within the commit function
-		commit_overlay
-		clean_overlay
+		echo ""
+		echo "Maintenance options for rootfs overlay."
+		echo "—— Last commit: `get_overlay_age` ago"
+		echo ""
+		echo "  a — abort and return to GRUB"
+		echo "  d — delete cached overlay and boot"
+		echo "    — or D to delete and return to GRUB"
+		echo "  c — commit cached overlay and boot"
+		echo "    — or C to commit and return to GRUB"
+		echo "  x — > continue boot (preserve current overlay) <"
+		echo ""
+		printf "Perform overlay operation? [ a/d/c/X ] > "
+
+		while true; do
+			read -r answer </dev/console || break;
+			# answer=${answer//[[:space:]]/}
+			case x"$answer" in
+				xa|xA)
+					echo "Abort: rebooting to GRUB..."
+					sleep 2
+					reboot -f
+					exit 0 ;;
+
+				xd)
+					echo "Delete: cleaning cached overlay"
+					mount_overlay
+					clean_overlay
+					break ;;
+				xD)
+					echo "Delete: cleaning cached overlay"
+					mount_overlay
+					clean_overlay
+					echo "Delete: done, rebooting to GRUB..."
+					sleep 2
+					reboot -f
+					exit 0 ;;
+
+				xc)
+					echo "Commit: merging overlay with live"
+					mount_overlay
+					commit_overlay
+					clean_overlay
+					break ;;
+				xC)
+					echo "Commit: merging overlay with live"
+					mount_overlay
+					commit_overlay
+					clean_overlay
+					echo "Commit: done, rebooting to GRUB..."
+					sleep 2
+					reboot -f
+					exit 0 ;;
+
+				x|xx|xX)
+					echo "Continue boot: no overlay operation"
+					mount_overlay
+					break ;;
+
+				*) echo "Unknown selection" ;;
+			esac
+			printf "[ a/d/c/X ] > "
+		done
 		timestamp_overlay
 		map_overlay_dirs
 		;;
 	overlay)
 		mount_overlay
+
 		timestamp_overlay
 		map_overlay_dirs
 		;;
 	snapshot)
 		mount_snapshot
+
+		timestamp_overlay
 		map_overlay_dirs
 		;;
 esac
