@@ -42,14 +42,14 @@ Scope {
 		sourceComponent: PanelWindow {
 			id: panel_Root
 
-			// Added in v0.3.0, which has no ebuild yet, so this is so I can set it
-			// and forget it for when there eventually is one (hopefully)
-			// https://github.com/imiric/qml-niri
-			visible: service_Niri.overview? !service_Niri.overview.isOpen : true
+			// 0.2.1 does not have the overview value, so we add an extra check
+			visible: (service_Niri.overview? !service_Niri.overview.isOpen : true)
 			color: "transparent"
 			margins {
 				left: STYLE.bar_EdgeMargin
 				right: STYLE.bar_EdgeMargin
+				// top: (service_Niri.overview? !service_Niri.overview.isOpen : true) ?
+					// 0 : -STYLE.bar_Height
 			}
 			anchors {
 				top: OPTS.isTopBar
@@ -119,7 +119,7 @@ Scope {
 				/* -- CONTENTS -- */
 				Status {
 					position: TYPES.TilePosition.Left
-					sideMargin: _RO.sideMargin
+					sideMargin: _RO.sideMargin / 2
 				}
 
 				Dock {

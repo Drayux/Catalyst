@@ -138,12 +138,18 @@ hotkey-overlay {
     skip-at-startup
 }
 
-// spawn-sh-at-startup "/usr/bin/swaybg -i /home/.config/niri/miku.jpg -m fill"
-spawn-sh-at-startup "sleep 2; kacau-wall" // TODO: create ebuild for this!!
-	// (right now the binary is just copied to /usr/local/bin)
-	// Also the sleep is only just so I see the transition effect when niri loads
+spawn-at-startup "quickshell"
+spawn-at-startup "gentoo-pipewire-launcher"
+
+// NOTE: For now, this binary is just copied to /usr/local/bin
+// > Sleep is only just so I see the transition effect when niri loads
+spawn-sh-at-startup "sleep 2; kacau-wall"
+
+// TODO: I haven't set this up yet. I'm considering seeking to recreate this
+// functionality within my quickshell bar, to stay true to my UI philosophy of
+// avoiding distracting components, or things that appear in an "surprising"
+// location.
 // spawn-sh-at-startup "/usr/bin/swayosd-server" // Opt depend: `swayosd-libinput-backend` for kbd montioring
-spawn-sh-at-startup "/usr/local/bin/audio-exec"
 
 // Unofficial window rules section
 // https://niri-wm.github.io/niri/Configuration:-Window-Rules
