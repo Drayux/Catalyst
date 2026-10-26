@@ -1,0 +1,31 @@
+[defaults]
+layer = "background"
+# layer = "bottom" # On niri, this breaks transparency
+cache = false
+
+# [transitions]
+# presets = ["glitch-tear"]
+# duration = 1000
+
+[[outputs]]
+name = "DP-2"
+# fit-mode = "contain" # doesn't work?
+# wallpaper by duona
+wallpaper = "/home/.config/kacau/backgrounds/miku.jpg"
+transitions = ["glitch-tear"]
+# effects = ["embers"]
+
+[[outputs]]
+name = "DP-3"
+# ~~tohru wallpaper by urorong~~
+# wallpaper by duona
+wallpaper = "/home/.config/kacau/backgrounds/scarlet.jpg"
+transitions = ["glitch-mosaic"]
+# effects = ["glitch"]
+
+[[outputs]]
+name = "HDMI-A-1"
+# wallpaper by salmon88 (downscaled from original)
+wallpaper = "/home/.config/kacau/backgrounds/power_crop.jpg"
+transitions = ["glitch-mosaic"]
+# effects = ["vhs"]

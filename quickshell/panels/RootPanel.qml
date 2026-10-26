@@ -42,14 +42,15 @@ Scope {
 		sourceComponent: PanelWindow {
 			id: panel_Root
 
+			// For the fade effect when we open the niri overview
+			readonly property real opacityMult: (service_Niri.overview && !service_Niri.overview.isOpen) ? 1.0 : 0.0
+
 			// 0.2.1 does not have the overview value, so we add an extra check
-			visible: (service_Niri.overview? !service_Niri.overview.isOpen : true)
+			// visible: (service_Niri.overview? !service_Niri.overview.isOpen : true)
 			color: "transparent"
 			margins {
 				left: STYLE.bar_EdgeMargin
 				right: STYLE.bar_EdgeMargin
-				// top: (service_Niri.overview? !service_Niri.overview.isOpen : true) ?
-					// 0 : -STYLE.bar_Height
 			}
 			anchors {
 				top: OPTS.isTopBar
@@ -105,8 +106,16 @@ Scope {
 					}
 
 					anchors.fill: parent
-					opacity: OPTS.gifBackground?
-						STYLE.bar_GifBackgroundOpacity : STYLE.bar_BackgroundOpacity
+					opacity: (OPTS.gifBackground?
+						STYLE.bar_GifBackgroundOpacity : STYLE.bar_BackgroundOpacity)
+						* opacityMult
+
+					Behavior on opacity {
+						PropertyAnimation {
+							duration: 300 /// TODO: another one ^^
+							easing.type: Easing.Linear
+						}
+					}
 
 					maskEnabled: OPTS.gifBackground
 					source: OPTS.gifBackground?
@@ -156,6 +165,14 @@ Scope {
 						bottomMargin: OPTS.isTopBar? 0 : -STYLE.g_MainBorderRadius
 					}
 					color: "transparent"
+					opacity: opacityMult
+
+					Behavior on opacity {
+						PropertyAnimation {
+							duration: 300 /// TODO: another one ^^
+							easing.type: Easing.Linear
+						}
+					}
 
 					topLeftRadius: _RO.topRadius
 					topRightRadius: _RO.topRadius

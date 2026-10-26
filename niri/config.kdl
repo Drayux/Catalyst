@@ -170,15 +170,17 @@ window-rule {
 	open-focused true
 }
 
-// Special rendering to waybar
-layer-rule {
-	match namespace="waybar"
-	match namespace="quickshell"
+// Special rendering to shell bar
+// NOTE: Disabled now that I have the GIF background, so you don't really
+// ever see the blur
+// layer-rule {
+	// match namespace="waybar"
+	// match namespace="quickshell"
 	// opacity 1.0
-	background-effect {
-		blur true
-	}
-}
+	// background-effect {
+		// blur true
+	// }
+// }
 
 // Example WR to blur kitty, but I kinda like the clear transparent better
 window-rule {

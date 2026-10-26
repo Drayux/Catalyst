@@ -110,6 +110,7 @@ timestamp_overlay() {
 
 # ── Functions for the real overlay ONLY! ──────────────────────────────────────
 
+# TODO: This appears to cause a "too many open files" error; worth investigating
 get_overlay_change_count() {
 	local total=0
 	local count
@@ -229,7 +230,7 @@ case "$FSMODE" in
 			echo ""
 			echo "NOTICE: uncommitted changes found in rootfs overlay."
 			echo "Booting live may produce a stale overlay cache."
-			echo "—— Changes: `get_overlay_change_count` files"
+			#echo "—— Changes: `get_overlay_change_count` files"
 			echo "—— Last commit: `get_overlay_age` ago"
 			echo ""
 			echo "  a — abort and return to GRUB"
@@ -280,7 +281,7 @@ case "$FSMODE" in
 		mount_overlay
 		echo ""
 		echo "Maintenance options for rootfs overlay."
-		echo "—— Changes: `get_overlay_change_count` files"
+		#echo "—— Changes: `get_overlay_change_count` files"
 		echo "—— Last commit: `get_overlay_age` ago"
 		echo ""
 		echo "  a — abort and return to GRUB"

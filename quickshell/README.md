@@ -9,6 +9,7 @@
     - Media: Monitor the audio server for volume changes, present a temporary speaker display (OSD equivalent.)
     - Media: Change the volume adjust the server volume, not the stream (which isn't observable or persistent.)
     - Battery: Make sure this only shows up on my laptop lmao.
+    - Display: ^^ Similarly, display brightness, laptop only.
     - Network: Status at least, not sure what other info I might want to display, yet.
     - Network: Bluetooth as well! Not sure if this should be merged into network or separate just yet.
     - Keyboard: Notably, becomes active if caps lock is on (though might also be handy for input mode switching, for japanese input.)
